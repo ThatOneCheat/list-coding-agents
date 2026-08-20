@@ -13,6 +13,11 @@
       * embedded Windows version-info (CompanyName / ProductName)
       * winget publisher (e.g. Anthropic.*, OpenAI.*)
       * naming patterns (contains "agent", "ai", a known model name + cli, ...)
+      * exact known CLI names + install-path signatures (bare agent exes
+        often ship with zero metadata, so codex/grok/kimi/jcode rely on this)
+
+    Pure MCP utility servers are excluded: @modelcontextprotocol/sdk alone is
+    not treated as an agent signal.
 
     Results are tiered by confidence:
       DETECTED  (score >= 4) - high confidence, grouped by install method
@@ -40,7 +45,9 @@
 
     Honest limitation: a command that is a bare binary with no metadata and a
     non-descriptive name (e.g. "agy") cannot be classified by any heuristic.
-    Add such names to agents-extra.txt (one per line) as an escape hatch.
+    Two escape hatches, one name per line, "#" for comments:
+      agents-extra.txt    force a name IN  (undetectable agents)
+      agents-exclude.txt  force a name OUT (false positives; wins over -extra)
 
 .PARAMETER IncludeEditors
     Also include GUI AI editors (Cursor/Windsurf/Kiro style launchers).
@@ -48,6 +55,11 @@
     Print the signals that triggered each detection.
 .PARAMETER NoHtml
     Skip writing/opening the HTML report.
+.PARAMETER SkipWinget
+    Skip the winget package scan (faster when you already know it adds nothing).
+    This makes the run a partial scan: winget-only agents are carried over from
+    the last full scan rather than reported as removed, and no trend point is
+    recorded (its totals would understate the fleet).
 .PARAMETER CheckUpdates
     Query npm and winget for newer versions and show update commands.
 .PARAMETER UpdateAll
@@ -60,6 +72,7 @@ param(
     [switch]$IncludeEditors,
     [switch]$ShowReasons,
     [switch]$NoHtml,
+    [switch]$SkipWinget,
     [switch]$CheckUpdates,
     [switch]$UpdateAll,
     [switch]$Json
@@ -71,30 +84,172 @@ if ($UpdateAll) { $CheckUpdates = $true }
 # they are model/vendor words, so newly-released agents are still detected via
 # their metadata even if their brand isn't listed here.
 # ---------------------------------------------------------------------------
-$AiVendors    = 'anthropic|openai|moonshot|mistral|cohere|sourcegraph|augment(code)?|codeium|anysphere|factory|sst|kilocode|kilo|perplexity|deepseek|xai'
-$AiSdkDep     = '(?i)anthropic|(^|/)openai|generative-ai|@google/genai|modelcontextprotocol|langchain|ollama|@ai-sdk|^ai$|mistralai'
-$BrandWords   = 'claude|gemini|copilot|codex|aider|cody|goose|opencode|cline|roo[- ]?code|droid|crush|qwen|grok|kimi|antigravity|blackbox|windsurf|cursor|mimo|\bgpt\b|\bllm\b'
-$AgentPhrase  = 'coding[- ]?agent|code[- ]?agent|agentic|ai[- ]?coding|ai pair|pair program|autonomous (coding|software|dev)|ai software engineer|terminal.*agent'
-$HardExclude  = 'install .*skill|skill for|\bdeploy(ment)?\b|package manager|boilerplate|scaffold|video extension|image extension|redistributable|driver'
+# ---------------------------------------------------------------------------
+# Lexicons - linguistic + known CLI names (not a closed product catalogue).
+# Bare agent installers often embed zero metadata, so exact command names
+# matter; unknown agents still surface via npm/winget/path/PE signals.
+# ---------------------------------------------------------------------------
+
+# Exact command basenames that are coding-agent CLIs when found on PATH.
+# Only names distinctive enough that a match is near-certain belong here - a hit
+# scores +6, which auto-detects on the name alone.
+$KnownCli = [System.Collections.Generic.HashSet[string]]::new(
+    [string[]]@(
+        'claude', 'codex', 'gemini', 'grok', 'kimi', 'opencode', 'openclaw',
+        'qwen', 'jcode', 'mimo', 'aider', 'cody', 'crush', 'droid',
+        'goose', 'cline', 'kilocode', 'kilo', 'factory', 'blackbox',
+        'auggie', 'cursor-agent', 'windsurf', 'kiro',
+        'roo-code', 'continue-cli', 'copilot', 'gh-copilot'
+    ),
+    [StringComparer]::OrdinalIgnoreCase
+)
+
+# Agent CLIs whose names are also common non-agent tools or ordinary words:
+#   sg  = ast-grep      src = Sourcegraph code search
+#   amp / pi / vibe / continue / roo = too generic to stand alone
+# These only nudge into the review tier; corroborating evidence (install path,
+# AI SDK dependency, vendor, agent phrasing) is what promotes them to DETECTED.
+$AmbiguousCli = [System.Collections.Generic.HashSet[string]]::new(
+    [string[]]@('sg', 'src', 'amp', 'pi', 'vibe', 'continue', 'roo'),
+    [StringComparer]::OrdinalIgnoreCase
+)
+
+# Path fragments that strongly imply an agent install tree.
+$PathSignatures = @(
+    '(?i)\\\.local\\bin\\claude',
+    '(?i)\\OpenAI\\Codex\\',
+    '(?i)\\\.grok\\bin\\',
+    '(?i)\\\.kimi-code\\',
+    '(?i)\\\.mimocode\\',
+    '(?i)\\jcode\\bin\\',
+    '(?i)\\Programs\\cursor\\',
+    '(?i)\\Programs\\Windsurf\\',
+    '(?i)\\gemini-cli\\',
+    '(?i)\\opencode',
+    '(?i)\\anthropic\\',
+    '(?i)\\Claude\\'
+)
+
+# Note: bare "google" is intentionally omitted (matches Android platform-tools, etc.).
+$AiVendors    = 'anthropic|openai|moonshot|mistral|cohere|sourcegraph|augment(code)?|codeium|anysphere|factory|\bsst\b|kilocode|perplexity|deepseek|\bxai\b'
+# Real model SDKs - deliberately NOT modelcontextprotocol (shared by non-agents).
+$AiSdkDep     = '(?i)@anthropic-ai/|(^|/)openai(@|/|$)|@google/genai|generative-ai|langchain|ollama|@ai-sdk/|^ai$|mistralai|@google/generative-ai'
+$BrandWords   = 'claude|gemini|copilot|codex|aider|cody|goose|opencode|openclaw|cline|roo[- ]?code|droid|crush|qwen|grok|kimi|antigravity|blackbox|windsurf|cursor|kiro|mimo|jcode|vibe|\bgpt\b|\bllm\b|kilocode|factory'
+# A bare brand basename, optionally with the usual agent suffix, so that
+# "kimi-cli" and "claude-code" score like plain "kimi" and "claude" do.
+$BrandCmdRx   = "^(?:$BrandWords)(?:[-_]?(?:cli|code|agent))?$"
+$AgentPhrase  = 'coding[- ]?agent|code[- ]?agent|agentic|ai[- ]?coding|ai pair|pair program|autonomous (coding|software|dev)|ai software engineer|terminal.*agent|ai[- ]?powered coding|coding assistant'
+# Hard exclude: package managers, pure MCP utilities, scaffolding, etc.
+$HardExclude  = '(?i)install .*skill|skill for|\bdeploy(ment)?\b|package manager|boilerplate|scaffold|video extension|image extension|redistributable|driver|\bmcp[- ]?server\b|^mcp\b|\bmodel context protocol\b'
 
 # --- scoring ----------------------------------------------------------------
 function Get-AgentScore {
-    param([string]$Text, [string[]]$Deps, [string]$Publisher, [string]$Name)
-    $t = (($Text, ($Deps -join ' '), $Publisher, $Name) -join ' ').ToLower()
-    $score = 0; $why = @()
+    param(
+        [string]$Text,
+        [string[]]$Deps,
+        [string]$Publisher,
+        [string]$Name,
+        [string]$Path
+    )
 
-    if ($t -match $HardExclude) { return [pscustomobject]@{ Score = -99; Why = 'excluded (non-agent phrase)' } }
+    $name = if ($Name) { $Name.ToLowerInvariant() } else { '' }
+    # Do NOT fold the full filesystem path into $t. Sibling tools in an agent
+    # install dir (.kimi-code\bin\fd.exe) would inherit brand words from the
+    # folder name. Path is only used for signature checks below.
+    $t = (($Text, ($Deps -join ' '), $Publisher, $name) -join ' ')
+    $tLower = $t.ToLowerInvariant()
+    $score = 0
+    $why = [System.Collections.Generic.List[string]]::new()
 
-    if ($t -match $AgentPhrase) { $score += 4; $why += 'coding-agent phrase' }
-    if ($Publisher -match "(?i)^($AiVendors)" -or $t -match "(?i)\b($AiVendors)\b") { $score += 3; $why += 'AI vendor' }
-    if ($Deps | Where-Object { $_ -match $AiSdkDep }) { $score += 3; $why += 'AI SDK dependency' }
-    if ($t -match '\bagent\b' -and $t -match 'code|coding|cli|terminal|dev') { $score += 2; $why += 'agent + code' }
-    if ($t -match "(?i)($BrandWords)") {
-        $score += 1; $why += 'model/brand name'
-        if ($t -match 'cli|code|coding|terminal') { $score += 3; $why += 'brand + cli' }
+    # Pure MCP utilities / non-agents - bail early unless exact known CLI.
+    # Ambiguous names deliberately do NOT get the bypass: an "amp-mcp-server" or
+    # "sg-updater" should still be filtered out by the guards below.
+    $isKnown = $KnownCli.Contains($name)
+    $isAmbig = (-not $isKnown) -and $AmbiguousCli.Contains($name)
+    if (-not $isKnown) {
+        if ($name -match '(?i)(^|-)mcp($|-)|-mcp-server$|^mcp-') {
+            return [pscustomobject]@{ Score = -99; Why = 'excluded (mcp utility)' }
+        }
+        # "CLI to install <x> skill ..." is a skill installer, never an agent -
+        # this one is unconditional (loose phrases like "ai coding" would
+        # otherwise keep it alive via the AgentPhrase guard below).
+        if ($tLower -match '(?i)install .*skill|skill for') {
+            return [pscustomobject]@{ Score = -99; Why = 'excluded (skill installer)' }
+        }
+        if ($tLower -match $HardExclude -and $tLower -notmatch $AgentPhrase) {
+            return [pscustomobject]@{ Score = -99; Why = 'excluded (non-agent phrase)' }
+        }
+        if ($name -match '(?i)(launcher|host|helper|shim|wrapper|updater|unins)') {
+            return [pscustomobject]@{ Score = -99; Why = 'excluded (helper binary)' }
+        }
     }
-    if ($t -match '(^|[^a-z])ai([^a-z]|$)') { $score += 1; $why += 'ai token' }
-    if ($t -match '\bmcp\b|model context protocol') { $score += 1; $why += 'mcp' }
+
+    if ($isKnown) {
+        $score += 6
+        $why.Add('known CLI name')
+    } elseif ($isAmbig) {
+        # Enough to land in the review tier, never enough to auto-detect alone:
+        # ast-grep's "sg" should not be announced as a coding agent on a machine
+        # that has never installed one.
+        $score += 2
+        $why.Add('ambiguous CLI name (needs corroboration)')
+    }
+
+    # Path signatures only boost the primary agent CLI, not sibling tools.
+    if ($Path -and ($isKnown -or $isAmbig -or $name -match $BrandCmdRx)) {
+        foreach ($pat in $PathSignatures) {
+            if ($Path -match $pat) {
+                $score += 3
+                $why.Add('install path signature')
+                break
+            }
+        }
+    }
+
+    if ($tLower -match $AgentPhrase) {
+        $score += 4
+        $why.Add('coding-agent phrase')
+    }
+
+    # Vendor from PE CompanyName / package text only (never from path).
+    $vendorText = (($Publisher, $Text) -join ' ')
+    if ($vendorText -match "(?i)($AiVendors)") {
+        if ($Publisher -notmatch '(?i)^(Node\.js|Oven|Microsoft Corporation)$') {
+            $score += 3
+            $why.Add('AI vendor')
+        }
+    }
+
+    $sdkHits = @($Deps | Where-Object { $_ -and ($_ -match $AiSdkDep) })
+    if ($sdkHits.Count -gt 0) {
+        $score += 3
+        $why.Add('AI SDK dependency')
+    }
+
+    if ($tLower -match '\bagent\b' -and $tLower -match 'code|coding|cli|terminal|dev') {
+        $score += 2
+        $why.Add('agent + code')
+    }
+
+    if ($tLower -match "(?i)($BrandWords)") {
+        $score += 1
+        $why.Add('model/brand name')
+        if ($tLower -match 'cli|code|coding|terminal|assistant') {
+            $score += 2
+            $why.Add('brand + cli/code')
+        }
+        # Basename is the brand word itself, with or without the usual agent
+        # suffix - "kimi", "kimi-cli" and "claude-code" all qualify.
+        if ($name -match $BrandCmdRx) {
+            $score += 2
+            $why.Add('brand command')
+        }
+    }
+
+    if ($tLower -match '(^|[^a-z])ai([^a-z]|$)' -and $tLower -match 'code|coding|cli|agent|assistant') {
+        $score += 1
+        $why.Add('ai + code token')
+    }
 
     [pscustomobject]@{ Score = $score; Why = ($why -join ', ') }
 }
@@ -250,40 +405,100 @@ function Get-ExeVersionProbe([string]$Path) {
 function Get-NpmMeta {
     $map = @{}
     if (-not (Get-Command npm -ErrorAction SilentlyContinue)) { return $map }
-    $root = (& npm root -g 2>$null | Out-String).Trim()
+
+    $root = $null
+    try { $root = (& npm root -g 2>$null | Out-String).Trim() } catch { return $map }
     if (-not $root -or -not (Test-Path -LiteralPath $root)) { return $map }
-    $dirs = foreach ($d in Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue) {
-        if ($d.Name -like '@*') { Get-ChildItem -LiteralPath $d.FullName -Directory -ErrorAction SilentlyContinue } else { $d }
-    }
-    foreach ($d in $dirs) {
-        $pj = Join-Path $d.FullName 'package.json'
-        if (-not (Test-Path -LiteralPath $pj)) { continue }
-        try { $j = Get-Content -LiteralPath $pj -Raw | ConvertFrom-Json } catch { continue }
-        if (-not $j.bin) { continue }
-        $cmds = if ($j.bin -is [string]) { @(($j.name -split '/')[-1]) } else { @($j.bin.PSObject.Properties.Name) }
-        $deps = @(); if ($j.dependencies) { $deps = $j.dependencies.PSObject.Properties.Name }
-        $kw   = @(); if ($j.keywords) { $kw = $j.keywords }
-        $meta = [pscustomobject]@{
-            Package = $j.name; Version = $j.version; Dir = $d.FullName
-            Text    = (($j.name, $j.description, ($kw -join ' ')) -join ' ')
-            Deps    = $deps
+
+    $pkgDirs = [System.Collections.Generic.List[string]]::new()
+    foreach ($d in Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue) {
+        if ($d.Name -like '@*') {
+            foreach ($sub in Get-ChildItem -LiteralPath $d.FullName -Directory -ErrorAction SilentlyContinue) {
+                $pkgDirs.Add($sub.FullName)
+            }
+        } else {
+            $pkgDirs.Add($d.FullName)
         }
-        foreach ($c in $cmds) { $map[$c.ToLower()] = $meta }
+    }
+
+    foreach ($dir in $pkgDirs) {
+        $pj = Join-Path $dir 'package.json'
+        if (-not (Test-Path -LiteralPath $pj)) { continue }
+        try {
+            $j = Get-Content -LiteralPath $pj -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+        } catch { continue }
+
+        $propNames = @($j.PSObject.Properties.Name)
+        if ($propNames -notcontains 'bin' -or -not $j.bin) { continue }
+
+        $cmds = if ($j.bin -is [string]) {
+            $fallback = if ($propNames -contains 'name') { ($j.name -split '/')[-1] } else { Split-Path $dir -Leaf }
+            @($fallback)
+        } else {
+            @($j.bin.PSObject.Properties.Name)
+        }
+
+        $deps = [System.Collections.Generic.List[string]]::new()
+        foreach ($section in @('dependencies', 'optionalDependencies', 'peerDependencies')) {
+            if ($propNames -notcontains $section) { continue }
+            $block = $j.$section
+            if ($block) {
+                foreach ($p in $block.PSObject.Properties) { [void]$deps.Add([string]$p.Name) }
+            }
+        }
+
+        $kw = @()
+        if ($propNames -contains 'keywords' -and $j.keywords) { $kw = @($j.keywords) }
+
+        $pkgName = if ($propNames -contains 'name') { [string]$j.name } else { '' }
+        $pkgVer  = if ($propNames -contains 'version') { [string]$j.version } else { '' }
+        $pkgDesc = if ($propNames -contains 'description') { [string]$j.description } else { '' }
+
+        $meta = [pscustomobject]@{
+            Package = $pkgName
+            Version = $pkgVer
+            Dir     = $dir
+            Text    = (@($pkgName, $pkgDesc) + $kw) -join ' '
+            Deps    = @($deps)
+        }
+        foreach ($c in $cmds) {
+            if ($c) { $map[$c.ToLowerInvariant()] = $meta }
+        }
     }
     $map
 }
 
 # --- candidate commands: PATH (outside Windows) -----------------------------
 function Get-PathCandidates {
-    $exts = @($env:PATHEXT -split ';' | Where-Object { $_ }) + '.PS1' | ForEach-Object { $_.ToUpperInvariant() } | Select-Object -Unique
-    $dirs = $env:PATH -split ';' | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Container) } | Select-Object -Unique
+    $exts = @(
+        $env:PATHEXT -split ';' |
+            Where-Object { $_ } |
+            ForEach-Object { $_.ToUpperInvariant() }
+    ) + @('.PS1') | Select-Object -Unique
+
+    $dirs = $env:PATH -split ';' |
+        Where-Object { $_ -and $_.Trim() } |
+        ForEach-Object { $_.Trim().TrimEnd('\') } |
+        Where-Object { Test-Path -LiteralPath $_ -PathType Container } |
+        Select-Object -Unique
+
     $seen = @{}
+    $winDir = $env:WINDIR
+
     foreach ($dir in $dirs) {
-        try { $files = Get-ChildItem -LiteralPath $dir -File -ErrorAction Stop } catch { continue }
+        # Skip pure Windows system dirs (keep WindowsApps for winget shims).
+        if ($winDir -and $dir.StartsWith($winDir, [StringComparison]::OrdinalIgnoreCase) -and
+            $dir -notmatch '(?i)\\WindowsApps$') { continue }
+
+        try {
+            $files = Get-ChildItem -LiteralPath $dir -File -ErrorAction Stop
+        } catch { continue }
+
         foreach ($f in $files) {
-            if ($env:WINDIR -and $f.FullName.StartsWith($env:WINDIR, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
-            if ($exts -notcontains $f.Extension.ToUpperInvariant()) { continue }
+            $ext = $f.Extension.ToUpperInvariant()
+            if ($exts -notcontains $ext) { continue }
             $name = $f.BaseName.ToLowerInvariant()
+            if (-not $name) { continue }
             if (-not $seen.ContainsKey($name)) {
                 $seen[$name] = [pscustomobject]@{ Path = $f.FullName; Shadows = @() }
             } elseif ($seen[$name].Path -ne $f.FullName -and ((Split-Path $seen[$name].Path) -ne (Split-Path $f.FullName))) {
@@ -292,71 +507,151 @@ function Get-PathCandidates {
             }
         }
     }
-    $seen.GetEnumerator() | ForEach-Object { [pscustomobject]@{ Command = $_.Key; Path = $_.Value.Path; Shadows = @($_.Value.Shadows) } }
+
+    $seen.GetEnumerator() | ForEach-Object {
+        [pscustomobject]@{ Command = $_.Key; Path = $_.Value.Path; Shadows = @($_.Value.Shadows) }
+    }
+}
+
+function Get-Method {
+    param([string]$Path)
+    if (-not $Path) { return 'unknown' }
+    if ($Path -match '(?i)\\AppData\\Roaming\\npm\\|\\node_modules\\') { return 'npm' }
+    if ($Path -match '(?i)\\WindowsApps\\|\\WinGet\\') { return 'winget' }
+    if ($Path -match '(?i)\\Python\\.*\\Scripts\\|\\uv\\|\\pipx\\') { return 'pip / uv' }
+    if ($Path -match '(?i)\\scoop\\') { return 'scoop' }
+    if ($Path -match '(?i)\\.cargo\\bin\\') { return 'cargo' }
+    if ($Path -match '(?i)\\.bun\\bin\\') { return 'bun' }
+    if ($Path -match '(?i)\\.local\\bin\\|\\Programs\\') { return 'standalone installer' }
+    return 'standalone installer'
+}
+
+function Get-Kind {
+    param([string]$Path, [string]$Name)
+    if ($Path -match '(?i)\\Programs\\(cursor|windsurf|kiro)\\' -or
+        $Name -match '^(cursor|windsurf|kiro)$') { return 'editor' }
+    return 'cli'
+}
+
+function Get-PeText {
+    param([string]$Path)
+    if (-not $Path -or $Path -notmatch '\.exe$') {
+        return [pscustomobject]@{ Text = ''; Publisher = ''; Version = '' }
+    }
+    try {
+        $vi = (Get-Item -LiteralPath $Path).VersionInfo
+        # Node/Bun wrappers are noise for classification.
+        $company = [string]$vi.CompanyName
+        $product = [string]$vi.ProductName
+        $desc = [string]$vi.FileDescription
+        if ($company -match '(?i)^(Node\.js|Oven)$' -or $product -match '(?i)^(Node\.js|Bun)$') {
+            # Wrapper runtime version is not the agent version.
+            return [pscustomobject]@{ Text = ''; Publisher = ''; Version = '' }
+        }
+        [pscustomobject]@{
+            Text      = (@($product, $desc) -join ' ').Trim()
+            Publisher = $company
+            Version   = if ($vi.ProductVersion) { [string]$vi.ProductVersion } else { [string]$vi.FileVersion }
+        }
+    } catch {
+        [pscustomobject]@{ Text = ''; Publisher = ''; Version = '' }
+    }
 }
 
 $npmMeta = Get-NpmMeta
-$extraFile = Join-Path $PSScriptRoot 'agents-extra.txt'
-$extra = if (Test-Path -LiteralPath $extraFile) { Get-Content $extraFile | ForEach-Object { $_.Trim().ToLower() } | Where-Object { $_ -and $_ -notmatch '^#' } } else { @() }
+
+function Get-NameListFile([string]$FileName) {
+    $set = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    $p = Join-Path $PSScriptRoot $FileName
+    if (Test-Path -LiteralPath $p) {
+        Get-Content -LiteralPath $p -ErrorAction SilentlyContinue | ForEach-Object {
+            $line = $_.Trim()
+            if ($line -and $line -notmatch '^\s*#') { [void]$set.Add($line.ToLowerInvariant()) }
+        }
+    }
+    # leading comma stops PowerShell unrolling the HashSet into loose strings -
+    # without it an empty set comes back as $null and .Contains() blows up
+    ,$set
+}
+
+$extra   = Get-NameListFile 'agents-extra.txt'     # force IN  (undetectable names)
+$exclude = Get-NameListFile 'agents-exclude.txt'  # force OUT (false positives)
 
 # --- evaluate every PATH candidate -----------------------------------------
-$rows = foreach ($c in Get-PathCandidates) {
-    $name = $c.Command; $path = $c.Path
-    $text = $name; $deps = @(); $publisher = ''; $method = 'standalone installer'; $kind = 'cli'
-    $version = ''; $package = ''; $pkgDir = ''
+$rows = [System.Collections.Generic.List[object]]::new()
+$haveNames = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
 
-    if ($path -match '(?i)\\AppData\\Roaming\\npm\\' -or $path -match '(?i)\\node_modules\\') { $method = 'npm' }
-    elseif ($path -match '(?i)\\WindowsApps\\')                                                { $method = 'winget' }
-    elseif ($path -match '(?i)\\Python\\.*\\Scripts\\' -or $path -match '(?i)\\uv\\')          { $method = 'pip / uv' }
-    if ($path -match '(?i)\\Programs\\[^\\]+\\.*bin\\')                                         { $kind = 'editor' }
+foreach ($c in Get-PathCandidates) {
+    $name = $c.Command; $path = $c.Path
+    # Skip hidden/backup/old launcher basenames (e.g. .jcode-launcher-old-...).
+    if ($name.StartsWith('.')) { continue }
+
+    $text = $name; $deps = @(); $publisher = ''
+    $version = ''; $package = ''; $pkgDir = ''
+    $method = Get-Method $path
+    $kind = Get-Kind -Path $path -Name $name
 
     if ($npmMeta.ContainsKey($name)) {
         $m = $npmMeta[$name]
         $text = $m.Text; $deps = $m.Deps; $method = 'npm'
-        $version = $m.Version; $package = $m.Package; $pkgDir = $m.Dir
-    }
-    if ($path -match '\.exe$') {
-        try { $vi = (Get-Item -LiteralPath $path).VersionInfo
-              $text = ($text, $vi.ProductName, $vi.FileDescription) -join ' '
-              $publisher = "$($vi.CompanyName)"
-              if (-not $version -and "$($vi.ProductVersion)" -match '^\s*(\d+(\.\d+)+)') { $version = $Matches[1] }
-        } catch {}
+        if ($m.Version) { $version = $m.Version }
+        $package = $m.Package; $pkgDir = $m.Dir
     }
 
-    $s = Get-AgentScore -Text $text -Deps $deps -Publisher $publisher -Name $name
-    if ($extra -contains $name -and $s.Score -lt 4) { $s = [pscustomobject]@{ Score = 5; Why = 'agents-extra.txt override' } }
+    $pe = Get-PeText -Path $path
+    if ($pe.Text) { $text = (@($text, $pe.Text) -join ' ').Trim() }
+    if ($pe.Publisher) { $publisher = $pe.Publisher }
+    if (-not $version -and $pe.Version -match '(\d+(\.\d+)+)') { $version = $Matches[1] }
 
-    [pscustomobject]@{
+    $s = Get-AgentScore -Text $text -Deps $deps -Publisher $publisher -Name $name -Path $path
+    if ($extra.Contains($name) -and $s.Score -lt 4) { $s = [pscustomobject]@{ Score = 5; Why = 'agents-extra.txt override' } }
+    # exclude wins over extra - it is the user's last word on a false positive
+    if ($exclude.Contains($name)) { $s = [pscustomobject]@{ Score = -99; Why = 'agents-exclude.txt override' } }
+
+    if ($s.Score -lt 2) { continue }
+
+    [void]$haveNames.Add($name)
+    $rows.Add([pscustomobject]@{
         Name=$name; Command=$name; Source=$path; Method=$method; Kind=$kind; Score=$s.Score; Why=$s.Why
         Version=$version; Package=$package; PkgDir=$pkgDir
         SizeMB=$null; LastUsed=$null; Latest=''; UpdateCmd=''
         Sessions30d=0; McpCount=0; Auth=$false; Stale=$false; UninstallCmd=''; Shadows=@($c.Shadows)
-    }
+    })
 }
 
 # --- evaluate winget packages (catches agents that aren't on PATH, e.g. Codex)
-if (Get-Command winget -ErrorAction SilentlyContinue) {
-    $haveNames = @($rows | ForEach-Object { $_.Name })
+# $wingetScanned drives the partial-scan handling further down: a run that never
+# looked at winget must not claim winget-only agents disappeared.
+$wingetScanned = $false
+if (-not $SkipWinget -and (Get-Command winget -ErrorAction SilentlyContinue)) {
+    $wingetScanned = $true
     foreach ($line in (winget list --disable-interactivity 2>$null)) {
         if ($line -notmatch '[A-Za-z]') { continue }   # skip progress bars / blank lines
-        $parts = $line -split '\s{2,}'
+        # winget table: Name  Id  Version  Available  Source  (2+ spaces)
+        $parts = $line -split '\s{2,}' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
         if ($parts.Count -lt 2) { continue }
-        $pkgName = $parts[0].Trim(); $id = $parts[1].Trim()
-        if (-not $pkgName -or $pkgName -eq 'Name') { continue }
+        $pkgName = $parts[0]; $id = $parts[1]
+        if ($pkgName -eq 'Name' -or $id -eq 'Id') { continue }
+        if ($pkgName -match '^(The following|No installed|-{2,})') { continue }
+
         $publisher = ($id -split '\.')[0]
-        $key = (($pkgName -split '\s')[0]).ToLower()
-        if ($haveNames -contains $key) { continue }    # already found on PATH
-        $s = Get-AgentScore -Text ("$pkgName $id") -Deps @() -Publisher $publisher -Name $pkgName
+        $key = (($pkgName -split '\s+')[0]).ToLowerInvariant()
+        if ($haveNames.Contains($key)) { continue }    # already found on PATH
+        # match agents-exclude.txt on the display name or its first word, since
+        # winget rows are keyed on "Codex"-style names rather than a basename
+        if ($exclude.Contains($key) -or $exclude.Contains($pkgName.ToLowerInvariant())) { continue }
+        $s = Get-AgentScore -Text ("$pkgName $id") -Deps @() -Publisher $publisher -Name $pkgName -Path $id
         if ($s.Score -ge 2) {
             $ver = ''
             if ($parts.Count -ge 3 -and $parts[2].Trim() -match '^(\d+(\.\d+)+)') { $ver = $Matches[1] }
             elseif ($id -match '_(\d+(\.\d+)+)_') { $ver = $Matches[1] }
-            $rows += [pscustomobject]@{
+            [void]$haveNames.Add($key)
+            $rows.Add([pscustomobject]@{
                 Name=$pkgName; Command='(winget)'; Source=$id; Method='winget'; Kind='cli'; Score=$s.Score; Why=$s.Why
                 Version=$ver; Package=''; PkgDir=''
                 SizeMB=$null; LastUsed=$null; Latest=''; UpdateCmd=''
                 Sessions30d=0; McpCount=0; Auth=$false; Stale=$false; UninstallCmd=''; Shadows=@()
-            }
+            })
         }
     }
 }
@@ -368,6 +663,7 @@ $possible = @($rows | Where-Object { $_.Score -ge 2 -and $_.Score -lt 4 -and ($I
 # --- previous scan: name diff, trend history, exe-probe cache ----------------
 $histFile  = Join-Path $PSScriptRoot 'last-scan.json'
 $prevNames = @(); $prevDate = ''; $histArr = @(); $probeCache = @{}
+$prevWinget = @(); $prevHasWinget = $false
 if (Test-Path -LiteralPath $histFile) {
     try {
         $prev = Get-Content -LiteralPath $histFile -Raw | ConvertFrom-Json
@@ -375,13 +671,22 @@ if (Test-Path -LiteralPath $histFile) {
         if ($prev.date)    { $prevDate  = "$($prev.date)" }
         if ($prev.history) { $histArr   = @($prev.history) }
         if ($prev.probes)  { foreach ($pp in $prev.probes.PSObject.Properties) { $probeCache[$pp.Name] = $pp.Value } }
+        # Agents only the winget scan can see. Tracked separately so a scan that
+        # skipped winget knows which previous names it simply didn't look for.
+        if ($prev.PSObject.Properties.Name -contains 'wingetOnly') {
+            $prevHasWinget = $true
+            if ($prev.wingetOnly) { $prevWinget = @($prev.wingetOnly) }
+        }
     } catch {}
 }
 $curNames = @($detected | ForEach-Object { $_.Name })
+# Without a winget scan, previous winget-only agents are "not checked", not
+# "gone" - reporting them as removed is a lie about state we never observed.
+$unscanned = if ($wingetScanned) { @() } else { $prevWinget }
 $newNames = @(); $goneNames = @()
 if ($prevNames.Count) {
     $newNames  = @($curNames  | Where-Object { $prevNames -notcontains $_ })
-    $goneNames = @($prevNames | Where-Object { $curNames  -notcontains $_ })
+    $goneNames = @($prevNames | Where-Object { $curNames -notcontains $_ -and $unscanned -notcontains $_ })
 }
 
 # --- enrich the agents that made a tier (sizes, usage intel, version probes) -
@@ -475,27 +780,59 @@ $rankName = if ($dcount -le 2) { 'MINIMALIST' }
             else { 'AGENT SINGULARITY' }
 
 # --- persist scan history (names diff, trend, probe cache) --------------------
-$histEntry = [pscustomobject]@{ d = (Get-Date -Format 'yyyy-MM-dd'); c = $detected.Count; mb = [math]::Round($totMB, 1) }
-if ($histArr.Count -and "$($histArr[$histArr.Count-1].d)" -eq $histEntry.d) { $histArr[$histArr.Count-1] = $histEntry }
-else { $histArr = @($histArr) + @($histEntry) }
-if ($histArr.Count -gt 60) { $histArr = @($histArr[($histArr.Count-60)..($histArr.Count-1)]) }
-try {
-    [pscustomobject]@{
-        date    = (Get-Date -Format 'yyyy-MM-dd HH:mm')
-        agents  = $curNames
-        history = $histArr
-        probes  = $probeCache
-    } | ConvertTo-Json -Depth 5 | Out-File -LiteralPath $histFile -Encoding utf8
-} catch {}
+# A run without a winget scan is a PARTIAL scan. Writing its short agent list as
+# the new baseline would make the next full scan report every winget-only agent
+# as "+ new" (and this run report them as "- gone"). So carry the previous
+# winget-only names forward and skip the trend point, whose count/size would be
+# understated and show up as a phantom dip in the sparkline.
+# Rows found by the winget scan carry Command='(winget)' - that is narrower than
+# Method='winget', which also covers WindowsApps shims the PATH scan finds fine.
+$wingetOnly   = @($detected | Where-Object { $_.Command -eq '(winget)' } | ForEach-Object { $_.Name })
+$persistNames = $curNames
+$writeHist    = $true
+
+if (-not $wingetScanned) {
+    if ($prevNames.Count -and -not $prevHasWinget) {
+        # Pre-upgrade state file: no way to tell which previous names were
+        # winget-only, so leave the baseline alone rather than corrupt it.
+        # One full scan re-establishes it.
+        $writeHist = $false
+    } else {
+        $wingetOnly   = $prevWinget
+        $persistNames = @(@($curNames) + @($prevWinget) | Select-Object -Unique)
+    }
+} else {
+    $histEntry = [pscustomobject]@{ d = (Get-Date -Format 'yyyy-MM-dd'); c = $detected.Count; mb = [math]::Round($totMB, 1) }
+    if ($histArr.Count -and "$($histArr[$histArr.Count-1].d)" -eq $histEntry.d) { $histArr[$histArr.Count-1] = $histEntry }
+    else { $histArr = @($histArr) + @($histEntry) }
+    if ($histArr.Count -gt 60) { $histArr = @($histArr[($histArr.Count-60)..($histArr.Count-1)]) }
+}
+
+if ($writeHist) {
+    try {
+        [pscustomobject]@{
+            date       = (Get-Date -Format 'yyyy-MM-dd HH:mm')
+            agents     = $persistNames
+            wingetOnly = $wingetOnly
+            history    = $histArr
+            probes     = $probeCache
+        } | ConvertTo-Json -Depth 5 | Out-File -LiteralPath $histFile -Encoding utf8
+    } catch {}
+}
 
 # --- terminal report ---------------------------------------------------------
-$rank = @{ 'npm'=1; 'winget'=2; 'pip / uv'=3; 'standalone installer'=4 }
+$rank = @{ 'npm'=1; 'winget'=2; 'pip / uv'=3; 'scoop'=4; 'cargo'=5; 'bun'=6; 'standalone installer'=7; 'unknown'=8 }
 
 Write-Host ""
 Write-Host "Auto-detected coding agents ($($detected.Count) detected, $($possible.Count) possible, $(Format-Size $totMB) on disk)" -ForegroundColor Cyan
 $reclaimLabel = Format-Size $reclaimMB; if (-not $reclaimLabel) { $reclaimLabel = 'none' }
 Write-Host ("fleet rank: {0} (lv {1}) | {2}/{1} used this month | dead weight: {3}" -f $rankName, $detected.Count, $active30, $reclaimLabel) -ForegroundColor Magenta
 if (-not $IncludeEditors) { Write-Host "(GUI editors hidden - use -IncludeEditors)" -ForegroundColor DarkGray }
+if (-not $wingetScanned) {
+    $why = if ($SkipWinget) { '-SkipWinget' } else { 'winget not found' }
+    $carried = if ($writeHist) { "$($prevWinget.Count) carried over from last full scan" } else { 'baseline left untouched' }
+    Write-Host ("(partial scan: $why - winget packages not checked, $carried)") -ForegroundColor DarkGray
+}
 if ($newNames.Count)  { Write-Host ("+ new since last scan ({0}): {1}"  -f $prevDate, ($newNames -join ', '))  -ForegroundColor Green }
 if ($goneNames.Count) { Write-Host ("- gone since last scan ({0}): {1}" -f $prevDate, ($goneNames -join ', ')) -ForegroundColor DarkGray }
 
@@ -594,7 +931,7 @@ if ($Json) {
 # --- HTML report ------------------------------------------------------------
 if (-not $NoHtml) {
     function Enc($s) { [System.Net.WebUtility]::HtmlEncode([string]$s) }
-    $chanColors = @{ 'npm'='#ff6b5e'; 'winget'='#5ad1ff'; 'pip / uv'='#ffcf5a'; 'standalone installer'='#d4ff3f' }
+    $chanColors = @{ 'npm'='#ff6b5e'; 'winget'='#5ad1ff'; 'pip / uv'='#ffcf5a'; 'scoop'='#c79bff'; 'cargo'='#ffa07a'; 'bun'='#fbf0df'; 'standalone installer'='#d4ff3f'; 'unknown'='#8a8a80' }
 
     function New-UnitChips($r, [bool]$IsNew) {
         $chips = ''
@@ -909,13 +1246,20 @@ $($sb.ToString())</div>
   if (!btn || !el) return;
   var D = {}; try { D = JSON.parse(el.textContent) || {}; } catch(err) {}
   btn.addEventListener('click', function(){
-    var fs = [
-      document.fonts.load('800 104px Syne'),
-      document.fonts.load('800 34px Syne'),
-      document.fonts.load('700 22px "JetBrains Mono"'),
-      document.fonts.load('400 19px "JetBrains Mono"')
-    ];
-    Promise.all(fs).then(draw, draw);
+    var fs;
+    try {
+      fs = Promise.all([
+        document.fonts.load('800 104px Syne'),
+        document.fonts.load('800 44px Syne'),
+        document.fonts.load('800 30px Syne'),
+        document.fonts.load('700 21px "JetBrains Mono"'),
+        document.fonts.load('400 19px "JetBrains Mono"')
+      ]);
+    } catch(err){ fs = Promise.resolve(); }
+    // a font load can hang forever (offline / file://) - never leave the
+    // button dead, fall back to system fonts after 2.5s
+    var timeout = new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('font timeout')); }, 2500); });
+    Promise.race([fs, timeout]).then(draw, draw);
   });
   function draw(){
     var W = 1200, H = 630;
@@ -933,27 +1277,59 @@ $($sb.ToString())</div>
     x.fillText('// AGENT FLEET MANIFEST', 64, 74);
     x.fillStyle = '#eceae0'; x.font = '800 104px Syne';
     x.fillText('CODING AGENTS', 58, 178);
-    var rank = (D.rank || '').toString();
-    if (rank){
-      x.font = '800 34px Syne';
-      var rw = x.measureText(rank).width;
-      x.strokeStyle = '#d4ff3f'; x.lineWidth = 2;
-      x.strokeRect(W - 64 - rw - 44, 216, rw + 44, 62);
-      x.fillStyle = '#d4ff3f';
-      x.fillText(rank, W - 64 - rw - 22, 259);
-    }
+    // Stats flow by content width rather than on a fixed 205px pitch. The old
+    // pitch was sized for short numbers, so a wide ON DISK value ("2.5 GB" is
+    // 227px) ran straight under the rank box's left border, while "12" and "3"
+    // left ~300px of dead space behind them.
     var stats = [
       [(D.dc || 0) + '', 'DETECTED'],
       [(D.cc || 0) + '', 'CHANNELS'],
-      [(D.disk || '0 MB') + '', 'ON DISK'],
-      [(D.active || 0) + '/' + (D.dc || 0), 'ACTIVE 30D']
+      [(D.disk || '0 MB') + '', 'ON DISK']
     ];
+    var STAT_GAP = 48, sx = 64, statsEnd = 64;
     for (var s = 0; s < stats.length; s++){
-      var sx = 64 + s * 205;
+      x.font = '800 44px Syne';
+      var vw = x.measureText(stats[s][0]).width;
+      x.font = '400 15px "JetBrains Mono"';
+      var lw = x.measureText(stats[s][1]).width;
       x.fillStyle = '#eceae0'; x.font = '800 44px Syne';
       x.fillText(stats[s][0], sx, 266);
       x.fillStyle = '#74746a'; x.font = '400 15px "JetBrains Mono"';
       x.fillText(stats[s][1], sx, 292);
+      var tileW = Math.max(vw, lw);
+      statsEnd = sx + tileW;
+      sx += tileW + STAT_GAP;
+    }
+    // Fleet-rank pill. The box now hugs its text: shrink the type until it
+    // clears the stats with even padding on both sides, then centre it in the
+    // box horizontally AND vertically (a fixed baseline left smaller type
+    // sitting low). The old fixed-width box gave "CERTIFIED HOARDER" exactly
+    // 0px of left padding, so it read as clipping through the border.
+    var rank = (D.rank || '').toString();
+    var PAD = 22, GAP = 28, boxR = W - 64, boxY = 216, boxH = 62;
+    if (rank && boxR - (statsEnd + GAP) >= 140){
+      var fs = 30, rw = 0, boxW = 0, boxL = 0;
+      for (;;){
+        x.font = '800 ' + fs + 'px Syne';
+        rw = x.measureText(rank).width;
+        boxW = rw + PAD * 2;
+        boxL = boxR - boxW;
+        if (boxL >= statsEnd + GAP || fs <= 18) break;
+        fs -= 2;
+      }
+      if (boxL < statsEnd + GAP){        // floor reached - clamp, then trim
+        boxL = statsEnd + GAP; boxW = boxR - boxL;
+        while (rank.length > 4 && x.measureText(rank).width > boxW - PAD * 2){
+          rank = rank.slice(0, -1);
+        }
+        rw = x.measureText(rank).width;
+      }
+      x.strokeStyle = '#d4ff3f'; x.lineWidth = 2;
+      x.strokeRect(boxL, boxY, boxW, boxH);
+      var rm = x.measureText(rank);
+      var asc = rm.actualBoundingBoxAscent || fs * 0.72;
+      x.fillStyle = '#d4ff3f';
+      x.fillText(rank, boxL + (boxW - rw) / 2, boxY + (boxH + asc) / 2);
     }
     x.strokeStyle = '#1c1c23'; x.lineWidth = 1;
     x.beginPath(); x.moveTo(64, 322); x.lineTo(W - 64, 322); x.stroke();
@@ -973,7 +1349,9 @@ $($sb.ToString())</div>
       }
     }
     x.fillStyle = '#74746a'; x.font = '400 16px "JetBrains Mono"';
-    x.fillText((D.hostn || '') + '  -  ' + (D.date || ''), 64, 592);
+    var foot = (D.hostn || '') + '  -  ' + (D.date || '') + '  -  ' + (D.active || 0) + '/' + (D.dc || 0) + ' active 30d';
+    if (D.reclaim){ foot += '  -  reclaim ' + D.reclaim; }
+    x.fillText(foot, 64, 592);
     x.fillStyle = '#d4ff3f'; x.font = '700 16px "JetBrains Mono"';
     var tag = 'list-coding-agents.ps1';
     x.fillText(tag, W - 64 - x.measureText(tag).width, 592);
