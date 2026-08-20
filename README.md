@@ -26,10 +26,25 @@ it prints everything AND opens a html report in your browser!
 ### extra command you can try
 
 ```powershell
+.\list-coding-agents.ps1 -CheckUpdates     # tells u which agents are outdated + the exact command to update them
+.\list-coding-agents.ps1 -Json             # dumps everything into coding-agents.json if u wanna script with it
 .\list-coding-agents.ps1 -IncludeEditors   # also show cursor / windsurf / kiro (the gui ones!)
 .\list-coding-agents.ps1 -ShowReasons      # tells you WHY it thinks something is an agent
 .\list-coding-agents.ps1 -NoHtml           # skip the html if u just want the terminal
 ```
+
+## ok it got a big upgrade
+
+so i went back in and made it way more useful, now it also:
+
+- shows the VERSION of every agent. even the sneaky exes with zero metadata, it literally runs them with `--version` and just asks (with a timeout so a weird one cant freeze the scan)
+- shows how much disk space each agent is eating. mine was 2.4 GB of coding agents... yeah
+- guesses when u last used each one by peeking at its config folder (like `~/.claude` and stuff)
+- `-CheckUpdates` checks npm + winget and tells u exactly whats outdated, with the copy paste command to fix it
+- remembers ur last scan in `last-scan.json`, so next run it goes "yo u installed 2 new agents since last time". it even tells u when one disappears
+- `-Json` dumps the whole thing to a json file with all the data (versions, sizes, update commands, everything)
+
+and the html report got fancy too. theres a search box now (press `/` to jump to it, esc to clear), version badges on every agent, lil chips showing size and when u last used it, a NEW tag on stuff u just installed, and if somethings outdated theres a yellow update pill u can literally CLICK and it copies the update command. thats it, u click, u paste, ur updated
 
 ## how does it even know what's an agent??
 
