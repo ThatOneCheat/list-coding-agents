@@ -50,7 +50,7 @@
       agents-exclude.txt  force a name OUT (false positives; wins over -extra)
 
 .PARAMETER IncludeEditors
-    Also include GUI AI editors (Cursor/Windsurf/Kiro style launchers).
+    Also include GUI AI editors (Cursor/Windsurf/Kiro/Trae style launchers).
 .PARAMETER ShowReasons
     Print the signals that triggered each detection.
 .PARAMETER NoHtml
@@ -99,7 +99,9 @@ $KnownCli = [System.Collections.Generic.HashSet[string]]::new(
         'qwen', 'jcode', 'mimo', 'aider', 'cody', 'crush', 'droid',
         'goose', 'cline', 'kilocode', 'kilo', 'factory', 'blackbox',
         'auggie', 'cursor-agent', 'windsurf', 'kiro',
-        'roo-code', 'continue-cli', 'copilot', 'gh-copilot'
+        'roo-code', 'continue-cli', 'copilot', 'gh-copilot',
+        'openhands', 'codebuddy', 'iflow', 'mux', 'zencoder', 'hermes', 'hermes-agent',
+        'letta', 'trae', 'trae-cn'
     ),
     [StringComparer]::OrdinalIgnoreCase
 )
@@ -124,17 +126,20 @@ $PathSignatures = @(
     '(?i)\\jcode\\bin\\',
     '(?i)\\Programs\\cursor\\',
     '(?i)\\Programs\\Windsurf\\',
+    '(?i)\\Programs\\(trae|Trae CN)\\',
     '(?i)\\gemini-cli\\',
     '(?i)\\opencode',
     '(?i)\\anthropic\\',
-    '(?i)\\Claude\\'
+    '(?i)\\Claude\\',
+    '(?i)\\\.openhands\\',
+    '(?i)\\\.hermes\\'
 )
 
 # Note: bare "google" is intentionally omitted (matches Android platform-tools, etc.).
-$AiVendors    = 'anthropic|openai|moonshot|mistral|cohere|sourcegraph|augment(code)?|codeium|anysphere|factory|\bsst\b|kilocode|perplexity|deepseek|\bxai\b'
+$AiVendors    = 'anthropic|openai|moonshot|mistral|cohere|sourcegraph|augment(code)?|codeium|anysphere|factory|\bsst\b|kilocode|perplexity|deepseek|\bxai\b|bytedance|tencent|all[- ]?hands|nous(\s?research)?|letta'
 # Real model SDKs - deliberately NOT modelcontextprotocol (shared by non-agents).
 $AiSdkDep     = '(?i)@anthropic-ai/|(^|/)openai(@|/|$)|@google/genai|generative-ai|langchain|ollama|@ai-sdk/|^ai$|mistralai|@google/generative-ai'
-$BrandWords   = 'claude|gemini|copilot|codex|aider|cody|goose|opencode|openclaw|cline|roo[- ]?code|droid|crush|qwen|grok|kimi|antigravity|blackbox|windsurf|cursor|kiro|mimo|jcode|vibe|\bgpt\b|\bllm\b|kilocode|factory'
+$BrandWords   = 'claude|gemini|copilot|codex|aider|cody|goose|opencode|openclaw|cline|roo[- ]?code|droid|crush|qwen|grok|kimi|antigravity|blackbox|windsurf|cursor|kiro|mimo|jcode|vibe|\bgpt\b|\bllm\b|kilocode|factory|openhands|codebuddy|iflow|mux|trae|zencoder|hermes|letta'
 # A bare brand basename, optionally with the usual agent suffix, so that
 # "kimi-cli" and "claude-code" score like plain "kimi" and "claude" do.
 $BrandCmdRx   = "^(?:$BrandWords)(?:[-_]?(?:cli|code|agent))?$"
@@ -528,8 +533,8 @@ function Get-Method {
 
 function Get-Kind {
     param([string]$Path, [string]$Name)
-    if ($Path -match '(?i)\\Programs\\(cursor|windsurf|kiro)\\' -or
-        $Name -match '^(cursor|windsurf|kiro)$') { return 'editor' }
+    if ($Path -match '(?i)\\Programs\\(cursor|windsurf|kiro|trae|trae-cn)\\' -or
+        $Name -match '^(cursor|windsurf|kiro|trae|trae-cn)$') { return 'editor' }
     return 'cli'
 }
 
