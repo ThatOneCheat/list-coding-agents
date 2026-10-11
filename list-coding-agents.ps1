@@ -732,6 +732,10 @@ if (-not $SkipWinget -and (Get-Command winget -ErrorAction SilentlyContinue)) {
 # --- split into tiers -------------------------------------------------------
 $detected = @($rows | Where-Object { $_.Score -ge 4 -and ($IncludeEditors -or $_.Kind -eq 'cli') })
 $possible = @($rows | Where-Object { $_.Score -ge 2 -and $_.Score -lt 4 -and ($IncludeEditors -or $_.Kind -eq 'cli') })
+# Everything that scored, whatever -IncludeEditors says. The new/gone diff and
+# the saved baseline use this, so toggling the switch between runs doesn't
+# make every editor look freshly installed (or freshly removed).
+$allDetected = @($rows | Where-Object { $_.Score -ge 4 })
 
 # --- previous scan: name diff, trend history, exe-probe cache ----------------
 $histFile  = Join-Path $PSScriptRoot 'last-scan.json'
@@ -752,7 +756,7 @@ if (Test-Path -LiteralPath $histFile) {
         }
     } catch {}
 }
-$curNames = @($detected | ForEach-Object { $_.Name })
+$curNames = @($allDetected | ForEach-Object { $_.Name })
 # Without a winget scan, previous winget-only agents are "not checked", not
 # "gone" - reporting them as removed is a lie about state we never observed.
 $unscanned = if ($wingetScanned) { @() } else { $prevWinget }
@@ -862,7 +866,7 @@ $rankName = if ($dcount -le 2) { 'MINIMALIST' }
 # understated and show up as a phantom dip in the sparkline.
 # Rows found by the winget scan carry Command='(winget)' - that is narrower than
 # Method='winget', which also covers WindowsApps shims the PATH scan finds fine.
-$wingetOnly   = @($detected | Where-Object { $_.Command -eq '(winget)' } | ForEach-Object { $_.Name })
+$wingetOnly   = @($allDetected | Where-Object { $_.Command -eq '(winget)' } | ForEach-Object { $_.Name })
 $persistNames = $curNames
 $writeHist    = $true
 
@@ -877,7 +881,11 @@ if (-not $wingetScanned) {
         $persistNames = @(@($curNames) + @($prevWinget) | Select-Object -Unique)
     }
 } else {
-    $histEntry = [pscustomobject]@{ d = (Get-Date -Format 'yyyy-MM-dd'); c = $detected.Count; mb = [math]::Round($totMB, 1) }
+    # the trend counts CLIs only, whatever -IncludeEditors says, so the
+    # sparkline doesn't dip or jump when the switch is toggled between scans
+    $trendRows = @($allDetected | Where-Object { $_.Kind -eq 'cli' })
+    $trendMB = 0.0; foreach ($r in $trendRows) { if ($r.SizeMB) { $trendMB += $r.SizeMB } }
+    $histEntry = [pscustomobject]@{ d = (Get-Date -Format 'yyyy-MM-dd'); c = $trendRows.Count; mb = [math]::Round($trendMB, 1) }
     if ($histArr.Count -and "$($histArr[$histArr.Count-1].d)" -eq $histEntry.d) { $histArr[$histArr.Count-1] = $histEntry }
     else { $histArr = @($histArr) + @($histEntry) }
     if ($histArr.Count -gt 60) { $histArr = @($histArr[($histArr.Count-60)..($histArr.Count-1)]) }
