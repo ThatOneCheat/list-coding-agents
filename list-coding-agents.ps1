@@ -50,7 +50,8 @@
       agents-exclude.txt  force a name OUT (false positives; wins over -extra)
 
 .PARAMETER IncludeEditors
-    Also include GUI AI editors (Cursor/Windsurf/Kiro/Trae style launchers).
+    Also include GUI AI editors (Cursor/Windsurf/Kiro/Trae style launchers)
+    and desktop apps that winget knows about (Claude, ChatGPT/Codex, ...).
 .PARAMETER ShowReasons
     Print the signals that triggered each detection.
 .PARAMETER NoHtml
@@ -592,6 +593,42 @@ function Get-PeText {
     }
 }
 
+function ConvertFrom-WingetRow([string]$Line) {
+    # One line of `winget list` -> name / id / version / publisher / product /
+    # kind, or $null for the header, separators and progress-bar noise.
+    # Ids come in three shapes:
+    #   Anthropic.ClaudeCode                   proper id: Publisher.Product
+    #   MSIX\OpenAI.Codex_1.2.3.0_x64__hash    packaged store app (always a GUI)
+    #   ARP\Machine\X86\Microsoft Copilot      Add/Remove Programs fallback, no publisher
+    if (-not $Line -or $Line -notmatch '[A-Za-z]') { return $null }
+    # winget table: Name  Id  Version  Available  Source  (2+ spaces between)
+    $parts = @($Line -split '\s{2,}' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    if ($parts.Count -lt 2) { return $null }
+    $name = $parts[0]; $id = $parts[1]
+    if ($name -eq 'Name' -or $id -eq 'Id') { return $null }
+    if ($name -match '^(The following|No installed|-{2,})') { return $null }
+    $publisher = ''; $product = $id
+    if ($id -match '^MSIX\\([^_\\]+)_') {
+        $full = $Matches[1]      # OpenAI.Codex / Microsoft.NET.Native.Framework.2.1 / aimgr
+        if ($full -match '^([^.]+)\.(.+)$') { $publisher = $Matches[1]; $product = $Matches[2] } else { $product = $full }
+    } elseif ($id -match '^ARP\\') {
+        $product = ($id -split '\\')[-1]
+    } elseif ($id -match '^([^.\\]+)\.(.+)$') {
+        $publisher = $Matches[1]; $product = $Matches[2]
+    }
+    $ver = ''
+    if ($parts.Count -ge 3 -and $parts[2] -match '^(\d+(\.\d+)+)') { $ver = $Matches[1] }
+    elseif ($id -match '_(\d+(\.\d+)+)_') { $ver = $Matches[1] }
+    # GUI or CLI? Editors by name, packaged store apps are always GUIs, and a
+    # bare brand name with no cli/code/agent in it (Claude, Copilot, ChatGPT)
+    # is the desktop app, not the agent CLI.
+    $kind = 'cli'
+    if ((Get-Kind -Path $id -Name $product) -eq 'editor' -or (Get-Kind -Path $id -Name $name) -eq 'editor') { $kind = 'editor' }
+    elseif ($id -match '^MSIX\\') { $kind = 'app' }
+    elseif ($name -notmatch '(?i)\b(cli|code|terminal|agent)\b' -and $product -notmatch '(?i)(cli|code|terminal|agent)$') { $kind = 'app' }
+    [pscustomobject]@{ Name = $name; Id = $id; Version = $ver; Publisher = $publisher; Product = $product; Kind = $kind }
+}
+
 $npmMeta = Get-NpmMeta
 
 function Get-NameListFile([string]$FileName) {
@@ -659,30 +696,32 @@ foreach ($c in Get-PathCandidates) {
 $wingetScanned = $false
 if (-not $SkipWinget -and (Get-Command winget -ErrorAction SilentlyContinue)) {
     $wingetScanned = $true
-    foreach ($line in (winget list --disable-interactivity 2>$null)) {
-        if ($line -notmatch '[A-Za-z]') { continue }   # skip progress bars / blank lines
-        # winget table: Name  Id  Version  Available  Source  (2+ spaces)
-        $parts = $line -split '\s{2,}' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
-        if ($parts.Count -lt 2) { continue }
-        $pkgName = $parts[0]; $id = $parts[1]
-        if ($pkgName -eq 'Name' -or $id -eq 'Id') { continue }
-        if ($pkgName -match '^(The following|No installed|-{2,})') { continue }
-
-        $publisher = ($id -split '\.')[0]
-        $key = (($pkgName -split '\s+')[0]).ToLowerInvariant()
-        if ($haveNames.Contains($key)) { continue }    # already found on PATH
-        # match agents-exclude.txt on the display name or its first word, since
-        # winget rows are keyed on "Codex"-style names rather than a basename
-        if ($exclude.Contains($key) -or $exclude.Contains($pkgName.ToLowerInvariant())) { continue }
-        $s = Get-AgentScore -Text ("$pkgName $id") -Deps @() -Publisher $publisher -Name $pkgName -Path $id
+    # --accept-source-agreements: a first-ever winget run otherwise stops to ask
+    # about the msstore terms, and --disable-interactivity turns that into a fail
+    foreach ($line in (winget list --disable-interactivity --accept-source-agreements 2>$null)) {
+        $w = ConvertFrom-WingetRow $line
+        if (-not $w) { continue }
+        # already found on PATH? check the product half of the id and every word
+        # of the display name, so "Claude Code" / Anthropic.ClaudeCode folds into
+        # the claude that is already listed instead of showing up twice
+        $keys = @($w.Product.ToLowerInvariant()) + @($w.Name.ToLowerInvariant() -split '\s+')
+        $dup = $false
+        foreach ($k in $keys) { if ($haveNames.Contains($k)) { $dup = $true; break } }
+        if ($dup) { continue }
+        # agents-exclude.txt wins: match the product, any word, or the whole name
+        $skip = $false
+        foreach ($k in ($keys + @($w.Name.ToLowerInvariant()))) { if ($exclude.Contains($k)) { $skip = $true; break } }
+        if ($skip) { continue }
+        # score on the product half of the id ("Codex" out of OpenAI.Codex), not
+        # the display name: Microsoft's "Copilot" app is not the copilot CLI.
+        # ARP rows with a GUID for a product have nothing better than the name.
+        $scoreName = if ($w.Product -match '^\{') { $w.Name } else { $w.Product }
+        $s = Get-AgentScore -Text ("$($w.Name) $($w.Id)") -Deps @() -Publisher $w.Publisher -Name $scoreName -Path $w.Id
         if ($s.Score -ge 2) {
-            $ver = ''
-            if ($parts.Count -ge 3 -and $parts[2].Trim() -match '^(\d+(\.\d+)+)') { $ver = $Matches[1] }
-            elseif ($id -match '_(\d+(\.\d+)+)_') { $ver = $Matches[1] }
-            [void]$haveNames.Add($key)
+            [void]$haveNames.Add($w.Product.ToLowerInvariant())
             $rows.Add([pscustomobject]@{
-                Name=$pkgName; Command='(winget)'; Source=$id; Method='winget'; Kind='cli'; Score=$s.Score; Why=$s.Why
-                Version=$ver; Package=''; PkgDir=''
+                Name=$w.Name; Command='(winget)'; Source=$w.Id; Method='winget'; Kind=$w.Kind; Score=$s.Score; Why=$s.Why
+                Version=$w.Version; Package=''; PkgDir=''
                 SizeMB=$null; LastUsed=$null; Latest=''; UpdateCmd=''; UpdateArgs=@()
                 Sessions30d=0; McpCount=0; Auth=$false; Stale=$false; UninstallCmd=''; Shadows=@()
             })
@@ -691,8 +730,8 @@ if (-not $SkipWinget -and (Get-Command winget -ErrorAction SilentlyContinue)) {
 }
 
 # --- split into tiers -------------------------------------------------------
-$detected = @($rows | Where-Object { $_.Score -ge 4 -and ($IncludeEditors -or $_.Kind -ne 'editor') })
-$possible = @($rows | Where-Object { $_.Score -ge 2 -and $_.Score -lt 4 -and ($IncludeEditors -or $_.Kind -ne 'editor') })
+$detected = @($rows | Where-Object { $_.Score -ge 4 -and ($IncludeEditors -or $_.Kind -eq 'cli') })
+$possible = @($rows | Where-Object { $_.Score -ge 2 -and $_.Score -lt 4 -and ($IncludeEditors -or $_.Kind -eq 'cli') })
 
 # --- previous scan: name diff, trend history, exe-probe cache ----------------
 $histFile  = Join-Path $PSScriptRoot 'last-scan.json'
@@ -774,7 +813,7 @@ if ($CheckUpdates) {
     if (Get-Command winget -ErrorAction SilentlyContinue) {
         Write-Host "checking winget for updates..." -ForegroundColor DarkGray
         $wg = @{}
-        foreach ($line in (winget upgrade --disable-interactivity 2>$null)) {
+        foreach ($line in (winget upgrade --disable-interactivity --accept-source-agreements 2>$null)) {
             if ($line -notmatch '[A-Za-z]') { continue }
             $parts = $line -split '\s{2,}'
             if ($parts.Count -ge 4 -and $parts[1].Trim() -match '\.' -and $parts[1].Trim() -ne 'Id') {
@@ -863,7 +902,11 @@ Write-Host ""
 Write-Host "Auto-detected coding agents ($($detected.Count) detected, $($possible.Count) possible, $(Format-Size $totMB) on disk)" -ForegroundColor Cyan
 $reclaimLabel = Format-Size $reclaimMB; if (-not $reclaimLabel) { $reclaimLabel = 'none' }
 Write-Host ("fleet rank: {0} (lv {1}) | {2}/{1} used this month | dead weight: {3}" -f $rankName, $detected.Count, $active30, $reclaimLabel) -ForegroundColor Magenta
-if (-not $IncludeEditors) { Write-Host "(GUI editors hidden - use -IncludeEditors)" -ForegroundColor DarkGray }
+$hiddenGui = @($rows | Where-Object { $_.Score -ge 2 -and $_.Kind -ne 'cli' }).Count
+if (-not $IncludeEditors -and $hiddenGui) {
+    $guiWord = if ($hiddenGui -eq 1) { 'GUI editor/app' } else { 'GUI editors/apps' }
+    Write-Host "($hiddenGui $guiWord hidden - use -IncludeEditors)" -ForegroundColor DarkGray
+}
 if (-not $wingetScanned) {
     $why = if ($SkipWinget) { '-SkipWinget' } else { 'winget not found' }
     $carried = if ($writeHist) { "$($prevWinget.Count) carried over from last full scan" } else { 'baseline left untouched' }
@@ -885,6 +928,7 @@ foreach ($grp in $detected | Group-Object Method | Sort-Object { $rank[$_.Name] 
         @{n='Auth';e={if ($_.Auth) { 'yes' }}},
         @{n='Source';e={$_.Source}}
     )
+    if ($IncludeEditors) { $cols += @{n='Kind';e={$_.Kind}} }
     if ($ShowReasons) { $cols += @{n='Why';e={$_.Why}} }
     $grp.Group | Sort-Object Name | Format-Table $cols -AutoSize
 }
@@ -980,6 +1024,7 @@ if (-not $NoHtml) {
     function New-UnitChips($r, [bool]$IsNew) {
         $chips = ''
         if ($IsNew)       { $chips += '<span class="chip new">NEW</span>' }
+        if ($r.Kind -ne 'cli') { $chips += "<span class=""chip"" title=""gui, not a cli"">$(Enc $r.Kind)</span>" }
         if ($r.SizeMB)    { $chips += "<span class=""chip"">$(Enc (Format-Size $r.SizeMB))</span>" }
         if ($r.LastUsed)  { $chips += "<span class=""chip"">$(Enc (Format-Age $r.LastUsed))</span>" }
         if ($r.Sessions30d) { $chips += "<span class=""chip sess"" title=""session files touched in the last 30 days"">$($r.Sessions30d)&times;/30d</span>" }

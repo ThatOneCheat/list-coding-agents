@@ -66,6 +66,58 @@ Describe 'Get-McpCountFromRaw' {
     }
 }
 
+Describe 'ConvertFrom-WingetRow' {
+    It 'skips the header, the separator, spinner noise and blank lines' {
+        ConvertFrom-WingetRow 'Name                 Id                  Version    Available  Source' | Should -BeNullOrEmpty
+        ConvertFrom-WingetRow '-----------------------------------------------' | Should -BeNullOrEmpty
+        ConvertFrom-WingetRow '   -   ' | Should -BeNullOrEmpty
+        ConvertFrom-WingetRow '' | Should -BeNullOrEmpty
+    }
+    It 'splits a proper Publisher.Product id' {
+        $w = ConvertFrom-WingetRow 'Claude Code                Anthropic.ClaudeCode           1.0.5      1.0.6     winget'
+        $w.Name | Should -Be 'Claude Code'
+        $w.Publisher | Should -Be 'Anthropic'
+        $w.Product | Should -Be 'ClaudeCode'
+        $w.Version | Should -Be '1.0.5'
+        $w.Kind | Should -Be 'cli'
+    }
+    It 'reads an MSIX store package as a gui app' {
+        $w = ConvertFrom-WingetRow 'ChatGPT                    MSIX\OpenAI.Codex_26.1007.2314.0_x64__2p2nqsd0c76g0      26.1007.2314.0'
+        $w.Publisher | Should -Be 'OpenAI'
+        $w.Product | Should -Be 'Codex'
+        $w.Version | Should -Be '26.1007.2314.0'
+        $w.Kind | Should -Be 'app'
+    }
+    It 'reads an ARP fallback id with no publisher' {
+        $w = ConvertFrom-WingetRow 'Copilot                    ARP\Machine\X86\Microsoft Copilot        155.0.4283.45'
+        $w.Publisher | Should -Be ''
+        $w.Product | Should -Be 'Microsoft Copilot'
+        $w.Kind | Should -Be 'app'
+    }
+    It 'calls cursor an editor' {
+        (ConvertFrom-WingetRow 'Cursor                     Anysphere.Cursor                 1.2.3    winget').Kind | Should -Be 'editor'
+    }
+    It 'keeps a cli-looking product a cli' {
+        (ConvertFrom-WingetRow 'Gemini CLI                 Google.GeminiCLI                 0.9.0    winget').Kind | Should -Be 'cli'
+    }
+    It 'treats an Unknown version as blank' {
+        (ConvertFrom-WingetRow 'Google Cloud SDK           Google.CloudSDK                  Unknown    588.0.0   winget').Version | Should -Be ''
+    }
+    It 'does not turn the Microsoft Copilot app into the copilot CLI' {
+        foreach ($line in @('Copilot                    ARP\Machine\X86\Microsoft Copilot        155.0.4283.45',
+                            'Copilot                    Microsoft.365Copilot                     155.0.4283.45   winget')) {
+            $w = ConvertFrom-WingetRow $line
+            $s = Get-AgentScore -Text "$($w.Name) $($w.Id)" -Deps @() -Publisher $w.Publisher -Name $w.Product -Path $w.Id
+            $s.Score | Should -BeLessThan 2
+        }
+    }
+    It 'still detects the Codex package by the product half of its id' {
+        $w = ConvertFrom-WingetRow 'ChatGPT                    MSIX\OpenAI.Codex_26.1007.2314.0_x64__2p2nqsd0c76g0      26.1007.2314.0'
+        $s = Get-AgentScore -Text "$($w.Name) $($w.Id)" -Deps @() -Publisher $w.Publisher -Name $w.Product -Path $w.Id
+        $s.Score | Should -BeGreaterOrEqual 4
+    }
+}
+
 Describe 'Get-ExeVersionProbe' {
     BeforeAll { $cmd = Join-Path $env:SystemRoot 'System32\cmd.exe' }
     It 'reads the version an exe prints' {
