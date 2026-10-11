@@ -31,6 +31,7 @@ it prints everything AND opens a html report in your browser!
 .\list-coding-agents.ps1 -IncludeEditors   # also show cursor / windsurf / kiro (the gui ones!)
 .\list-coding-agents.ps1 -ShowReasons      # tells you WHY it thinks something is an agent
 .\list-coding-agents.ps1 -NoHtml           # skip the html if u just want the terminal
+.\list-coding-agents.ps1 -NoOpen           # still writes the html but doesnt pop the browser (for scripts n stuff)
 ```
 
 ## ok it got a big upgrade

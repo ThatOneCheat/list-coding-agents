@@ -56,6 +56,8 @@
     Print the signals that triggered each detection.
 .PARAMETER NoHtml
     Skip writing/opening the HTML report.
+.PARAMETER NoOpen
+    Write the HTML report but don't launch the browser (handy from scripts).
 .PARAMETER SkipWinget
     Skip the winget package scan (faster when you already know it adds nothing).
     This makes the run a partial scan: winget-only agents are carried over from
@@ -73,6 +75,7 @@ param(
     [switch]$IncludeEditors,
     [switch]$ShowReasons,
     [switch]$NoHtml,
+    [switch]$NoOpen,
     [switch]$SkipWinget,
     [switch]$CheckUpdates,
     [switch]$UpdateAll,
@@ -1540,5 +1543,5 @@ $($sb.ToString())</div>
     $htmlPath = Join-Path $PSScriptRoot 'coding-agents.html'
     Write-Utf8File $htmlPath $html
     Write-Host "HTML report: $htmlPath" -ForegroundColor Green
-    try { Invoke-Item -LiteralPath $htmlPath } catch {}
+    if (-not $NoOpen) { try { Invoke-Item -LiteralPath $htmlPath } catch {} }
 }
