@@ -66,6 +66,34 @@ Describe 'Get-McpCountFromRaw' {
     }
 }
 
+Describe 'Get-ExeVersionProbe' {
+    BeforeAll { $cmd = Join-Path $env:SystemRoot 'System32\cmd.exe' }
+    It 'reads the version an exe prints' {
+        Get-ExeVersionProbe -Path $cmd -Arguments @('/c', 'echo mytool v1.2.3') | Should -Be '1.2.3'
+    }
+    It 'also looks at stderr' {
+        Get-ExeVersionProbe -Path $cmd -Arguments @('/c', 'echo 4.5.6 1>&2') | Should -Be '4.5.6'
+    }
+    It 'returns nothing for an exe that prints no version' {
+        Get-ExeVersionProbe -Path $cmd -Arguments @('/c', 'echo hello') | Should -BeNullOrEmpty
+    }
+    It 'gives up on a hung exe and kills its whole tree' {
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
+        $v = Get-ExeVersionProbe -Path $cmd -Arguments @('/c', 'ping -n 30 127.0.0.1 >nul') -TimeoutSec 1
+        $sw.Stop()
+        $v | Should -BeNullOrEmpty
+        $sw.Elapsed.TotalSeconds | Should -BeLessThan 10
+        # the ping child must go down with cmd, not linger for 30s
+        $deadline = (Get-Date).AddSeconds(3)
+        do {
+            $left = @(Get-Process -Name ping -ErrorAction SilentlyContinue)
+            if (-not $left.Count) { break }
+            Start-Sleep -Milliseconds 200
+        } while ((Get-Date) -lt $deadline)
+        $left.Count | Should -Be 0
+    }
+}
+
 Describe 'Format-Size' {
     It 'is blank for null' { Format-Size $null | Should -Be '' }
     It 'rounds tiny things to <0.1 MB' { Format-Size 0.05 | Should -Be '<0.1 MB' }

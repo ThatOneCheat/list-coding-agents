@@ -393,16 +393,45 @@ function Format-Age($Dt) {
     ('{0}y ago' -f [int][math]::Floor($days / 365))
 }
 
-function Get-ExeVersionProbe([string]$Path) {
-    # Bare exes carry no metadata, so ask them directly - inside a job with a
-    # timeout so an interactive/hung CLI can't stall the whole scan.
+function Get-ExeVersionProbe([string]$Path, [int]$TimeoutSec = 8, [string[]]$Arguments = @('--version')) {
+    # Bare exes carry no metadata, so ask them directly, with a timeout so an
+    # interactive/hung CLI can't stall the whole scan. This used to go through
+    # Start-Job, which costs ~2s just to spin up the job host and, on a
+    # timeout, left the hung CLI running in the background. A plain process
+    # is quicker to start and gets its whole tree killed when time is up.
+    $p = $null
     try {
-        $job = Start-Job -ScriptBlock { param($p) & $p --version 2>$null } -ArgumentList $Path
-        $out = ''
-        if (Wait-Job $job -Timeout 8) { $out = ((Receive-Job $job -ErrorAction SilentlyContinue) -join ' ') }
-        Remove-Job $job -Force -ErrorAction SilentlyContinue | Out-Null
-        if ($out -match '(\d+\.\d+(\.\d+)*)') { return $Matches[1] }
-    } catch {}
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = $Path
+        $psi.Arguments = (@($Arguments | ForEach-Object { if ($_ -match '\s') { '"' + $_ + '"' } else { $_ } }) -join ' ')
+        $psi.UseShellExecute = $false
+        $psi.CreateNoWindow = $true
+        $psi.RedirectStandardInput = $true     # closed right away: a CLI that wants to chat gets EOF, not a wait
+        $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true     # some CLIs print their version there
+        # most CLIs skip update checks, prompts and colours when they see these
+        $psi.EnvironmentVariables['CI'] = '1'
+        $psi.EnvironmentVariables['NO_COLOR'] = '1'
+        $psi.EnvironmentVariables['TERM'] = 'dumb'
+        $psi.EnvironmentVariables['NO_UPDATE_NOTIFIER'] = '1'
+        $p = [System.Diagnostics.Process]::Start($psi)
+        try { $p.StandardInput.Close() } catch {}
+        $outTask = $p.StandardOutput.ReadToEndAsync()
+        $errTask = $p.StandardError.ReadToEndAsync()
+        if (-not $p.WaitForExit($TimeoutSec * 1000)) {
+            # kill the whole tree: node/bun wrappers spawn the real CLI as a child
+            try { & taskkill /PID $p.Id /T /F 2>$null | Out-Null } catch {}
+            try { if (-not $p.HasExited) { $p.Kill() } } catch {}
+            return $null
+        }
+        # a leftover child could keep the pipes open, so don't wait forever for EOF
+        if ([System.Threading.Tasks.Task]::WaitAll(@($outTask, $errTask), 2000)) {
+            $out = $outTask.Result + ' ' + $errTask.Result
+            if ($out -match '(\d+\.\d+(\.\d+)*)') { return $Matches[1] }
+        }
+    } catch {} finally {
+        if ($p) { $p.Dispose() }
+    }
     $null
 }
 
