@@ -778,7 +778,7 @@ $allDetected = @($rows | Where-Object { $_.Score -ge 4 })
 
 # --- previous scan: name diff, trend history, exe-probe cache ----------------
 $histFile  = Join-Path $PSScriptRoot 'last-scan.json'
-$prevNames = @(); $prevDate = ''; $histArr = @(); $probeCache = @{}
+$prevNames = @(); $prevDate = ''; $histArr = @(); $probeCache = @{}; $sizeCache = @{}
 $prevWinget = @(); $prevHasWinget = $false
 if (Test-Path -LiteralPath $histFile) {
     try {
@@ -787,6 +787,9 @@ if (Test-Path -LiteralPath $histFile) {
         if ($prev.date)    { $prevDate  = "$($prev.date)" }
         if ($prev.history) { $histArr   = @($prev.history) }
         if ($prev.probes)  { foreach ($pp in $prev.probes.PSObject.Properties) { $probeCache[$pp.Name] = $pp.Value } }
+        if ($prev.PSObject.Properties.Name -contains 'sizes' -and $prev.sizes) {
+            foreach ($sp in $prev.sizes.PSObject.Properties) { $sizeCache[$sp.Name] = [double]$sp.Value }
+        }
         # Agents only the winget scan can see. Tracked separately so a scan that
         # skipped winget knows which previous names it simply didn't look for.
         if ($prev.PSObject.Properties.Name -contains 'wingetOnly') {
@@ -809,7 +812,17 @@ if ($prevNames.Count) {
 Write-Host ""
 Write-Host "enriching: sizes + usage intel + mcp configs + versions..." -ForegroundColor DarkGray
 foreach ($r in ($detected + $possible)) {
-    if ($r.Method -eq 'npm' -and $r.PkgDir) { $r.SizeMB = Get-SizeMB $r.PkgDir }
+    if ($r.Method -eq 'npm' -and $r.PkgDir) {
+        # a big npm package (opencode is 500+ MB of files) takes a second or
+        # two to walk cold, and its size can't change without its version
+        # changing, so remember it per dir + version in last-scan.json
+        $sizeKey = "$($r.PkgDir)|$($r.Version)"
+        if ($r.Version -and $sizeCache.ContainsKey($sizeKey)) { $r.SizeMB = $sizeCache[$sizeKey] }
+        else {
+            $r.SizeMB = Get-SizeMB $r.PkgDir
+            if ($r.Version -and $null -ne $r.SizeMB) { $sizeCache[$sizeKey] = $r.SizeMB }
+        }
+    }
     elseif ($r.Source -match '(?i)\.exe$')  { $r.SizeMB = Get-SizeMB $r.Source }
     # winget rows have no command to go on: try the product half of the id and
     # each word of the display name ("Codex", "ChatGPT" -> ~/.codex), and for a
@@ -952,6 +965,7 @@ if ($writeHist) {
             wingetOnly = $wingetOnly
             history    = $histArr
             probes     = $probeCache
+            sizes      = $sizeCache
         } | ConvertTo-Json -Depth 5
         Write-Utf8File $histFile $stateJson
     } catch {}
