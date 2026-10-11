@@ -18,7 +18,7 @@ BeforeDiscovery {
     $textFiles = @(Get-ChildItem -LiteralPath $root -Recurse -File |
             Where-Object {
                 $rel = $_.FullName.Substring($root.Length + 1).Replace('\', '/')
-                $rel -notmatch '^(\.git/|tests/report/node_modules/|docs/recon/)' -and
+                $rel -notmatch '^(\.git/|\.claude/worktrees/|tests/report/node_modules/|docs/recon/)' -and
                 $_.Extension -match '^\.(ps1|psm1|psd1|ps1xml|json|html|css|js|cmd|yml|yaml)$'
             })
     $script:AsciiCases = @($textFiles | ForEach-Object { @{ Path = $_.FullName; Rel = $_.FullName.Substring($root.Length + 1).Replace('\', '/') } })
