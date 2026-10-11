@@ -185,7 +185,7 @@ function Get-AgentScore {
         if ($tLower -match $HardExclude -and $tLower -notmatch $AgentPhrase) {
             return [pscustomobject]@{ Score = -99; Why = 'excluded (non-agent phrase)' }
         }
-        if ($name -match '(?i)(launcher|host|helper|shim|wrapper|updater|unins)') {
+        if ($name -match '(?i)(launcher|host|helper|shim|wrapper|updater|unins|runner)') {
             return [pscustomobject]@{ Score = -99; Why = 'excluded (helper binary)' }
         }
     }
@@ -240,7 +240,9 @@ function Get-AgentScore {
     if ($tLower -match "(?i)($BrandWords)") {
         $score += 1
         $why.Add('model/brand name')
-        if ($tLower -match 'cli|code|coding|terminal|assistant') {
+        # whole words only: "codex" is not "code" plus an x, so the Codex app's
+        # helper exes don't collect this on their name alone
+        if ($tLower -match '\b(cli|code|coding|terminal|assistant)\b') {
             $score += 2
             $why.Add('brand + cli/code')
         }

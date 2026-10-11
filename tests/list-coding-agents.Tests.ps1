@@ -181,3 +181,18 @@ Describe 'Get-Kind' {
     It 'calls windsurf an editor by name' { Get-Kind -Path 'C:\x\windsurf.exe' -Name 'windsurf' | Should -Be 'editor' }
     It 'calls claude a cli' { Get-Kind -Path 'C:\x\claude.exe' -Name 'claude' | Should -Be 'cli' }
 }
+
+Describe 'Get-AgentScore precision' {
+    It 'does not read the "code" inside "codex" as the cli/code word' {
+        $s = Get-AgentScore -Text 'codexy' -Deps @() -Publisher '' -Name 'codexy' -Path 'C:\x\codexy.exe'
+        $s.Why | Should -Not -Match 'brand \+ cli/code'
+    }
+    It 'still gives claude-code the cli/code bonus' {
+        $s = Get-AgentScore -Text 'claude-code' -Deps @() -Publisher '' -Name 'claude-code' -Path 'C:\x\claude-code.cmd'
+        $s.Why | Should -Match 'brand \+ cli/code'
+    }
+    It 'throws out the Codex app command runner' {
+        $s = Get-AgentScore -Text 'codex-core-command-runner' -Deps @() -Publisher '' -Name 'codex-core-command-runner' -Path 'C:\x\codex-core-command-runner.exe'
+        $s.Score | Should -BeLessThan 0
+    }
+}
