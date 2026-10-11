@@ -1203,6 +1203,10 @@ if (-not $NoHtml) {
     $metaExtra = ''
     if ($newNames.Count) { $metaExtra = " &middot; <span class=""ac"">+$($newNames.Count) new since last scan</span>" }
     if ($reclaimMB -gt 0) { $metaExtra += " &middot; <span class=""wr"">$(Enc (Format-Size $reclaimMB)) reclaimable</span>" }
+    if (-not $IncludeEditors -and $hiddenGui) {
+        $guiTxt = if ($hiddenGui -eq 1) { '1 gui editor/app hidden' } else { "$hiddenGui gui editors/apps hidden" }
+        $metaExtra += " &middot; <span title=""run with -IncludeEditors to list them"">$guiTxt</span>"
+    }
 
     if ($CheckUpdates) {
         $tile4 = "<div class=""stat$(if ($updates.Count) { ' warn' })"" style=""--i:3""><span class=""num"" data-count=""$($updates.Count)"">$($updates.Count)</span><span class=""lbl"">updates available</span></div>"
@@ -1262,6 +1266,7 @@ h1 em{font-style:normal;color:transparent;-webkit-text-stroke:1.4px var(--mut)}
 .sharebtn{background:transparent;border:1px solid var(--accent);color:var(--accent);font:inherit;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;padding:14px 22px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
 .sharebtn:hover{background:var(--accent);color:#08080a}
 .trend{margin-top:16px;border:1px solid var(--line);background:var(--panel);padding:14px 20px 10px;display:flex;flex-direction:column;gap:7px}
+.trend[hidden]{display:none}
 .trend svg{width:100%;height:64px;display:block}
 .trend .tl{color:var(--mut);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase}
 .channels{margin-top:18px;display:grid;gap:18px}
