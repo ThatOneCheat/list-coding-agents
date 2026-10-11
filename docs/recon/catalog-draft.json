@@ -1,0 +1,4748 @@
+[
+  {
+    "id": "claude-code",
+    "displayName": "Claude Code",
+    "vendor": "Anthropic",
+    "kind": "cli",
+    "commands": [
+      "claude"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@anthropic-ai/claude-code"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:claude-code",
+        "cask:claude-code@latest"
+      ],
+      "scoop": [
+        "claude-code"
+      ],
+      "choco": [
+        "claude-code"
+      ],
+      "winget": [
+        "Anthropic.ClaudeCode"
+      ],
+      "vscode": [
+        "anthropic.claude-code"
+      ]
+    },
+    "pathSignatures": [
+      "/\\.local/share/claude/versions/",
+      "/\\.local/bin/claude(\\.exe)?$"
+    ],
+    "configDirs": {
+      "all": [
+        "~/.claude",
+        "~/.claude.json"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://code.claude.com/docs",
+    "repo": "anthropics/claude-code",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "claude",
+        "url": "https://code.claude.com/docs/en/setup"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@anthropic-ai/claude-code",
+        "url": "https://registry.npmjs.org/@anthropic-ai/claude-code/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:claude-code",
+        "url": "https://formulae.brew.sh/cask/claude-code"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:claude-code@latest",
+        "url": "https://code.claude.com/docs/en/setup"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Anthropic.ClaudeCode",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Anthropic/ClaudeCode"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "claude-code",
+        "url": "https://github.com/ScoopInstaller/Main/blob/master/bucket/claude-code.json"
+      },
+      {
+        "field": "packages.choco",
+        "value": "claude-code",
+        "url": "https://community.chocolatey.org/packages/claude-code"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "anthropic.claude-code",
+        "url": "https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code"
+      },
+      {
+        "field": "pathSignatures",
+        "value": "/\\.local/share/claude/versions/",
+        "url": "https://code.claude.com/docs/en/setup"
+      },
+      {
+        "field": "pathSignatures",
+        "value": "/\\.local/bin/claude(\\.exe)?$",
+        "url": "https://code.claude.com/docs/en/setup"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.claude",
+        "url": "https://code.claude.com/docs/en/setup"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.claude.json",
+        "url": "https://code.claude.com/docs/en/setup"
+      },
+      {
+        "field": "repo",
+        "value": "anthropics/claude-code",
+        "url": "https://github.com/anthropics/claude-code"
+      }
+    ],
+    "verified": true,
+    "notes": "Native installer (claude.ai/install.sh|ps1|cmd) is recommended; README says npm install is deprecated. Also signed apt/dnf/apk repos (package 'claude-code'). Homebrew cask zap additionally lists ~/.config/claude, ~/.local/state/claude, ~/.cache/claude. Not the CLI: Claude desktop app (cask 'claude', winget Anthropic.Claude) and winget Anthropic.Ant ('ant', Claude Platform CLI)."
+  },
+  {
+    "id": "codex",
+    "displayName": "OpenAI Codex CLI",
+    "vendor": "OpenAI",
+    "kind": "cli",
+    "commands": [
+      "codex"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@openai/codex"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:codex"
+      ],
+      "scoop": [
+        "codex"
+      ],
+      "choco": [
+        "codex"
+      ],
+      "winget": [
+        "OpenAI.Codex"
+      ],
+      "vscode": [
+        "openai.chatgpt"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.codex"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://developers.openai.com/codex",
+    "repo": "openai/codex",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "codex",
+        "url": "https://registry.npmjs.org/@openai/codex/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@openai/codex",
+        "url": "https://registry.npmjs.org/@openai/codex/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:codex",
+        "url": "https://formulae.brew.sh/cask/codex"
+      },
+      {
+        "field": "packages.winget",
+        "value": "OpenAI.Codex",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/OpenAI/Codex"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "codex",
+        "url": "https://github.com/ScoopInstaller/Main/blob/master/bucket/codex.json"
+      },
+      {
+        "field": "packages.choco",
+        "value": "codex",
+        "url": "https://community.chocolatey.org/packages/codex"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "openai.chatgpt",
+        "url": "https://marketplace.visualstudio.com/items?itemName=openai.chatgpt"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.codex",
+        "url": "https://learn.chatgpt.com/docs/config-file/config-basic"
+      },
+      {
+        "field": "repo",
+        "value": "openai/codex",
+        "url": "https://github.com/openai/codex"
+      }
+    ],
+    "verified": true,
+    "notes": "Standalone installers chatgpt.com/codex/install.sh / install.ps1 (download from releases.openai.com/codex, fall back to GitHub Releases). Homebrew cask 'codex-app' (Codex desktop app) is deprecated/discontinued. PyPI 'codex' is an unrelated comic-reader server. VS Code extension id openai.chatgpt is branded 'Codex - OpenAI's coding agent'."
+  },
+  {
+    "id": "gemini-cli",
+    "displayName": "Gemini CLI",
+    "vendor": "Google",
+    "kind": "cli",
+    "commands": [
+      "gemini"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@google/gemini-cli"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "gemini-cli"
+      ],
+      "scoop": [],
+      "choco": [
+        "gemini-cli"
+      ],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.gemini"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://geminicli.com",
+    "repo": "google-gemini/gemini-cli",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "gemini",
+        "url": "https://registry.npmjs.org/@google/gemini-cli/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@google/gemini-cli",
+        "url": "https://registry.npmjs.org/@google/gemini-cli/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "gemini-cli",
+        "url": "https://formulae.brew.sh/formula/gemini-cli"
+      },
+      {
+        "field": "packages.choco",
+        "value": "gemini-cli",
+        "url": "https://community.chocolatey.org/packages/gemini-cli"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.gemini",
+        "url": "https://github.com/google-gemini/gemini-cli"
+      },
+      {
+        "field": "repo",
+        "value": "google-gemini/gemini-cli",
+        "url": "https://github.com/google-gemini/gemini-cli"
+      }
+    ],
+    "verified": true,
+    "notes": "Being superseded by Antigravity CLI ('agy'): Google's developer blog post 'An important update: transitioning Gemini CLI to Antigravity CLI' (developers.googleblog.com) - individual/free tiers stopped being served 2026-06-18. Homebrew formula gemini-cli is deprecated (2026-06-18, replacement cask antigravity-cli). ~/.gemini is also used by Antigravity (~/.gemini/antigravity*), so its presence alone does not prove Gemini CLI. VS Code companion extension: Google.gemini-cli-vscode-ide-companion."
+  },
+  {
+    "id": "gemini-code-assist",
+    "displayName": "Gemini Code Assist",
+    "vendor": "Google",
+    "kind": "extension",
+    "commands": [],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": [
+        "google.geminicodeassist"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [],
+    "homepage": "https://marketplace.visualstudio.com/items?itemName=google.geminicodeassist",
+    "repo": null,
+    "sources": [
+      {
+        "field": "packages.vscode",
+        "value": "google.geminicodeassist",
+        "url": "https://marketplace.visualstudio.com/items?itemName=google.geminicodeassist"
+      }
+    ],
+    "verified": true,
+    "notes": "IDE extension only (no CLI). Per Google's Gemini CLI -> Antigravity CLI transition post, Code Assist IDE extensions stopped serving individual tiers on 2026-06-18; enterprise continues."
+  },
+  {
+    "id": "antigravity-cli",
+    "displayName": "Google Antigravity CLI",
+    "vendor": "Google",
+    "kind": "cli",
+    "commands": [
+      "agy"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:antigravity-cli"
+      ],
+      "scoop": [
+        "antigravity-cli"
+      ],
+      "choco": [],
+      "winget": [
+        "Google.AntigravityCLI"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [
+      "/\\.local/bin/agy(\\.exe)?$",
+      "/AppData/Local/agy/bin/"
+    ],
+    "configDirs": {
+      "all": [
+        "~/.gemini/antigravity-cli"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://antigravity.google/product/antigravity-cli",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "agy",
+        "url": "https://antigravity.google/docs/getting-started?tab=cli"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:antigravity-cli",
+        "url": "https://formulae.brew.sh/cask/antigravity-cli"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Google.AntigravityCLI",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/Google/AntigravityCLI"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "antigravity-cli",
+        "url": "https://github.com/ScoopInstaller/Main/blob/master/bucket/antigravity-cli.json"
+      },
+      {
+        "field": "pathSignatures",
+        "value": "/\\.local/bin/agy(\\.exe)?$",
+        "url": "https://antigravity.google/docs/getting-started?tab=cli"
+      },
+      {
+        "field": "pathSignatures",
+        "value": "/AppData/Local/agy/bin/",
+        "url": "https://antigravity.google/docs/getting-started?tab=cli"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.gemini/antigravity-cli",
+        "url": "https://formulae.brew.sh/cask/antigravity-cli"
+      }
+    ],
+    "verified": true,
+    "notes": "Successor to Gemini CLI. Install: antigravity.google/cli/install.sh | install.ps1 | install.cmd. Cask binary 'antigravity' is linked as 'agy'; Scoop also shims 'antigravity-cli.exe'. Config dir from Homebrew cask zap stanza."
+  },
+  {
+    "id": "antigravity",
+    "displayName": "Google Antigravity (agent platform app)",
+    "vendor": "Google",
+    "kind": "editor",
+    "commands": [],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:antigravity"
+      ],
+      "scoop": [
+        "extras/antigravity"
+      ],
+      "choco": [
+        "antigravity"
+      ],
+      "winget": [
+        "Google.Antigravity"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.antigravity",
+        "~/.gemini/antigravity"
+      ],
+      "windows": [],
+      "macos": [
+        "{APPSUPPORT}/Antigravity"
+      ],
+      "linux": []
+    },
+    "versionArgs": [],
+    "homepage": "https://antigravity.google/product/antigravity-2",
+    "repo": null,
+    "sources": [
+      {
+        "field": "packages.brew",
+        "value": "cask:antigravity",
+        "url": "https://formulae.brew.sh/cask/antigravity"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Google.Antigravity",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/Google/Antigravity"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "extras/antigravity",
+        "url": "https://github.com/ScoopInstaller/Extras/blob/master/bucket/antigravity.json"
+      },
+      {
+        "field": "packages.choco",
+        "value": "antigravity",
+        "url": "https://community.chocolatey.org/packages/antigravity"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.antigravity",
+        "url": "https://formulae.brew.sh/cask/antigravity"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.gemini/antigravity",
+        "url": "https://formulae.brew.sh/cask/antigravity"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "{APPSUPPORT}/Antigravity",
+        "url": "https://formulae.brew.sh/cask/antigravity"
+      }
+    ],
+    "verified": true,
+    "notes": "Desktop app ('Antigravity 2', agent orchestration). No shell launcher documented in cask/scoop. The VS Code-style editor is now a separate product (antigravity-ide). The 'agy' name now belongs to Antigravity CLI."
+  },
+  {
+    "id": "antigravity-ide",
+    "displayName": "Google Antigravity IDE",
+    "vendor": "Google",
+    "kind": "editor",
+    "commands": [
+      "antigravity-ide",
+      "agy-ide"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:antigravity-ide"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [
+        "Google.AntigravityIDE"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.antigravity-ide",
+        "~/.gemini/antigravity-ide"
+      ],
+      "windows": [],
+      "macos": [
+        "{APPSUPPORT}/Antigravity IDE"
+      ],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://antigravity.google/product/antigravity-ide",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "antigravity-ide",
+        "url": "https://formulae.brew.sh/cask/antigravity-ide"
+      },
+      {
+        "field": "commands",
+        "value": "agy-ide",
+        "url": "https://formulae.brew.sh/cask/antigravity-ide"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:antigravity-ide",
+        "url": "https://formulae.brew.sh/cask/antigravity-ide"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Google.AntigravityIDE",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/Google/AntigravityIDE"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.antigravity-ide",
+        "url": "https://formulae.brew.sh/cask/antigravity-ide"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.gemini/antigravity-ide",
+        "url": "https://formulae.brew.sh/cask/antigravity-ide"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "{APPSUPPORT}/Antigravity IDE",
+        "url": "https://formulae.brew.sh/cask/antigravity-ide"
+      }
+    ],
+    "verified": true,
+    "notes": "Commands are the shell launchers the Homebrew cask links. winget Google.AntigravityIDE was previously named 'Antigravity'."
+  },
+  {
+    "id": "grok-build",
+    "displayName": "Grok Build",
+    "vendor": "xAI",
+    "kind": "cli",
+    "commands": [
+      "grok",
+      "agent"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [
+        "@xai-official/grok"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:grok-build"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [
+        "xAI.GrokBuild"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.grok"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://x.ai/build",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "grok",
+        "url": "https://docs.x.ai/build/overview"
+      },
+      {
+        "field": "commands",
+        "value": "agent",
+        "url": "https://formulae.brew.sh/cask/grok-build"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@xai-official/grok",
+        "url": "https://registry.npmjs.org/@xai-official/grok/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:grok-build",
+        "url": "https://formulae.brew.sh/cask/grok-build"
+      },
+      {
+        "field": "packages.winget",
+        "value": "xAI.GrokBuild",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/x/xAI/GrokBuild"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.grok",
+        "url": "https://docs.x.ai/build/overview"
+      }
+    ],
+    "verified": true,
+    "notes": "Official xAI terminal coding agent. Install: curl -fsSL https://x.ai/cli/install.sh | bash; irm https://x.ai/cli/install.ps1 | iex. npm @xai-official/grok is maintained by npm user xai-security <security@x.ai> (bin 'grok'), not mentioned in the docs page. Homebrew cask links the binary as both 'grok' and 'agent'. 'grok' collides with the community superagent-ai/grok-cli (same ~/.grok dir) and Homebrew's deprecated 'grok' regex tool; 'agent' collides with Cursor CLI. Windows user config: %USERPROFILE%\\.grok\\config.toml."
+  },
+  {
+    "id": "grok-cli-community",
+    "displayName": "Grok CLI (Superagent, community)",
+    "vendor": "Superagent (community)",
+    "kind": "cli",
+    "commands": [
+      "grok"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [
+        "grok-dev"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.grok"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://github.com/superagent-ai/grok-cli",
+    "repo": "superagent-ai/grok-cli",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "grok",
+        "url": "https://github.com/superagent-ai/grok-cli"
+      },
+      {
+        "field": "packages.npm",
+        "value": "grok-dev",
+        "url": "https://github.com/superagent-ai/grok-cli"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.grok",
+        "url": "https://github.com/superagent-ai/grok-cli"
+      },
+      {
+        "field": "repo",
+        "value": "superagent-ai/grok-cli",
+        "url": "https://github.com/superagent-ai/grok-cli"
+      }
+    ],
+    "verified": true,
+    "notes": "Not affiliated with xAI. README install: curl .../superagent-ai/grok-cli/main/install.sh | bash, or 'bun add -g grok-dev' (npm grok-dev, maintainer superagent-labs, bin grok). Older npm name @vibe-kit/grok-cli (bin grok, README 'Grok CLI', last publish 2025-11) is very likely the same project but no primary source links it - left out of packages. Shares 'grok' command and ~/.grok with xAI Grok Build; settings file ~/.grok/user-settings.json is specific to this tool."
+  },
+  {
+    "id": "kimi-code",
+    "displayName": "Kimi Code CLI",
+    "vendor": "Moonshot AI",
+    "kind": "cli",
+    "commands": [
+      "kimi"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@moonshot-ai/kimi-code"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "kimi-code"
+      ],
+      "scoop": [
+        "kimi-code"
+      ],
+      "choco": [],
+      "winget": [
+        "MoonshotAI.KimiCodeCLI"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.kimi-code"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://moonshotai.github.io/kimi-code/",
+    "repo": "MoonshotAI/kimi-code",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "kimi",
+        "url": "https://moonshotai.github.io/kimi-code/en/guides/getting-started"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@moonshot-ai/kimi-code",
+        "url": "https://registry.npmjs.org/@moonshot-ai/kimi-code/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "kimi-code",
+        "url": "https://formulae.brew.sh/formula/kimi-code"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "kimi-code",
+        "url": "https://github.com/ScoopInstaller/Main/blob/master/bucket/kimi-code.json"
+      },
+      {
+        "field": "packages.winget",
+        "value": "MoonshotAI.KimiCodeCLI",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/MoonshotAI/KimiCodeCLI"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.kimi-code",
+        "url": "https://moonshotai.github.io/kimi-code/en/guides/getting-started"
+      },
+      {
+        "field": "repo",
+        "value": "MoonshotAI/kimi-code",
+        "url": "https://github.com/MoonshotAI/kimi-code"
+      }
+    ],
+    "verified": true,
+    "notes": "Current Kimi agent (replaces Python kimi-cli). Install: code.kimi.com/kimi-code/install.sh | install.ps1. KIMI_CODE_HOME overrides ~/.kimi-code. 'kimi' command is shared with legacy kimi-cli. npm 'kimi-code' (whitesmith) is an unrelated claude-code proxy wrapper with bin 'kimi'."
+  },
+  {
+    "id": "kimi-cli",
+    "displayName": "Kimi CLI (legacy, Python)",
+    "vendor": "Moonshot AI",
+    "kind": "cli",
+    "commands": [
+      "kimi"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [
+        "kimi-cli",
+        "kimi-code"
+      ],
+      "cargo": [],
+      "brew": [
+        "kimi-cli"
+      ],
+      "scoop": [
+        "kimi-cli"
+      ],
+      "choco": [],
+      "winget": [
+        "MoonshotAI.KimiCLI"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.kimi"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://github.com/MoonshotAI/kimi-cli",
+    "repo": "MoonshotAI/kimi-cli",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "kimi",
+        "url": "https://github.com/MoonshotAI/kimi-cli"
+      },
+      {
+        "field": "packages.pypi",
+        "value": "kimi-cli",
+        "url": "https://pypi.org/pypi/kimi-cli/json"
+      },
+      {
+        "field": "packages.pypi",
+        "value": "kimi-code",
+        "url": "https://pypi.org/pypi/kimi-code/json"
+      },
+      {
+        "field": "packages.brew",
+        "value": "kimi-cli",
+        "url": "https://formulae.brew.sh/formula/kimi-cli"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "kimi-cli",
+        "url": "https://github.com/ScoopInstaller/Main/blob/master/bucket/kimi-cli.json"
+      },
+      {
+        "field": "packages.winget",
+        "value": "MoonshotAI.KimiCLI",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/MoonshotAI/KimiCLI"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.kimi",
+        "url": "https://github.com/MoonshotAI/kimi-cli"
+      },
+      {
+        "field": "repo",
+        "value": "MoonshotAI/kimi-cli",
+        "url": "https://github.com/MoonshotAI/kimi-cli"
+      }
+    ],
+    "verified": true,
+    "notes": "Archived and no longer maintained; replaced by Kimi Code CLI (kimi-code), which migrates data from ~/.kimi. PyPI 'kimi-code' is an archived legacy alias of the same Python package (NOT the new Kimi Code CLI). Homebrew formula kimi-cli deprecated 2026-07-17 (replacement kimi-code). Was typically installed via 'uv tool install kimi-cli'."
+  },
+  {
+    "id": "opencode",
+    "displayName": "OpenCode",
+    "vendor": "Anomaly (formerly SST)",
+    "kind": "cli",
+    "commands": [
+      "opencode"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "opencode-ai"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "opencode",
+        "anomalyco/tap/opencode"
+      ],
+      "scoop": [
+        "opencode"
+      ],
+      "choco": [
+        "opencode"
+      ],
+      "winget": [
+        "SST.opencode"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [
+      "/\\.opencode/bin/"
+    ],
+    "configDirs": {
+      "all": [
+        "{XDG_CONFIG_HOME}/opencode"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://opencode.ai",
+    "repo": "anomalyco/opencode",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "opencode",
+        "url": "https://registry.npmjs.org/opencode-ai/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "opencode-ai",
+        "url": "https://registry.npmjs.org/opencode-ai/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "opencode",
+        "url": "https://formulae.brew.sh/formula/opencode"
+      },
+      {
+        "field": "packages.brew",
+        "value": "anomalyco/tap/opencode",
+        "url": "https://github.com/anomalyco/opencode"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "opencode",
+        "url": "https://github.com/ScoopInstaller/Main/blob/master/bucket/opencode.json"
+      },
+      {
+        "field": "packages.choco",
+        "value": "opencode",
+        "url": "https://community.chocolatey.org/packages/opencode"
+      },
+      {
+        "field": "packages.winget",
+        "value": "SST.opencode",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/s/SST/opencode"
+      },
+      {
+        "field": "pathSignatures",
+        "value": "/\\.opencode/bin/",
+        "url": "https://github.com/anomalyco/opencode"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "{XDG_CONFIG_HOME}/opencode",
+        "url": "https://opencode.ai/docs/config/"
+      },
+      {
+        "field": "repo",
+        "value": "anomalyco/opencode",
+        "url": "https://github.com/anomalyco/opencode"
+      }
+    ],
+    "verified": true,
+    "notes": "Repo moved sst/opencode -> anomalyco/opencode (old URL redirects). Install script default fallback dir is ~/.opencode/bin (after $OPENCODE_INSTALL_DIR, $XDG_BIN_DIR, ~/bin). Desktop app: cask opencode-desktop, winget SST.OpenCodeDesktop, scoop extras/opencode-desktop. Kilo CLI is a fork and reads legacy opencode.json."
+  },
+  {
+    "id": "openclaw",
+    "displayName": "OpenClaw",
+    "vendor": "OpenClaw",
+    "kind": "cli",
+    "commands": [
+      "openclaw"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "openclaw"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [
+      "/\\.openclaw/"
+    ],
+    "configDirs": {
+      "all": [
+        "~/.openclaw"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://openclaw.ai",
+    "repo": "openclaw/openclaw",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "openclaw",
+        "url": "https://docs.openclaw.ai/install"
+      },
+      {
+        "field": "packages.npm",
+        "value": "openclaw",
+        "url": "https://registry.npmjs.org/openclaw/latest"
+      },
+      {
+        "field": "pathSignatures",
+        "value": "/\\.openclaw/",
+        "url": "https://docs.openclaw.ai/install"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.openclaw",
+        "url": "https://docs.openclaw.ai/install"
+      },
+      {
+        "field": "repo",
+        "value": "openclaw/openclaw",
+        "url": "https://github.com/openclaw/openclaw"
+      }
+    ],
+    "verified": true,
+    "notes": "Personal multi-channel AI agent/gateway rather than a pure coding agent. ~/.openclaw is documented as the local-prefix install location (install-cli.sh); Hermes Agent docs also treat ~/.openclaw as OpenClaw's data dir. winget OpenClaw.OpenClawCompanion is the Windows desktop companion (no CLI)."
+  },
+  {
+    "id": "qwen-code",
+    "displayName": "Qwen Code",
+    "vendor": "Alibaba (Qwen)",
+    "kind": "cli",
+    "commands": [
+      "qwen"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@qwen-code/qwen-code"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "qwen-code"
+      ],
+      "scoop": [],
+      "choco": [
+        "qwen-code"
+      ],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.qwen"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://qwenlm.github.io/qwen-code-docs/",
+    "repo": "QwenLM/qwen-code",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "qwen",
+        "url": "https://registry.npmjs.org/@qwen-code/qwen-code/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@qwen-code/qwen-code",
+        "url": "https://registry.npmjs.org/@qwen-code/qwen-code/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "qwen-code",
+        "url": "https://formulae.brew.sh/formula/qwen-code"
+      },
+      {
+        "field": "packages.choco",
+        "value": "qwen-code",
+        "url": "https://community.chocolatey.org/packages/qwen-code"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.qwen",
+        "url": "https://qwenlm.github.io/qwen-code-docs/en/users/configuration/settings/"
+      },
+      {
+        "field": "repo",
+        "value": "QwenLM/qwen-code",
+        "url": "https://github.com/QwenLM/qwen-code"
+      }
+    ],
+    "verified": true,
+    "notes": "Also standalone installer (install-qwen-standalone.sh/.ps1 on aliyuncs OSS). VS Code companion extension: qwenlm.qwen-code-vscode-ide-companion (publisher not domain-verified)."
+  },
+  {
+    "id": "jcode",
+    "displayName": "jcode",
+    "vendor": "1jehuang (community)",
+    "kind": "cli",
+    "commands": [
+      "jcode"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "jcode"
+      ],
+      "scoop": [
+        "jcode"
+      ],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.jcode"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": [
+        "{XDG_CONFIG_HOME}/jcode"
+      ]
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://jcode.sh",
+    "repo": "1jehuang/jcode",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "jcode",
+        "url": "https://github.com/1jehuang/jcode"
+      },
+      {
+        "field": "packages.brew",
+        "value": "jcode",
+        "url": "https://formulae.brew.sh/formula/jcode"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "jcode",
+        "url": "https://github.com/ScoopInstaller/Main/blob/master/bucket/jcode.json"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.jcode",
+        "url": "https://github.com/1jehuang/jcode"
+      },
+      {
+        "field": "configDirs.linux",
+        "value": "{XDG_CONFIG_HOME}/jcode",
+        "url": "https://github.com/1jehuang/jcode"
+      },
+      {
+        "field": "repo",
+        "value": "1jehuang/jcode",
+        "url": "https://github.com/1jehuang/jcode"
+      }
+    ],
+    "verified": true,
+    "notes": "Rust coding-agent harness. Install: jcode.sh/install | install.ps1, brew (core formula jcode, also tap 1jehuang/jcode). PyPI 'jcode' (codewithjoe-tech) and npm 'jcode' are unrelated projects."
+  },
+  {
+    "id": "mimo-code",
+    "displayName": "MiMo Code",
+    "vendor": "Xiaomi",
+    "kind": "cli",
+    "commands": [
+      "mimo"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@mimo-ai/cli"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [
+        "mimo-code"
+      ],
+      "choco": [],
+      "winget": [
+        "Xiaomi.MiMoCode",
+        "Xiaomi.MiMoCode.Baseline"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [
+        "{LOCALAPPDATA}/mimocode"
+      ],
+      "macos": [
+        "~/.config/mimocode",
+        "~/.local/share/mimocode"
+      ],
+      "linux": [
+        "{XDG_CONFIG_HOME}/mimocode",
+        "{XDG_DATA_HOME}/mimocode",
+        "{XDG_STATE_HOME}/mimocode"
+      ]
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://mimo.xiaomi.com/coder",
+    "repo": "XiaomiMiMo/MiMo-Code",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "mimo",
+        "url": "https://registry.npmjs.org/@mimo-ai/cli/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@mimo-ai/cli",
+        "url": "https://registry.npmjs.org/@mimo-ai/cli/latest"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "mimo-code",
+        "url": "https://github.com/ScoopInstaller/Main/blob/master/bucket/mimo-code.json"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Xiaomi.MiMoCode",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/x/Xiaomi/MiMoCode"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Xiaomi.MiMoCode.Baseline",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/x/Xiaomi/MiMoCode/Baseline"
+      },
+      {
+        "field": "configDirs.linux",
+        "value": "{XDG_CONFIG_HOME}/mimocode",
+        "url": "https://github.com/XiaomiMiMo/MiMo-Code"
+      },
+      {
+        "field": "configDirs.linux",
+        "value": "{XDG_DATA_HOME}/mimocode",
+        "url": "https://github.com/XiaomiMiMo/MiMo-Code"
+      },
+      {
+        "field": "configDirs.linux",
+        "value": "{XDG_STATE_HOME}/mimocode",
+        "url": "https://github.com/XiaomiMiMo/MiMo-Code"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "~/.config/mimocode",
+        "url": "https://github.com/XiaomiMiMo/MiMo-Code"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "~/.local/share/mimocode",
+        "url": "https://github.com/XiaomiMiMo/MiMo-Code"
+      },
+      {
+        "field": "configDirs.windows",
+        "value": "{LOCALAPPDATA}/mimocode",
+        "url": "https://github.com/XiaomiMiMo/MiMo-Code"
+      },
+      {
+        "field": "repo",
+        "value": "XiaomiMiMo/MiMo-Code",
+        "url": "https://github.com/XiaomiMiMo/MiMo-Code"
+      }
+    ],
+    "verified": true,
+    "notes": "Install: mimo.xiaomi.com/install | install.ps1, or npm. MIMOCODE_HOME overrides all paths. winget Xiaomi.MiMoDesktop is the MiMo chat app, not the CLI."
+  },
+  {
+    "id": "aider",
+    "displayName": "Aider",
+    "vendor": "Aider-AI",
+    "kind": "cli",
+    "commands": [
+      "aider"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [
+        "aider-chat",
+        "aider-install"
+      ],
+      "cargo": [],
+      "brew": [
+        "aider"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.aider.conf.yml"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://aider.chat",
+    "repo": "Aider-AI/aider",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "aider",
+        "url": "https://github.com/Aider-AI/aider"
+      },
+      {
+        "field": "packages.pypi",
+        "value": "aider-chat",
+        "url": "https://pypi.org/pypi/aider-chat/json"
+      },
+      {
+        "field": "packages.pypi",
+        "value": "aider-install",
+        "url": "https://pypi.org/pypi/aider-install/json"
+      },
+      {
+        "field": "packages.brew",
+        "value": "aider",
+        "url": "https://formulae.brew.sh/formula/aider"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.aider.conf.yml",
+        "url": "https://aider.chat/docs/config/aider_conf.html"
+      },
+      {
+        "field": "repo",
+        "value": "Aider-AI/aider",
+        "url": "https://github.com/Aider-AI/aider"
+      }
+    ],
+    "verified": true,
+    "notes": "Recommended install: 'pip install aider-install && aider-install' (installs aider-chat via uv). ~/.aider.conf.yml is a file (also read from git root and cwd)."
+  },
+  {
+    "id": "cody-cli",
+    "displayName": "Sourcegraph Cody CLI",
+    "vendor": "Sourcegraph",
+    "kind": "cli",
+    "commands": [
+      "cody"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@sourcegraph/cody"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": [
+        "sourcegraph.cody-ai"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://sourcegraph.com/cody",
+    "repo": "sourcegraph/cody",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "cody",
+        "url": "https://registry.npmjs.org/@sourcegraph/cody/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@sourcegraph/cody",
+        "url": "https://registry.npmjs.org/@sourcegraph/cody/latest"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "sourcegraph.cody-ai",
+        "url": "https://marketplace.visualstudio.com/items?itemName=sourcegraph.cody-ai"
+      },
+      {
+        "field": "repo",
+        "value": "sourcegraph/cody",
+        "url": "https://github.com/sourcegraph/cody"
+      }
+    ],
+    "verified": true,
+    "notes": "npm @sourcegraph/cody latest 5.5.26 (bin cody). Current status unclear: Sourcegraph steers individual users to Amp; treat as legacy. '@sourcegraph/cody-agent' is a JSON-RPC agent for IDE plugins, not a CLI."
+  },
+  {
+    "id": "crush",
+    "displayName": "Crush",
+    "vendor": "Charm",
+    "kind": "cli",
+    "commands": [
+      "crush"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [
+        "@charmland/crush"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "charmbracelet/tap/crush"
+      ],
+      "scoop": [
+        "charm/crush"
+      ],
+      "choco": [
+        "crush"
+      ],
+      "winget": [
+        "charmbracelet.crush"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "{XDG_CONFIG_HOME}/crush"
+      ],
+      "windows": [
+        "{LOCALAPPDATA}/crush"
+      ],
+      "macos": [
+        "~/.local/share/crush"
+      ],
+      "linux": [
+        "{XDG_DATA_HOME}/crush"
+      ]
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://charm.sh/crush",
+    "repo": "charmbracelet/crush",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "crush",
+        "url": "https://registry.npmjs.org/@charmland/crush/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@charmland/crush",
+        "url": "https://registry.npmjs.org/@charmland/crush/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "charmbracelet/tap/crush",
+        "url": "https://github.com/charmbracelet/crush"
+      },
+      {
+        "field": "packages.winget",
+        "value": "charmbracelet.crush",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/charmbracelet/crush"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "charm/crush",
+        "url": "https://github.com/charmbracelet/crush"
+      },
+      {
+        "field": "packages.choco",
+        "value": "crush",
+        "url": "https://community.chocolatey.org/packages/crush"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "{XDG_CONFIG_HOME}/crush",
+        "url": "https://github.com/charmbracelet/crush"
+      },
+      {
+        "field": "configDirs.linux",
+        "value": "{XDG_DATA_HOME}/crush",
+        "url": "https://github.com/charmbracelet/crush"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "~/.local/share/crush",
+        "url": "https://github.com/charmbracelet/crush"
+      },
+      {
+        "field": "configDirs.windows",
+        "value": "{LOCALAPPDATA}/crush",
+        "url": "https://github.com/charmbracelet/crush"
+      },
+      {
+        "field": "repo",
+        "value": "charmbracelet/crush",
+        "url": "https://github.com/charmbracelet/crush"
+      }
+    ],
+    "verified": true,
+    "notes": "'crush' is a common word (PyPI 'crush' and winget kalink0.Crush are unrelated). Scoop needs custom bucket: scoop bucket add charm https://github.com/charmbracelet/scoop-bucket.git. Windows global config is %USERPROFILE%\\.config\\crush. CRUSH_GLOBAL_CONFIG / CRUSH_GLOBAL_DATA override."
+  },
+  {
+    "id": "droid",
+    "displayName": "Factory Droid CLI",
+    "vendor": "Factory",
+    "kind": "cli",
+    "commands": [
+      "droid"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@factory/cli",
+        "droid"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:droid"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": [
+        "Factory.factory-vscode-extension"
+      ]
+    },
+    "pathSignatures": [
+      "/\\.local/bin/droid(\\.exe)?$"
+    ],
+    "configDirs": {
+      "all": [
+        "~/.factory"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://factory.ai",
+    "repo": "Factory-AI/factory",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "droid",
+        "url": "https://registry.npmjs.org/@factory/cli/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@factory/cli",
+        "url": "https://registry.npmjs.org/@factory/cli/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "droid",
+        "url": "https://registry.npmjs.org/droid/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:droid",
+        "url": "https://formulae.brew.sh/cask/droid"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "Factory.factory-vscode-extension",
+        "url": "https://marketplace.visualstudio.com/items?itemName=Factory.factory-vscode-extension"
+      },
+      {
+        "field": "pathSignatures",
+        "value": "/\\.local/bin/droid(\\.exe)?$",
+        "url": "https://formulae.brew.sh/cask/droid"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.factory",
+        "url": "https://docs.factory.com/cli/configuration/settings"
+      },
+      {
+        "field": "repo",
+        "value": "Factory-AI/factory",
+        "url": "https://github.com/Factory-AI/factory"
+      }
+    ],
+    "verified": true,
+    "notes": "Install: curl -fsSL https://app.factory.ai/cli | sh; irm https://app.factory.ai/cli/windows | iex. npm 'droid' and '@factory/cli' publish the same build. Docs moved docs.factory.ai -> docs.factory.com. Factory desktop app is a separate entry (factory-desktop)."
+  },
+  {
+    "id": "factory-desktop",
+    "displayName": "Factory (desktop app)",
+    "vendor": "Factory",
+    "kind": "editor",
+    "commands": [],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:factory"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [
+        "FactoryAI.Factory"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [
+        "{APPSUPPORT}/Factory",
+        "{APPSUPPORT}/ai.factory.desktop"
+      ],
+      "linux": []
+    },
+    "versionArgs": [],
+    "homepage": "https://www.factory.ai/",
+    "repo": null,
+    "sources": [
+      {
+        "field": "packages.brew",
+        "value": "cask:factory",
+        "url": "https://formulae.brew.sh/cask/factory"
+      },
+      {
+        "field": "packages.winget",
+        "value": "FactoryAI.Factory",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/f/FactoryAI/Factory"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "{APPSUPPORT}/Factory",
+        "url": "https://formulae.brew.sh/cask/factory"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "{APPSUPPORT}/ai.factory.desktop",
+        "url": "https://formulae.brew.sh/cask/factory"
+      }
+    ],
+    "verified": true,
+    "notes": "No shell command documented; the v1 'factory' command name could not be confirmed in any primary source (the CLI is 'droid')."
+  },
+  {
+    "id": "goose",
+    "displayName": "goose",
+    "vendor": "Block / AAIF",
+    "kind": "cli",
+    "commands": [
+      "goose"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "block-goose-cli",
+        "cask:block-goose"
+      ],
+      "scoop": [
+        "extras/goose"
+      ],
+      "choco": [
+        "goose"
+      ],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [
+        "{APPDATA}/Block/goose/config"
+      ],
+      "macos": [
+        "~/.config/goose"
+      ],
+      "linux": [
+        "{XDG_CONFIG_HOME}/goose"
+      ]
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://goose-docs.ai",
+    "repo": "aaif-goose/goose",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "goose",
+        "url": "https://github.com/aaif-goose/goose"
+      },
+      {
+        "field": "packages.brew",
+        "value": "block-goose-cli",
+        "url": "https://formulae.brew.sh/formula/block-goose-cli"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:block-goose",
+        "url": "https://formulae.brew.sh/cask/block-goose"
+      },
+      {
+        "field": "packages.choco",
+        "value": "goose",
+        "url": "https://community.chocolatey.org/packages/goose"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "extras/goose",
+        "url": "https://github.com/ScoopInstaller/Extras/blob/master/bucket/goose.json"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "~/.config/goose",
+        "url": "https://goose-docs.ai/docs/guides/config-files"
+      },
+      {
+        "field": "configDirs.linux",
+        "value": "{XDG_CONFIG_HOME}/goose",
+        "url": "https://goose-docs.ai/docs/guides/config-files"
+      },
+      {
+        "field": "configDirs.windows",
+        "value": "{APPDATA}/Block/goose/config",
+        "url": "https://goose-docs.ai/docs/guides/config-files"
+      },
+      {
+        "field": "repo",
+        "value": "aaif-goose/goose",
+        "url": "https://github.com/aaif-goose/goose"
+      }
+    ],
+    "verified": true,
+    "notes": "Repo moved block/goose -> aaif-goose/goose (redirects). CLI install: download_cli.sh from GitHub releases. cask block-goose and scoop extras/goose are the desktop app. Collides with Pressly 'goose' DB-migration tool (Homebrew formula 'goose', winget Pressly.Goose)."
+  },
+  {
+    "id": "cline",
+    "displayName": "Cline",
+    "vendor": "Cline",
+    "kind": "cli",
+    "commands": [
+      "cline"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "cline"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cline",
+        "cask:cline-app"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": [
+        "saoudrizwan.claude-dev"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://cline.bot",
+    "repo": "cline/cline",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "cline",
+        "url": "https://registry.npmjs.org/cline/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "cline",
+        "url": "https://registry.npmjs.org/cline/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cline",
+        "url": "https://formulae.brew.sh/formula/cline"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:cline-app",
+        "url": "https://formulae.brew.sh/cask/cline-app"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "saoudrizwan.claude-dev",
+        "url": "https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev"
+      },
+      {
+        "field": "repo",
+        "value": "cline/cline",
+        "url": "https://github.com/cline/cline"
+      }
+    ],
+    "verified": true,
+    "notes": "Homebrew formula 'cline' is deprecated (2026-05-18, non-FOSS deps). cask cline-app is Cline Desktop (no CLI). Default config/data dirs not documented (only --config/--data-dir flags). PyPI 'cline' is unrelated."
+  },
+  {
+    "id": "kilo-code",
+    "displayName": "Kilo Code CLI",
+    "vendor": "Kilo Code",
+    "kind": "cli",
+    "commands": [
+      "kilo",
+      "kilocode"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [
+        "@kilocode/cli"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "Kilo-Org/tap/kilo"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": [
+        "kilocode.Kilo-Code"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "{XDG_CONFIG_HOME}/kilo"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://kilo.ai",
+    "repo": "Kilo-Org/kilocode",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "kilo",
+        "url": "https://registry.npmjs.org/@kilocode/cli/latest"
+      },
+      {
+        "field": "commands",
+        "value": "kilocode",
+        "url": "https://registry.npmjs.org/@kilocode/cli/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@kilocode/cli",
+        "url": "https://registry.npmjs.org/@kilocode/cli/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "Kilo-Org/tap/kilo",
+        "url": "https://github.com/Kilo-Org/kilocode"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "kilocode.Kilo-Code",
+        "url": "https://marketplace.visualstudio.com/items?itemName=kilocode.Kilo-Code"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "{XDG_CONFIG_HOME}/kilo",
+        "url": "https://kilo.ai/docs/cli"
+      },
+      {
+        "field": "repo",
+        "value": "Kilo-Org/kilocode",
+        "url": "https://github.com/Kilo-Org/kilocode"
+      }
+    ],
+    "verified": true,
+    "notes": "CLI is a fork of OpenCode; also reads legacy opencode.json and project .kilocode/. Install script: kilo.ai/cli/install. 'kilo' collides with antirez's kilo text editor. Docs say Windows config path 'may vary'."
+  },
+  {
+    "id": "blackbox-cli",
+    "displayName": "BLACKBOX AI CLI",
+    "vendor": "BLACKBOX AI",
+    "kind": "cli",
+    "commands": [
+      "blackbox"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": [
+        "Blackboxapp.blackbox"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://docs.blackbox.ai/features/blackbox-cli",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "blackbox",
+        "url": "https://docs.blackbox.ai/features/blackbox-cli/getting-started.md"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "Blackboxapp.blackbox",
+        "url": "https://marketplace.visualstudio.com/items?itemName=Blackboxapp.blackbox"
+      }
+    ],
+    "verified": true,
+    "notes": "Install: curl -fsSL https://blackbox.ai/install.sh | bash; iex (irm https://blackbox.ai/install.ps1). No version flag documented (docs list 'blackbox info'). npm @blackbox_ai/blackbox-cli (bin blackbox, repo llmcod/blackbox_cli) exists but is not referenced by official docs - excluded; '@blackbox/cli' from the marketing page is 404 on npm. Homebrew formula 'blackbox' is StackExchange's unrelated secrets tool."
+  },
+  {
+    "id": "auggie",
+    "displayName": "Auggie CLI",
+    "vendor": "Augment Code",
+    "kind": "cli",
+    "commands": [
+      "auggie"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@augmentcode/auggie"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": [
+        "augment.vscode-augment"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://augmentcode.com",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "auggie",
+        "url": "https://registry.npmjs.org/@augmentcode/auggie/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@augmentcode/auggie",
+        "url": "https://registry.npmjs.org/@augmentcode/auggie/latest"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "augment.vscode-augment",
+        "url": "https://marketplace.visualstudio.com/items?itemName=augment.vscode-augment"
+      }
+    ],
+    "verified": true,
+    "notes": "Config dir not documented in fetched docs (likely ~/.augment, unverified)."
+  },
+  {
+    "id": "cursor-cli",
+    "displayName": "Cursor CLI",
+    "vendor": "Anysphere (Cursor)",
+    "kind": "cli",
+    "commands": [
+      "agent",
+      "cursor-agent"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:cursor-cli"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [
+      "/\\.local/share/cursor-agent/"
+    ],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [
+        "~/.config/cursor-agent"
+      ],
+      "linux": [
+        "~/.config/cursor-agent"
+      ]
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://cursor.com/cli",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "agent",
+        "url": "https://cursor.com/docs/cli/installation"
+      },
+      {
+        "field": "commands",
+        "value": "cursor-agent",
+        "url": "https://formulae.brew.sh/cask/cursor-cli"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:cursor-cli",
+        "url": "https://formulae.brew.sh/cask/cursor-cli"
+      },
+      {
+        "field": "pathSignatures",
+        "value": "/\\.local/share/cursor-agent/",
+        "url": "https://formulae.brew.sh/cask/cursor-cli"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "~/.config/cursor-agent",
+        "url": "https://formulae.brew.sh/cask/cursor-cli"
+      },
+      {
+        "field": "configDirs.linux",
+        "value": "~/.config/cursor-agent",
+        "url": "https://formulae.brew.sh/cask/cursor-cli"
+      }
+    ],
+    "verified": true,
+    "notes": "Primary command is now 'agent' (docs); Homebrew cask still links it as 'cursor-agent'. Install: curl https://cursor.com/install -fsS | bash; irm 'https://cursor.com/install?win32=true' | iex; puts launcher in ~/.local/bin. 'agent' is a generic name (also linked by Grok Build cask). Config paths come from the Homebrew cask zap stanza (~/.local/share/cursor-agent is the install tree)."
+  },
+  {
+    "id": "cursor",
+    "displayName": "Cursor",
+    "vendor": "Anysphere",
+    "kind": "editor",
+    "commands": [
+      "cursor"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:cursor"
+      ],
+      "scoop": [
+        "extras/cursor"
+      ],
+      "choco": [
+        "cursoride"
+      ],
+      "winget": [
+        "Anysphere.Cursor"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.cursor"
+      ],
+      "windows": [],
+      "macos": [
+        "{APPSUPPORT}/Cursor"
+      ],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://cursor.com",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "cursor",
+        "url": "https://formulae.brew.sh/cask/cursor"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:cursor",
+        "url": "https://formulae.brew.sh/cask/cursor"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Anysphere.Cursor",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Anysphere/Cursor"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "extras/cursor",
+        "url": "https://github.com/ScoopInstaller/Extras/blob/master/bucket/cursor.json"
+      },
+      {
+        "field": "packages.choco",
+        "value": "cursoride",
+        "url": "https://community.chocolatey.org/packages/cursoride"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.cursor",
+        "url": "https://formulae.brew.sh/cask/cursor"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "{APPSUPPORT}/Cursor",
+        "url": "https://formulae.brew.sh/cask/cursor"
+      }
+    ],
+    "verified": true,
+    "notes": "'cursor' shell launcher is the bundled VS Code-style CLI. Chocolatey id is 'cursoride' ('cursor' is 404)."
+  },
+  {
+    "id": "windsurf",
+    "displayName": "Devin Desktop (formerly Windsurf)",
+    "vendor": "Cognition (formerly Codeium)",
+    "kind": "editor",
+    "commands": [
+      "windsurf",
+      "devin-desktop"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:devin-desktop"
+      ],
+      "scoop": [
+        "extras/windsurf"
+      ],
+      "choco": [
+        "windsurf"
+      ],
+      "winget": [
+        "Codeium.Windsurf",
+        "CognitionAI.DevinDesktop"
+      ],
+      "vscode": [
+        "Codeium.codeium"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.codeium/windsurf"
+      ],
+      "windows": [],
+      "macos": [
+        "{APPSUPPORT}/Devin"
+      ],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://devin.ai/desktop",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "windsurf",
+        "url": "https://github.com/ScoopInstaller/Extras/blob/master/bucket/windsurf.json"
+      },
+      {
+        "field": "commands",
+        "value": "devin-desktop",
+        "url": "https://formulae.brew.sh/cask/devin-desktop"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:devin-desktop",
+        "url": "https://formulae.brew.sh/cask/devin-desktop"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Codeium.Windsurf",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/Codeium/Windsurf"
+      },
+      {
+        "field": "packages.winget",
+        "value": "CognitionAI.DevinDesktop",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/CognitionAI/DevinDesktop"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "extras/windsurf",
+        "url": "https://github.com/ScoopInstaller/Extras/blob/master/bucket/windsurf.json"
+      },
+      {
+        "field": "packages.choco",
+        "value": "windsurf",
+        "url": "https://community.chocolatey.org/packages/windsurf"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "Codeium.codeium",
+        "url": "https://marketplace.visualstudio.com/items?itemName=Codeium.codeium"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.codeium/windsurf",
+        "url": "https://formulae.brew.sh/cask/devin-desktop"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "{APPSUPPORT}/Devin",
+        "url": "https://formulae.brew.sh/cask/devin-desktop"
+      }
+    ],
+    "verified": true,
+    "notes": "Windsurf was rebranded Devin Desktop: Homebrew cask devin-desktop has old_tokens ['windsurf'] and still downloads from windsurf-stable.codeiumdata.com. winget still carries Codeium.Windsurf alongside CognitionAI.DevinDesktop. Cask zap also removes ~/.devin (shared with Devin CLI). Codeium.codeium = 'Windsurf Plugin (formerly Codeium)' for VS Code (publisher not domain-verified)."
+  },
+  {
+    "id": "devin-cli",
+    "displayName": "Devin CLI",
+    "vendor": "Cognition",
+    "kind": "cli",
+    "commands": [
+      "devin"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:devin-cli"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [
+        "CognitionAI.DevinCLI"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.devin"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://docs.devin.ai/cli",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "devin",
+        "url": "https://docs.devin.ai/cli"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:devin-cli",
+        "url": "https://formulae.brew.sh/cask/devin-cli"
+      },
+      {
+        "field": "packages.winget",
+        "value": "CognitionAI.DevinCLI",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/c/CognitionAI/DevinCLI"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.devin",
+        "url": "https://formulae.brew.sh/cask/devin-cli"
+      }
+    ],
+    "verified": true,
+    "notes": "Install: curl -fsSL https://cli.devin.ai/install.sh | bash; irm https://static.devin.ai/cli/setup.ps1 | iex; or 'Install Devin CLI' from Devin Desktop. Version flag not documented."
+  },
+  {
+    "id": "kiro",
+    "displayName": "Kiro (IDE)",
+    "vendor": "Amazon (AWS)",
+    "kind": "editor",
+    "commands": [
+      "kiro"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:kiro"
+      ],
+      "scoop": [
+        "extras/kiro"
+      ],
+      "choco": [
+        "kiro"
+      ],
+      "winget": [
+        "Amazon.Kiro"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.kiro"
+      ],
+      "windows": [],
+      "macos": [
+        "{APPSUPPORT}/Kiro"
+      ],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://kiro.dev",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "kiro",
+        "url": "https://formulae.brew.sh/cask/kiro"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:kiro",
+        "url": "https://formulae.brew.sh/cask/kiro"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Amazon.Kiro",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Amazon/Kiro"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "extras/kiro",
+        "url": "https://github.com/ScoopInstaller/Extras/blob/master/bucket/kiro.json"
+      },
+      {
+        "field": "packages.choco",
+        "value": "kiro",
+        "url": "https://community.chocolatey.org/packages/kiro"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.kiro",
+        "url": "https://formulae.brew.sh/cask/kiro"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "{APPSUPPORT}/Kiro",
+        "url": "https://formulae.brew.sh/cask/kiro"
+      }
+    ],
+    "verified": true,
+    "notes": "~/.kiro is shared with Kiro CLI ('your .kiro configuration is shared across all of them'). Linux packages: apt/dnf 'kiro'."
+  },
+  {
+    "id": "kiro-cli",
+    "displayName": "Kiro CLI (formerly Amazon Q Developer CLI)",
+    "vendor": "Amazon (AWS)",
+    "kind": "cli",
+    "commands": [
+      "kiro-cli",
+      "q"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:kiro-cli"
+      ],
+      "scoop": [
+        "kiro-cli"
+      ],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [
+      "/\\.local/bin/kiro-cli(-chat)?(\\.exe)?$"
+    ],
+    "configDirs": {
+      "all": [
+        "~/.kiro",
+        "~/.aws/amazonq"
+      ],
+      "windows": [],
+      "macos": [
+        "{APPSUPPORT}/kiro-cli"
+      ],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://kiro.dev/cli/",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "kiro-cli",
+        "url": "https://formulae.brew.sh/cask/kiro-cli"
+      },
+      {
+        "field": "commands",
+        "value": "q",
+        "url": "https://kiro.dev/docs/upgrade-guides/migrating-from-q/"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:kiro-cli",
+        "url": "https://formulae.brew.sh/cask/kiro-cli"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "kiro-cli",
+        "url": "https://github.com/ScoopInstaller/Main/blob/master/bucket/kiro-cli.json"
+      },
+      {
+        "field": "pathSignatures",
+        "value": "/\\.local/bin/kiro-cli(-chat)?(\\.exe)?$",
+        "url": "https://formulae.brew.sh/cask/kiro-cli"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.kiro",
+        "url": "https://kiro.dev/docs/upgrade-guides/migrating-from-q/"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.aws/amazonq",
+        "url": "https://kiro.dev/docs/upgrade-guides/migrating-from-q/"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "{APPSUPPORT}/kiro-cli",
+        "url": "https://formulae.brew.sh/cask/kiro-cli"
+      }
+    ],
+    "verified": true,
+    "notes": "Amazon Q Developer CLI was renamed Kiro CLI: Homebrew cask kiro-cli has old_tokens ['amazon-q','codewhisperer']; migration doc says 'q' and 'q chat' keep working. 'q' collides with Scoop main/q (harelba SQL-on-CSV) and Homebrew formula 'q' (natesales DNS client). ~/.aws/amazonq is the legacy Q config dir."
+  },
+  {
+    "id": "amazon-q-developer",
+    "displayName": "Amazon Q Developer (IDE extension)",
+    "vendor": "Amazon (AWS)",
+    "kind": "extension",
+    "commands": [],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": [
+        "AmazonWebServices.amazon-q-vscode"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [],
+    "homepage": "https://marketplace.visualstudio.com/items?itemName=AmazonWebServices.amazon-q-vscode",
+    "repo": null,
+    "sources": [
+      {
+        "field": "packages.vscode",
+        "value": "AmazonWebServices.amazon-q-vscode",
+        "url": "https://marketplace.visualstudio.com/items?itemName=AmazonWebServices.amazon-q-vscode"
+      }
+    ],
+    "verified": true,
+    "notes": "IDE extension. The Amazon Q Developer CLI ('q') is now Kiro CLI - see kiro-cli entry."
+  },
+  {
+    "id": "roo-code",
+    "displayName": "Roo Code",
+    "vendor": "Roo Code Inc",
+    "kind": "extension",
+    "commands": [],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": [
+        "RooVeterinaryInc.roo-cline"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [],
+    "homepage": "https://roocode.com",
+    "repo": "RooCodeInc/Roo-Code",
+    "sources": [
+      {
+        "field": "packages.vscode",
+        "value": "RooVeterinaryInc.roo-cline",
+        "url": "https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"
+      },
+      {
+        "field": "repo",
+        "value": "RooCodeInc/Roo-Code",
+        "url": "https://github.com/RooCodeInc/Roo-Code"
+      }
+    ],
+    "verified": true,
+    "notes": "VS Code extension only; no official Roo Code CLI found (npm 'roo-cli' and '@roo-code/cli' are unrelated/404)."
+  },
+  {
+    "id": "continue",
+    "displayName": "Continue CLI",
+    "vendor": "Continue",
+    "kind": "cli",
+    "commands": [
+      "cn"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@continuedev/cli"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": [
+        "Continue.continue"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://continue.dev",
+    "repo": "continuedev/continue",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "cn",
+        "url": "https://registry.npmjs.org/@continuedev/cli/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@continuedev/cli",
+        "url": "https://registry.npmjs.org/@continuedev/cli/latest"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "Continue.continue",
+        "url": "https://marketplace.visualstudio.com/items?itemName=Continue.continue"
+      },
+      {
+        "field": "repo",
+        "value": "continuedev/continue",
+        "url": "https://github.com/continuedev/continue"
+      }
+    ],
+    "verified": true,
+    "notes": "README: repository is no longer actively maintained and is read-only; final 2.0.0 release of extension, CLI and JetBrains plugin. Config dir (~/.continue) not confirmed in fetched primary sources."
+  },
+  {
+    "id": "copilot-cli",
+    "displayName": "GitHub Copilot CLI",
+    "vendor": "GitHub",
+    "kind": "cli",
+    "commands": [
+      "copilot"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [
+        "@github/copilot"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:copilot-cli",
+        "cask:copilot-cli@prerelease"
+      ],
+      "scoop": [
+        "copilot-cli"
+      ],
+      "choco": [
+        "github-copilot-cli",
+        "copilot-cli"
+      ],
+      "winget": [
+        "GitHub.Copilot",
+        "GitHub.Copilot.Prerelease"
+      ],
+      "vscode": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.copilot"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://github.com/features/copilot/cli",
+    "repo": "github/copilot-cli",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "copilot",
+        "url": "https://registry.npmjs.org/@github/copilot/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@github/copilot",
+        "url": "https://registry.npmjs.org/@github/copilot/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:copilot-cli",
+        "url": "https://formulae.brew.sh/cask/copilot-cli"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:copilot-cli@prerelease",
+        "url": "https://github.com/github/copilot-cli"
+      },
+      {
+        "field": "packages.winget",
+        "value": "GitHub.Copilot",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/GitHub/Copilot"
+      },
+      {
+        "field": "packages.winget",
+        "value": "GitHub.Copilot.Prerelease",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/GitHub/Copilot/Prerelease"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "copilot-cli",
+        "url": "https://github.com/ScoopInstaller/Main/blob/master/bucket/copilot-cli.json"
+      },
+      {
+        "field": "packages.choco",
+        "value": "github-copilot-cli",
+        "url": "https://community.chocolatey.org/packages/github-copilot-cli"
+      },
+      {
+        "field": "packages.choco",
+        "value": "copilot-cli",
+        "url": "https://community.chocolatey.org/packages/copilot-cli"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "GitHub.copilot",
+        "url": "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "GitHub.copilot-chat",
+        "url": "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.copilot",
+        "url": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference"
+      },
+      {
+        "field": "repo",
+        "value": "github/copilot-cli",
+        "url": "https://github.com/github/copilot-cli"
+      }
+    ],
+    "verified": true,
+    "notes": "COPILOT_HOME overrides ~/.copilot; older XDG locations are migrated. Install script gh.io/copilot-install uses PREFIX ($HOME/.local for non-root, /usr/local for root). 'copilot' collides with AWS Copilot CLI (Homebrew formula 'copilot', winget Amazon.CopilotCLI). Chocolatey 'copilot-cli' looks stale (1.0.12) vs 'github-copilot-cli' (1.0.91). Desktop app: cask github-copilot-app / winget GitHub.CopilotApp."
+  },
+  {
+    "id": "gh-copilot",
+    "displayName": "GitHub Copilot in the CLI (gh extension)",
+    "vendor": "GitHub",
+    "kind": "extension",
+    "commands": [],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [],
+    "homepage": "https://github.com/github/gh-copilot",
+    "repo": "github/gh-copilot",
+    "sources": [
+      {
+        "field": "repo",
+        "value": "github/gh-copilot",
+        "url": "https://github.com/github/gh-copilot"
+      }
+    ],
+    "verified": true,
+    "notes": "Deprecated 2025-10-25 in favor of GitHub Copilot CLI. Not a standalone executable: installed with 'gh extension install github/gh-copilot' and run as 'gh copilot suggest|explain'; detect via 'gh extension list'."
+  },
+  {
+    "id": "openhands",
+    "displayName": "OpenHands CLI",
+    "vendor": "OpenHands (All Hands AI)",
+    "kind": "cli",
+    "commands": [
+      "openhands"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [
+        "openhands",
+        "openhands-ai"
+      ],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.openhands"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://docs.openhands.dev",
+    "repo": "OpenHands/OpenHands-CLI",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "openhands",
+        "url": "https://github.com/OpenHands/OpenHands-CLI"
+      },
+      {
+        "field": "packages.pypi",
+        "value": "openhands",
+        "url": "https://pypi.org/pypi/openhands/json"
+      },
+      {
+        "field": "packages.pypi",
+        "value": "openhands-ai",
+        "url": "https://pypi.org/pypi/openhands-ai/json"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.openhands",
+        "url": "https://github.com/OpenHands/OpenHands-CLI"
+      },
+      {
+        "field": "repo",
+        "value": "OpenHands/OpenHands-CLI",
+        "url": "https://github.com/OpenHands/OpenHands-CLI"
+      }
+    ],
+    "verified": true,
+    "notes": "Install: 'uv tool install openhands --python 3.12' or install.openhands.dev/install.sh. PyPI 'openhands' is the CLI; 'openhands-ai' is the main OpenHands (server/'Agent Canvas') package. npm 'openhands' is a security placeholder."
+  },
+  {
+    "id": "codebuddy-code",
+    "displayName": "CodeBuddy Code",
+    "vendor": "Tencent",
+    "kind": "cli",
+    "commands": [
+      "codebuddy",
+      "cbc",
+      "codebuddy-code"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [
+        "@tencent-ai/codebuddy-code"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://cnb.cool/codebuddy/codebuddy-code",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "codebuddy",
+        "url": "https://registry.npmjs.org/@tencent-ai/codebuddy-code/latest"
+      },
+      {
+        "field": "commands",
+        "value": "cbc",
+        "url": "https://registry.npmjs.org/@tencent-ai/codebuddy-code/latest"
+      },
+      {
+        "field": "commands",
+        "value": "codebuddy-code",
+        "url": "https://registry.npmjs.org/@tencent-ai/codebuddy-code/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@tencent-ai/codebuddy-code",
+        "url": "https://registry.npmjs.org/@tencent-ai/codebuddy-code/latest"
+      }
+    ],
+    "verified": true,
+    "notes": "npm bins: codebuddy, cbc, codebuddy-code (plus helper bins cbc-prewarm, codebuddy-lowmem). Version: 'codebuddy -V/--version'. 'cbc' collides with COIN-OR CBC solver (Homebrew formula 'cbc'). CLI config dir not documented; ~/.codebuddy is documented for the IDE (see codebuddy-ide)."
+  },
+  {
+    "id": "codebuddy-ide",
+    "displayName": "CodeBuddy (IDE)",
+    "vendor": "Tencent",
+    "kind": "editor",
+    "commands": [],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:codebuddy",
+        "cask:codebuddy-cn"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [
+        "Tencent.CodeBuddy"
+      ],
+      "vscode": [
+        "Tencent-Cloud.coding-copilot"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.codebuddy"
+      ],
+      "windows": [],
+      "macos": [
+        "{APPSUPPORT}/CodeBuddy"
+      ],
+      "linux": []
+    },
+    "versionArgs": [],
+    "homepage": "https://www.codebuddy.ai/ide/",
+    "repo": null,
+    "sources": [
+      {
+        "field": "packages.brew",
+        "value": "cask:codebuddy",
+        "url": "https://formulae.brew.sh/cask/codebuddy"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:codebuddy-cn",
+        "url": "https://formulae.brew.sh/cask/codebuddy-cn"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Tencent.CodeBuddy",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/t/Tencent/CodeBuddy"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "Tencent-Cloud.coding-copilot",
+        "url": "https://marketplace.visualstudio.com/items?itemName=Tencent-Cloud.coding-copilot"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.codebuddy",
+        "url": "https://formulae.brew.sh/cask/codebuddy"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "{APPSUPPORT}/CodeBuddy",
+        "url": "https://formulae.brew.sh/cask/codebuddy"
+      }
+    ],
+    "verified": true,
+    "notes": "No shell launcher documented. Tencent-Cloud.coding-copilot = 'Tencent Cloud CodeBuddy' VS Code extension (publisher not domain-verified)."
+  },
+  {
+    "id": "iflow-cli",
+    "displayName": "iFlow CLI",
+    "vendor": "iFlow (Alibaba)",
+    "kind": "cli",
+    "commands": [
+      "iflow"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@iflow-ai/iflow-cli"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "iflow-ai/iflow-cli/iflow-cli"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.iflow"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://github.com/iflow-ai/iflow-cli",
+    "repo": "iflow-ai/iflow-cli",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "iflow",
+        "url": "https://registry.npmjs.org/@iflow-ai/iflow-cli/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@iflow-ai/iflow-cli",
+        "url": "https://registry.npmjs.org/@iflow-ai/iflow-cli/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "iflow-ai/iflow-cli/iflow-cli",
+        "url": "https://github.com/iflow-ai/iflow-cli"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.iflow",
+        "url": "https://github.com/iflow-ai/iflow-cli"
+      },
+      {
+        "field": "repo",
+        "value": "iflow-ai/iflow-cli",
+        "url": "https://github.com/iflow-ai/iflow-cli"
+      }
+    ],
+    "verified": true,
+    "notes": "One-click installer: cloud.iflow.cn/iflow-cli/install.sh. npm latest 0.5.19 last modified 2026-05."
+  },
+  {
+    "id": "xum",
+    "displayName": "Xum (formerly Mux)",
+    "vendor": "Coder",
+    "kind": "cli",
+    "commands": [
+      "xum",
+      "mux"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [
+        "@coder/xum",
+        "mux"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://xum.cdr.dev",
+    "repo": "coder/xum",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "xum",
+        "url": "https://registry.npmjs.org/@coder/xum/latest"
+      },
+      {
+        "field": "commands",
+        "value": "mux",
+        "url": "https://registry.npmjs.org/@coder/xum/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@coder/xum",
+        "url": "https://registry.npmjs.org/@coder/xum/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "mux",
+        "url": "https://registry.npmjs.org/mux/latest"
+      },
+      {
+        "field": "repo",
+        "value": "coder/xum",
+        "url": "https://github.com/coder/xum"
+      }
+    ],
+    "verified": true,
+    "notes": "Coding-agent multiplexer (desktop app + CLI). Renamed Mux -> Xum after a Mux.com trademark concern; legacy npm 'mux' forwards to @coder/xum. Repo coder/mux redirects to coder/xum. 'mux' collides with Mux.com's video CLI and generic multiplexer tools. Config dir not documented on install page."
+  },
+  {
+    "id": "zencoder",
+    "displayName": "Zencoder",
+    "vendor": "Zencoder",
+    "kind": "extension",
+    "commands": [],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": [
+        "ZencoderAI.zencoder"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [],
+    "homepage": "https://zencoder.ai",
+    "repo": null,
+    "sources": [
+      {
+        "field": "packages.vscode",
+        "value": "ZencoderAI.zencoder",
+        "url": "https://marketplace.visualstudio.com/items?itemName=ZencoderAI.zencoder"
+      }
+    ],
+    "verified": true,
+    "notes": "IDE extension. Zencoder docs mention a 'Zen CLI' runtime, but no install command/package or executable name could be confirmed. npm 'zencoder' is an unrelated video-encoding library."
+  },
+  {
+    "id": "hermes-agent",
+    "displayName": "Hermes Agent",
+    "vendor": "Nous Research",
+    "kind": "cli",
+    "commands": [
+      "hermes"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "hermes-agent",
+        "cask:hermes-desktop"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [
+      "/AppData/Local/hermes/"
+    ],
+    "configDirs": {
+      "all": [
+        "~/.hermes"
+      ],
+      "windows": [
+        "{LOCALAPPDATA}/hermes"
+      ],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://hermes-agent.nousresearch.com",
+    "repo": "NousResearch/hermes-agent",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "hermes",
+        "url": "https://github.com/NousResearch/hermes-agent"
+      },
+      {
+        "field": "packages.brew",
+        "value": "hermes-agent",
+        "url": "https://formulae.brew.sh/formula/hermes-agent"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:hermes-desktop",
+        "url": "https://formulae.brew.sh/cask/hermes-desktop"
+      },
+      {
+        "field": "pathSignatures",
+        "value": "/AppData/Local/hermes/",
+        "url": "https://github.com/NousResearch/hermes-agent"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.hermes",
+        "url": "https://github.com/NousResearch/hermes-agent"
+      },
+      {
+        "field": "configDirs.windows",
+        "value": "{LOCALAPPDATA}/hermes",
+        "url": "https://github.com/NousResearch/hermes-agent"
+      },
+      {
+        "field": "repo",
+        "value": "NousResearch/hermes-agent",
+        "url": "https://github.com/NousResearch/hermes-agent"
+      }
+    ],
+    "verified": true,
+    "notes": "Install: hermes-agent.nousresearch.com/install.sh | install.ps1. cask hermes-desktop is the desktop app. npm 'hermes-agent' is an UNOFFICIAL bridge (wyrtensi) and PyPI 'hermes-agent' has no project URLs tying it to Nous Research - both excluded. winget fathah.HermesDesktop is third-party. 'hermes' collides with Meta's Hermes JavaScript engine CLI."
+  },
+  {
+    "id": "letta-code",
+    "displayName": "Letta Code",
+    "vendor": "Letta",
+    "kind": "cli",
+    "commands": [
+      "letta"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@letta-ai/letta-code"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "letta-code"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [
+        "Letta.LettaCode"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.letta"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://docs.letta.com/letta-code",
+    "repo": "letta-ai/letta-code",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "letta",
+        "url": "https://registry.npmjs.org/@letta-ai/letta-code/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@letta-ai/letta-code",
+        "url": "https://registry.npmjs.org/@letta-ai/letta-code/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "letta-code",
+        "url": "https://formulae.brew.sh/formula/letta-code"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Letta.LettaCode",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/l/Letta/LettaCode"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.letta",
+        "url": "https://github.com/letta-ai/letta-code"
+      },
+      {
+        "field": "repo",
+        "value": "letta-ai/letta-code",
+        "url": "https://github.com/letta-ai/letta-code"
+      }
+    ],
+    "verified": true,
+    "notes": "Also installable via Nix flake github:letta-ai/letta-code."
+  },
+  {
+    "id": "trae",
+    "displayName": "Trae (IDE)",
+    "vendor": "ByteDance",
+    "kind": "editor",
+    "commands": [
+      "trae"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:trae"
+      ],
+      "scoop": [
+        "extras/trae"
+      ],
+      "choco": [],
+      "winget": [
+        "ByteDance.Trae"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.trae"
+      ],
+      "windows": [],
+      "macos": [
+        "{APPSUPPORT}/Trae"
+      ],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://www.trae.ai",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "trae",
+        "url": "https://github.com/ScoopInstaller/Extras/blob/master/bucket/trae.json"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:trae",
+        "url": "https://formulae.brew.sh/cask/trae"
+      },
+      {
+        "field": "packages.winget",
+        "value": "ByteDance.Trae",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/b/ByteDance/Trae"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "extras/trae",
+        "url": "https://github.com/ScoopInstaller/Extras/blob/master/bucket/trae.json"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.trae",
+        "url": "https://formulae.brew.sh/cask/trae"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "{APPSUPPORT}/Trae",
+        "url": "https://formulae.brew.sh/cask/trae"
+      }
+    ],
+    "verified": true,
+    "notes": "'trae' launcher documented only by the Scoop manifest (bin\\trae.cmd). winget ByteDance.TraeWork is 'TRAE SOLO'. Trae Agent (trae-cli) is a separate open-source CLI."
+  },
+  {
+    "id": "trae-cn",
+    "displayName": "Trae CN (IDE)",
+    "vendor": "ByteDance",
+    "kind": "editor",
+    "commands": [],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:trae-cn"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [
+        "ByteDance.Trae.CN"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.trae-cn"
+      ],
+      "windows": [],
+      "macos": [
+        "{APPSUPPORT}/Trae CN"
+      ],
+      "linux": []
+    },
+    "versionArgs": [],
+    "homepage": "https://www.trae.com.cn",
+    "repo": null,
+    "sources": [
+      {
+        "field": "packages.brew",
+        "value": "cask:trae-cn",
+        "url": "https://formulae.brew.sh/cask/trae-cn"
+      },
+      {
+        "field": "packages.winget",
+        "value": "ByteDance.Trae.CN",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/b/ByteDance/Trae/CN"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.trae-cn",
+        "url": "https://formulae.brew.sh/cask/trae-cn"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "{APPSUPPORT}/Trae CN",
+        "url": "https://formulae.brew.sh/cask/trae-cn"
+      }
+    ],
+    "verified": true,
+    "notes": "China edition. The v1 'trae-cn' command name is not documented in any primary source checked."
+  },
+  {
+    "id": "amp",
+    "displayName": "Amp",
+    "vendor": "Amp (Sourcegraph)",
+    "kind": "cli",
+    "commands": [
+      "amp"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [
+        "@ampcode/cli",
+        "@sourcegraph/amp"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:amp-app"
+      ],
+      "scoop": [],
+      "choco": [
+        "amp"
+      ],
+      "winget": [
+        "Sourcegraph.Amp"
+      ],
+      "vscode": [
+        "sourcegraph.amp"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.config/amp"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "version"
+    ],
+    "homepage": "https://ampcode.com",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "amp",
+        "url": "https://registry.npmjs.org/@ampcode/cli/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@ampcode/cli",
+        "url": "https://registry.npmjs.org/@ampcode/cli/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@sourcegraph/amp",
+        "url": "https://registry.npmjs.org/@sourcegraph/amp/latest"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Sourcegraph.Amp",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/s/Sourcegraph/Amp"
+      },
+      {
+        "field": "packages.choco",
+        "value": "amp",
+        "url": "https://community.chocolatey.org/packages/amp"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:amp-app",
+        "url": "https://formulae.brew.sh/cask/amp-app"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "sourcegraph.amp",
+        "url": "https://marketplace.visualstudio.com/items?itemName=sourcegraph.amp"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.config/amp",
+        "url": "https://ampcode.com/docs/cli/settings"
+      }
+    ],
+    "verified": true,
+    "notes": "npm @sourcegraph/amp renamed to @ampcode/cli (see ampcode.com/news/npm-package-changes). Install script: ampcode.com/install.sh. Docs use 'amp version'. Chocolatey 'amp' looks stale (0.0.1753960840). cask amp-app is the macOS app. 'amp' collides with the amp.rs text editor (Homebrew formula 'amp')."
+  },
+  {
+    "id": "qodo",
+    "displayName": "Qodo Command / Qodo Gen CLI",
+    "vendor": "Qodo",
+    "kind": "cli",
+    "commands": [
+      "qodo"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@qodo/command",
+        "@qodo/gen"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": [
+        "Codium.codium"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://www.qodo.ai",
+    "repo": "qodo-ai/command",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "qodo",
+        "url": "https://registry.npmjs.org/@qodo/command/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@qodo/command",
+        "url": "https://registry.npmjs.org/@qodo/command/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@qodo/gen",
+        "url": "https://registry.npmjs.org/@qodo/gen/latest"
+      },
+      {
+        "field": "packages.vscode",
+        "value": "Codium.codium",
+        "url": "https://marketplace.visualstudio.com/items?itemName=Codium.codium"
+      },
+      {
+        "field": "repo",
+        "value": "qodo-ai/command",
+        "url": "https://github.com/qodo-ai/command"
+      }
+    ],
+    "verified": true,
+    "notes": "Both npm packages are deprecated (@qodo/gen -> @qodo/command -> 'no longer supported'). Replacement is the Qodo Agentic Toolbox (get.qodo.ai | install.ps1), whose executable name is not stated in its docs. Codium.codium is now 'Qodo: AI Code Review'."
+  },
+  {
+    "id": "plandex",
+    "displayName": "Plandex",
+    "vendor": "Plandex",
+    "kind": "cli",
+    "commands": [
+      "plandex",
+      "pdx"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://plandex.ai",
+    "repo": "plandex-ai/plandex",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "plandex",
+        "url": "https://github.com/plandex-ai/plandex"
+      },
+      {
+        "field": "commands",
+        "value": "pdx",
+        "url": "https://github.com/plandex-ai/plandex"
+      },
+      {
+        "field": "repo",
+        "value": "plandex-ai/plandex",
+        "url": "https://github.com/plandex-ai/plandex"
+      }
+    ],
+    "verified": true,
+    "notes": "Install: curl -sL https://plandex.ai/install.sh | bash. Windows only via WSL. npm 'plandex' is a security placeholder; not on PyPI/Homebrew core."
+  },
+  {
+    "id": "gptme",
+    "displayName": "gptme",
+    "vendor": "gptme",
+    "kind": "cli",
+    "commands": [
+      "gptme"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [
+        "gptme"
+      ],
+      "cargo": [],
+      "brew": [
+        "gptme"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "{XDG_CONFIG_HOME}/gptme"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://gptme.org",
+    "repo": "gptme/gptme",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "gptme",
+        "url": "https://pypi.org/pypi/gptme/json"
+      },
+      {
+        "field": "packages.pypi",
+        "value": "gptme",
+        "url": "https://pypi.org/pypi/gptme/json"
+      },
+      {
+        "field": "packages.brew",
+        "value": "gptme",
+        "url": "https://formulae.brew.sh/formula/gptme"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "{XDG_CONFIG_HOME}/gptme",
+        "url": "https://github.com/gptme/gptme"
+      },
+      {
+        "field": "repo",
+        "value": "gptme/gptme",
+        "url": "https://github.com/gptme/gptme"
+      }
+    ],
+    "verified": true,
+    "notes": "Related executables: gptme-tui, gptme-util, gptme-mcp-server."
+  },
+  {
+    "id": "open-interpreter",
+    "displayName": "Open Interpreter",
+    "vendor": "Open Interpreter",
+    "kind": "cli",
+    "commands": [
+      "interpreter",
+      "i"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [],
+      "pypi": [
+        "open-interpreter"
+      ],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.openinterpreter"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://www.openinterpreter.com",
+    "repo": "openinterpreter/open-interpreter",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "interpreter",
+        "url": "https://github.com/openinterpreter/open-interpreter"
+      },
+      {
+        "field": "commands",
+        "value": "i",
+        "url": "https://github.com/openinterpreter/open-interpreter"
+      },
+      {
+        "field": "packages.pypi",
+        "value": "open-interpreter",
+        "url": "https://pypi.org/pypi/open-interpreter/json"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.openinterpreter",
+        "url": "https://github.com/openinterpreter/open-interpreter"
+      },
+      {
+        "field": "repo",
+        "value": "openinterpreter/open-interpreter",
+        "url": "https://github.com/openinterpreter/open-interpreter"
+      }
+    ],
+    "verified": true,
+    "notes": "Rewritten as a fork of OpenAI Codex; install via openinterpreter.com/install | install.ps1. PyPI open-interpreter (0.4.3) is the legacy Python version. 'i' is a one-letter command - very collision-prone."
+  },
+  {
+    "id": "jules",
+    "displayName": "Jules Tools CLI",
+    "vendor": "Google",
+    "kind": "cli",
+    "commands": [
+      "jules"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@google/jules"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "version"
+    ],
+    "homepage": "https://jules.google",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "jules",
+        "url": "https://registry.npmjs.org/@google/jules/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@google/jules",
+        "url": "https://registry.npmjs.org/@google/jules/latest"
+      }
+    ],
+    "verified": true,
+    "notes": "Asynchronous cloud coding agent's terminal client. Docs document 'jules version' subcommand rather than --version."
+  },
+  {
+    "id": "rovo-dev",
+    "displayName": "Atlassian Rovo Dev CLI",
+    "vendor": "Atlassian",
+    "kind": "cli",
+    "commands": [
+      "acli"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [
+        "acli"
+      ],
+      "choco": [],
+      "winget": [
+        "Atlassian.AtlassianCLI"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://developer.atlassian.com/cloud/acli/",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "acli",
+        "url": "https://support.atlassian.com/rovo/docs/install-and-run-rovo-dev-cli-on-your-device/"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Atlassian.AtlassianCLI",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Atlassian/AtlassianCLI"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "acli",
+        "url": "https://github.com/ScoopInstaller/Main/blob/master/bucket/acli.json"
+      }
+    ],
+    "verified": true,
+    "notes": "Rovo Dev runs as a subcommand: 'acli rovodev run' (auth: 'acli rovodev auth login'). acli is the general Atlassian CLI, so its presence does not prove Rovo Dev use; Appfire's older 'ACLI' also uses the name. winget Atlassian.Rovo is the Rovo desktop app. Config dir not documented on the fetched page."
+  },
+  {
+    "id": "warp",
+    "displayName": "Warp (terminal)",
+    "vendor": "Warp",
+    "kind": "editor",
+    "commands": [],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:warp"
+      ],
+      "scoop": [
+        "extras/warp-terminal"
+      ],
+      "choco": [
+        "warp-terminal"
+      ],
+      "winget": [
+        "Warp.Warp"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.warp"
+      ],
+      "windows": [],
+      "macos": [
+        "{APPSUPPORT}/dev.warp.Warp-Stable"
+      ],
+      "linux": []
+    },
+    "versionArgs": [],
+    "homepage": "https://www.warp.dev",
+    "repo": null,
+    "sources": [
+      {
+        "field": "packages.brew",
+        "value": "cask:warp",
+        "url": "https://formulae.brew.sh/cask/warp"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Warp.Warp",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/w/Warp/Warp"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "extras/warp-terminal",
+        "url": "https://github.com/ScoopInstaller/Extras/blob/master/bucket/warp-terminal.json"
+      },
+      {
+        "field": "packages.choco",
+        "value": "warp-terminal",
+        "url": "https://community.chocolatey.org/packages/warp-terminal"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.warp",
+        "url": "https://formulae.brew.sh/cask/warp"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "{APPSUPPORT}/dev.warp.Warp-Stable",
+        "url": "https://formulae.brew.sh/cask/warp"
+      }
+    ],
+    "verified": true,
+    "notes": "Agentic terminal app; no shell command. Chocolatey 'warp' is Cloudflare WARP and Scoop main/warp is warp-packer - do not use those ids."
+  },
+  {
+    "id": "warp-agent-cli",
+    "displayName": "Warp Agent CLI",
+    "vendor": "Warp",
+    "kind": "cli",
+    "commands": [
+      "warp"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:warp-agent-cli"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [
+      "/\\.local/bin/warp$"
+    ],
+    "configDirs": {
+      "all": [
+        "~/.warp"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://www.warp.dev/agent-cli",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "warp",
+        "url": "https://formulae.brew.sh/cask/warp-agent-cli"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:warp-agent-cli",
+        "url": "https://formulae.brew.sh/cask/warp-agent-cli"
+      },
+      {
+        "field": "pathSignatures",
+        "value": "/\\.local/bin/warp$",
+        "url": "https://formulae.brew.sh/cask/warp-agent-cli"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.warp",
+        "url": "https://formulae.brew.sh/cask/warp-agent-cli"
+      }
+    ],
+    "verified": true,
+    "notes": "Install: curl -fsSL https://app.warp.dev/download/agent-cli | bash. Cask links 'warp-tui-stable' as 'warp'. 'warp' collides with Scoop main/warp (warp-packer) and Cloudflare WARP."
+  },
+  {
+    "id": "zed",
+    "displayName": "Zed",
+    "vendor": "Zed Industries",
+    "kind": "editor",
+    "commands": [
+      "zed"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "cask:zed",
+        "cask:zed@preview"
+      ],
+      "scoop": [
+        "extras/zed"
+      ],
+      "choco": [
+        "zed"
+      ],
+      "winget": [
+        "ZedIndustries.Zed",
+        "ZedIndustries.Zed.Preview"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [
+        "~/.config/zed",
+        "{APPSUPPORT}/Zed"
+      ],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://zed.dev",
+    "repo": "zed-industries/zed",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "zed",
+        "url": "https://formulae.brew.sh/cask/zed"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:zed",
+        "url": "https://formulae.brew.sh/cask/zed"
+      },
+      {
+        "field": "packages.brew",
+        "value": "cask:zed@preview",
+        "url": "https://formulae.brew.sh/cask/zed@preview"
+      },
+      {
+        "field": "packages.winget",
+        "value": "ZedIndustries.Zed",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/z/ZedIndustries/Zed"
+      },
+      {
+        "field": "packages.winget",
+        "value": "ZedIndustries.Zed.Preview",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/z/ZedIndustries/Zed/Preview"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "extras/zed",
+        "url": "https://github.com/ScoopInstaller/Extras/blob/master/bucket/zed.json"
+      },
+      {
+        "field": "packages.choco",
+        "value": "zed",
+        "url": "https://community.chocolatey.org/packages/zed"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "~/.config/zed",
+        "url": "https://formulae.brew.sh/cask/zed"
+      },
+      {
+        "field": "configDirs.macos",
+        "value": "{APPSUPPORT}/Zed",
+        "url": "https://formulae.brew.sh/cask/zed"
+      },
+      {
+        "field": "repo",
+        "value": "zed-industries/zed",
+        "url": "https://github.com/zed-industries/zed"
+      }
+    ],
+    "verified": true,
+    "notes": "Editor with agent panel/ACP host. Preview channel launcher is 'zed-preview'. Chocolatey 'zed' version (1.2.1) lags. Homebrew cask zed-delta ('Delta', delta.dev) is a separate Zed Industries agent environment, not included."
+  },
+  {
+    "id": "mistral-vibe",
+    "displayName": "Mistral Vibe",
+    "vendor": "Mistral AI",
+    "kind": "cli",
+    "commands": [
+      "vibe",
+      "vibe-acp"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [],
+      "pypi": [
+        "mistral-vibe"
+      ],
+      "cargo": [],
+      "brew": [
+        "mistral-vibe"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [
+        "MistralAI.MistralVibe.ACP"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.vibe"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://github.com/mistralai/mistral-vibe",
+    "repo": "mistralai/mistral-vibe",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "vibe",
+        "url": "https://github.com/mistralai/mistral-vibe"
+      },
+      {
+        "field": "commands",
+        "value": "vibe-acp",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/MistralAI/MistralVibe/ACP"
+      },
+      {
+        "field": "packages.pypi",
+        "value": "mistral-vibe",
+        "url": "https://pypi.org/pypi/mistral-vibe/json"
+      },
+      {
+        "field": "packages.brew",
+        "value": "mistral-vibe",
+        "url": "https://formulae.brew.sh/formula/mistral-vibe"
+      },
+      {
+        "field": "packages.winget",
+        "value": "MistralAI.MistralVibe.ACP",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/MistralAI/MistralVibe/ACP"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.vibe",
+        "url": "https://github.com/mistralai/mistral-vibe"
+      },
+      {
+        "field": "repo",
+        "value": "mistralai/mistral-vibe",
+        "url": "https://github.com/mistralai/mistral-vibe"
+      }
+    ],
+    "verified": true,
+    "notes": "Install: curl -LsSf https://mistral.ai/vibe/install.sh | bash, or 'uv tool install mistral-vibe'. winget package is the ACP-mode build (command vibe-acp). 'vibe' is a common word."
+  },
+  {
+    "id": "pi",
+    "displayName": "Pi coding agent",
+    "vendor": "Earendil Works (Mario Zechner)",
+    "kind": "cli",
+    "commands": [
+      "pi"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [
+        "@earendil-works/pi-coding-agent",
+        "@mariozechner/pi-coding-agent"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "pi-coding-agent"
+      ],
+      "scoop": [
+        "pi-coding-agent"
+      ],
+      "choco": [],
+      "winget": [
+        "EarendilWorks.pi"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.pi/agent"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://pi.dev",
+    "repo": "earendil-works/pi",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "pi",
+        "url": "https://registry.npmjs.org/@earendil-works/pi-coding-agent/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@earendil-works/pi-coding-agent",
+        "url": "https://registry.npmjs.org/@earendil-works/pi-coding-agent/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@mariozechner/pi-coding-agent",
+        "url": "https://registry.npmjs.org/@mariozechner/pi-coding-agent/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "pi-coding-agent",
+        "url": "https://formulae.brew.sh/formula/pi-coding-agent"
+      },
+      {
+        "field": "packages.scoop",
+        "value": "pi-coding-agent",
+        "url": "https://github.com/ScoopInstaller/Main/blob/master/bucket/pi-coding-agent.json"
+      },
+      {
+        "field": "packages.winget",
+        "value": "EarendilWorks.pi",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/e/EarendilWorks/pi"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.pi/agent",
+        "url": "https://pi.dev"
+      },
+      {
+        "field": "repo",
+        "value": "earendil-works/pi",
+        "url": "https://github.com/earendil-works/pi"
+      }
+    ],
+    "verified": true,
+    "notes": "@mariozechner/pi-coding-agent is deprecated in favor of @earendil-works/pi-coding-agent; repo badlogic/pi-mono redirects to earendil-works/pi. Install: pi.dev/install.sh | install.ps1. Agent config lives in ~/.pi/agent. 'pi' is a short common name."
+  },
+  {
+    "id": "forge",
+    "displayName": "Forge (ForgeCode)",
+    "vendor": "Antinomy",
+    "kind": "cli",
+    "commands": [
+      "forge"
+    ],
+    "ambiguous": true,
+    "packages": {
+      "npm": [
+        "forgecode",
+        "@antinomyhq/forge"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/forge",
+        "~/.forge"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://forgecode.dev",
+    "repo": "antinomyhq/forge",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "forge",
+        "url": "https://registry.npmjs.org/forgecode/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "forgecode",
+        "url": "https://registry.npmjs.org/forgecode/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@antinomyhq/forge",
+        "url": "https://registry.npmjs.org/@antinomyhq/forge/latest"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/forge",
+        "url": "https://github.com/antinomyhq/forge"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.forge",
+        "url": "https://github.com/antinomyhq/forge"
+      },
+      {
+        "field": "repo",
+        "value": "antinomyhq/forge",
+        "url": "https://github.com/antinomyhq/forge"
+      }
+    ],
+    "verified": true,
+    "notes": "Install: curl -fsSL https://forgecode.dev/cli | sh. README documents both ~/forge (config/skills/agents) and FORGE_CONFIG default ~/.forge. 'forge' collides with Foundry's forge (Ethereum toolkit) and Homebrew formula 'forge' (arrayfire visualization)."
+  },
+  {
+    "id": "junie",
+    "displayName": "Junie CLI",
+    "vendor": "JetBrains",
+    "kind": "cli",
+    "commands": [
+      "junie"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@jetbrains/junie",
+        "@jetbrains/junie-cli"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [
+        "jetbrains-junie/junie/junie"
+      ],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.junie"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://junie.jetbrains.com",
+    "repo": "JetBrains/junie",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "junie",
+        "url": "https://registry.npmjs.org/@jetbrains/junie/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@jetbrains/junie",
+        "url": "https://registry.npmjs.org/@jetbrains/junie/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@jetbrains/junie-cli",
+        "url": "https://registry.npmjs.org/@jetbrains/junie-cli/latest"
+      },
+      {
+        "field": "packages.brew",
+        "value": "jetbrains-junie/junie/junie",
+        "url": "https://github.com/JetBrains/junie"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.junie",
+        "url": "https://junie.jetbrains.com/docs/junie-cli.html"
+      },
+      {
+        "field": "repo",
+        "value": "JetBrains/junie",
+        "url": "https://github.com/JetBrains/junie"
+      }
+    ],
+    "verified": true,
+    "notes": "Install: junie.jetbrains.com/install.sh | install.ps1. @jetbrains/junie-cli is the older npm name (last publish 2026-07); README now uses @jetbrains/junie."
+  },
+  {
+    "id": "qoder-cli",
+    "displayName": "Qoder CLI",
+    "vendor": "Alibaba (Qoder)",
+    "kind": "cli",
+    "commands": [
+      "qoder",
+      "qodercli",
+      "qodercn"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@qoder-ai/qodercli"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [
+        "Alibaba.QoderCLI.CN"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [
+        "~/.qoder",
+        "~/.qoder-cn"
+      ],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://qoder.com/cli",
+    "repo": null,
+    "sources": [
+      {
+        "field": "commands",
+        "value": "qoder",
+        "url": "https://docs.qoder.com/cli/quick-start"
+      },
+      {
+        "field": "commands",
+        "value": "qodercli",
+        "url": "https://registry.npmjs.org/@qoder-ai/qodercli/latest"
+      },
+      {
+        "field": "commands",
+        "value": "qodercn",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Alibaba/QoderCLI/CN"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@qoder-ai/qodercli",
+        "url": "https://registry.npmjs.org/@qoder-ai/qodercli/latest"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Alibaba.QoderCLI.CN",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Alibaba/QoderCLI/CN"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.qoder",
+        "url": "https://registry.npmjs.org/@qoder-ai/qodercli/latest"
+      },
+      {
+        "field": "configDirs.all",
+        "value": "~/.qoder-cn",
+        "url": "https://registry.npmjs.org/@qoder-ai/qodercli/latest"
+      }
+    ],
+    "verified": true,
+    "notes": "npm bins: qoder (dispatcher) and qodercli. winget Alibaba.QoderCLI.CN registers 'qodercn'. QODER_CONFIG_DIR / QODER_CONFIG_DIR_NAME override config dir."
+  },
+  {
+    "id": "qoder",
+    "displayName": "Qoder (IDE)",
+    "vendor": "Alibaba",
+    "kind": "editor",
+    "commands": [],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [
+        "Alibaba.Qoder"
+      ],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [],
+    "homepage": "https://qoder.com",
+    "repo": null,
+    "sources": [
+      {
+        "field": "packages.winget",
+        "value": "Alibaba.Qoder",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Alibaba/Qoder"
+      }
+    ],
+    "verified": true,
+    "notes": "Agentic IDE. No shell launcher or config dir confirmed. Related: winget Alibaba.QoderWork, Alibaba.QoderWake."
+  },
+  {
+    "id": "lingma",
+    "displayName": "Lingma / Qoder CN (formerly Tongyi Lingma)",
+    "vendor": "Alibaba Cloud",
+    "kind": "extension",
+    "commands": [],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [
+        "Alibaba.Lingma"
+      ],
+      "vscode": [
+        "Alibaba-Cloud.tongyi-lingma"
+      ]
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [],
+    "homepage": "https://marketplace.visualstudio.com/items?itemName=Alibaba-Cloud.tongyi-lingma",
+    "repo": null,
+    "sources": [
+      {
+        "field": "packages.vscode",
+        "value": "Alibaba-Cloud.tongyi-lingma",
+        "url": "https://marketplace.visualstudio.com/items?itemName=Alibaba-Cloud.tongyi-lingma"
+      },
+      {
+        "field": "packages.winget",
+        "value": "Alibaba.Lingma",
+        "url": "https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Alibaba/Lingma"
+      }
+    ],
+    "verified": true,
+    "notes": "VS Code extension now titled 'Qoder CN (Formerly Lingma)'; winget Alibaba.Lingma is the standalone Lingma IDE."
+  },
+  {
+    "id": "neovate",
+    "displayName": "Neovate Code",
+    "vendor": "Neovate",
+    "kind": "cli",
+    "commands": [
+      "neovate"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [
+        "@neovate/code"
+      ],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://neovateai.dev",
+    "repo": "neovateai/neovate-code",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "neovate",
+        "url": "https://registry.npmjs.org/@neovate/code/latest"
+      },
+      {
+        "field": "packages.npm",
+        "value": "@neovate/code",
+        "url": "https://registry.npmjs.org/@neovate/code/latest"
+      },
+      {
+        "field": "repo",
+        "value": "neovateai/neovate-code",
+        "url": "https://github.com/neovateai/neovate-code"
+      }
+    ],
+    "verified": true,
+    "notes": "Config dir not documented in README."
+  },
+  {
+    "id": "trae-agent",
+    "displayName": "Trae Agent",
+    "vendor": "ByteDance",
+    "kind": "cli",
+    "commands": [
+      "trae-cli"
+    ],
+    "ambiguous": false,
+    "packages": {
+      "npm": [],
+      "pypi": [],
+      "cargo": [],
+      "brew": [],
+      "scoop": [],
+      "choco": [],
+      "winget": [],
+      "vscode": []
+    },
+    "pathSignatures": [],
+    "configDirs": {
+      "all": [],
+      "windows": [],
+      "macos": [],
+      "linux": []
+    },
+    "versionArgs": [
+      "--version"
+    ],
+    "homepage": "https://github.com/bytedance/trae-agent",
+    "repo": "bytedance/trae-agent",
+    "sources": [
+      {
+        "field": "commands",
+        "value": "trae-cli",
+        "url": "https://github.com/bytedance/trae-agent"
+      },
+      {
+        "field": "repo",
+        "value": "bytedance/trae-agent",
+        "url": "https://github.com/bytedance/trae-agent"
+      }
+    ],
+    "verified": true,
+    "notes": "Research/open-source CLI agent; installed from source with 'uv sync' (no npm/PyPI package found). Config file trae_config.yaml in the working directory."
+  }
+]

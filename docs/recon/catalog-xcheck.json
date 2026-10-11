@@ -1,0 +1,1402 @@
+{
+ "claude-code": {
+  "packages": {
+   "npm:@anthropic-ai/claude-code": "confirmed",
+   "brew:cask:claude-code": "confirmed",
+   "brew:cask:claude-code@latest": "confirmed",
+   "scoop:claude-code": "confirmed",
+   "choco:claude-code": "confirmed",
+   "winget:Anthropic.ClaudeCode": "confirmed",
+   "vscode:anthropic.claude-code": "confirmed"
+  },
+  "commands": {
+   "claude": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "configDirs: ~/.claude/settings.json and ~/.claude.json documented: https://code.claude.com/docs/en/settings.md ; uninstall section lists ~/.claude, ~/.claude.json, ~/.local/share/claude: https://code.claude.com/docs/en/setup.md",
+  "evidence": {
+   "packages": {
+    "npm:@anthropic-ai/claude-code": "v2.1.296 bin=claude repo=https://github.com/anthropics/claude-code maint=zak@anthropic.com;dylanc@anthropic.com;ben@anthropic.com",
+    "brew:cask:claude-code": "cask \"Claude Code\" homepage=https://claude.com/product/claude-code bins=claude",
+    "brew:cask:claude-code@latest": "cask \"Claude Code\" homepage=https://claude.com/product/claude-code bins=claude",
+    "scoop:claude-code": "manifest https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/claude-code.json homepage=https://claude.com/product/claude-code bin=claude",
+    "choco:claude-code": "\"Claude Code\" v2.1.287 published=2026-10-09 project=https://github.com/anthropics/claude-code pkgsrc=https://github.com/publicfacingusername/choco-claude-code",
+    "winget:Anthropic.ClaudeCode": "index: name=Claude Code latest=2.1.287 commands=claude publisher=Anthropic PBC url=",
+    "vscode:anthropic.claude-code": "\"Claude Code for VS Code\" by Anthropic (verified domain https://anthropic.com, True) installs=27471777 flags=validated, public"
+   },
+   "commands": {
+    "claude": "registry bin in npm:@anthropic-ai/claude-code, brew:cask:claude-code, brew:cask:claude-code@latest, scoop:claude-code, winget:Anthropic.ClaudeCode"
+   }
+  }
+ },
+ "codex": {
+  "packages": {
+   "npm:@openai/codex": "confirmed",
+   "brew:cask:codex": "confirmed",
+   "scoop:codex": "confirmed",
+   "choco:codex": "confirmed",
+   "winget:OpenAI.Codex": "confirmed",
+   "vscode:openai.chatgpt": "confirmed"
+  },
+  "commands": {
+   "codex": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "configDirs: ~/.codex/config.toml (CODEX_HOME override): https://developers.openai.com/codex/config-basic",
+  "evidence": {
+   "packages": {
+    "npm:@openai/codex": "v0.162.1 bin=codex repo=git+https://github.com/openai/codex.git maint=oai-package-publish-npm@openai.com;tino@openai.com;dylan.hurd@openai.com",
+    "brew:cask:codex": "cask \"Codex\" homepage=https://github.com/openai/codex bins=codex",
+    "scoop:codex": "manifest https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/codex.json homepage=https://github.com/openai/codex bin=codex",
+    "choco:codex": "\"Codex CLI\" v0.162.1 published=2026-10-09 project=https://github.com/openai/codex pkgsrc=https://github.com/publicfacingusername/choco-codex",
+    "winget:OpenAI.Codex": "index: name=Codex CLI latest=0.161.0 commands=codex publisher=OpenAI, Inc. url=https://github.com/openai/codex",
+    "vscode:openai.chatgpt": "\"Codex – OpenAI’s coding agent\" by OpenAI (verified domain https://openai.com, True) installs=15359936 flags=validated, public"
+   },
+   "commands": {
+    "codex": "registry bin in npm:@openai/codex, brew:cask:codex, scoop:codex, winget:OpenAI.Codex"
+   }
+  }
+ },
+ "gemini-cli": {
+  "packages": {
+   "npm:@google/gemini-cli": "confirmed",
+   "brew:gemini-cli": "confirmed",
+   "choco:gemini-cli": "confirmed"
+  },
+  "commands": {
+   "gemini": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "Transition confirmed by Google Developers Blog (developers.googleblog.com/an-important-update-transitioning-gemini-cli-to-antigravity-cli/): Gemini CLI + Code Assist IDE extensions stopped serving individual Pro/Ultra/free users 2026-06-18; enterprise access unchanged. The blog does not name the agy command; agy comes from antigravity.google docs. configDirs: ~/.gemini/settings.json: https://raw.githubusercontent.com/google-gemini/gemini-cli/HEAD/docs/reference/configuration.md",
+  "evidence": {
+   "packages": {
+    "npm:@google/gemini-cli": "v0.63.0 bin=gemini repo=git+https://github.com/google-gemini/gemini-cli.git maint=node-team-npm+wombot@google.com;ofrobots@google.com;info@mrdoob.com",
+    "brew:gemini-cli": "Formula deprecated 2026-06-18 (reason \"unsupported\", replacement cask antigravity-cli). formula homepage=https://geminicli.com src=https://registry.npmjs.org/@google/gemini-cli/-/gemini-cli-0.46.0.tgz",
+    "choco:gemini-cli": "Community (publicfacingusername); stale at 0.27.2 (2026-02-06); newer versions \"Waiting for Maintainer\". \"Gemini CLI\" v0.27.2 published=2026-02-06 project=https://github.com/google-gemini/gemini-cli pkgsrc=https://github.com/publicfacingusername/choco-gemini-cli"
+   },
+   "commands": {
+    "gemini": "registry bin in npm:@google/gemini-cli"
+   }
+  }
+ },
+ "gemini-code-assist": {
+  "packages": {
+   "vscode:google.geminicodeassist": "confirmed"
+  },
+  "commands": {},
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "vscode:google.geminicodeassist": "\"Gemini Code Assist\" by Google (verified domain https://www.google.com/, True) installs=5449949 flags=validated, public"
+   },
+   "commands": {}
+  }
+ },
+ "antigravity-cli": {
+  "packages": {
+   "brew:cask:antigravity-cli": "confirmed",
+   "scoop:antigravity-cli": "confirmed",
+   "winget:Google.AntigravityCLI": "confirmed"
+  },
+  "commands": {
+   "agy": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "configDirs: ~/.gemini/antigravity-cli/settings.json: https://antigravity.google/docs/cli/install (also Homebrew zap)",
+  "evidence": {
+   "packages": {
+    "brew:cask:antigravity-cli": "cask \"Google Antigravity CLI\" homepage=https://antigravity.google/product/antigravity-cli bins=agy",
+    "scoop:antigravity-cli": "manifest https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/antigravity-cli.json homepage=https://antigravity.google/product/antigravity-cli bin=agy,antigravity-cli",
+    "winget:Google.AntigravityCLI": "index: name=Antigravity CLI latest=1.3.3 commands=agy publisher=Google url=https://antigravity.google/"
+   },
+   "commands": {
+    "agy": "registry bin in brew:cask:antigravity-cli, scoop:antigravity-cli, winget:Google.AntigravityCLI; docs: https://antigravity.google/docs/getting-started?tab=cli (installer registers agy)"
+   }
+  }
+ },
+ "antigravity": {
+  "packages": {
+   "brew:cask:antigravity": "confirmed",
+   "scoop:extras/antigravity": "confirmed",
+   "choco:antigravity": "confirmed",
+   "winget:Google.Antigravity": "confirmed"
+  },
+  "commands": {},
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "brew:cask:antigravity": "cask \"Google Antigravity\" homepage=https://antigravity.google/product/antigravity-2 bins=(app only)",
+    "scoop:extras/antigravity": "manifest https://raw.githubusercontent.com/ScoopInstaller/Extras/master/bucket/antigravity.json homepage=https://antigravity.google/product/antigravity-2 bin=(shortcut only)",
+    "choco:antigravity": "\"Antigravity\" v2.22.0 published=2026-10-10 project=https://antigravity.google/ pkgsrc=https://github.com/targed/chocolatey-projects/tree/main/Antigravity",
+    "winget:Google.Antigravity": "index: name=Antigravity latest=2.22.0 commands=- publisher=Google url=https://antigravity.google/"
+   },
+   "commands": {}
+  }
+ },
+ "antigravity-ide": {
+  "packages": {
+   "brew:cask:antigravity-ide": "confirmed",
+   "winget:Google.AntigravityIDE": "confirmed"
+  },
+  "commands": {
+   "antigravity-ide": "confirmed",
+   "agy-ide": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "brew:cask:antigravity-ide": "cask \"Google Antigravity IDE\" homepage=https://antigravity.google/product/antigravity-ide bins=agy-ide,antigravity-ide",
+    "winget:Google.AntigravityIDE": "index: name=Antigravity/Antigravity IDE latest=2.5.5 commands=- publisher=Google url=https://antigravity.google/"
+   },
+   "commands": {
+    "antigravity-ide": "registry bin in brew:cask:antigravity-ide",
+    "agy-ide": "registry bin in brew:cask:antigravity-ide"
+   }
+  }
+ },
+ "grok-build": {
+  "packages": {
+   "npm:@xai-official/grok": "confirmed",
+   "brew:cask:grok-build": "confirmed",
+   "winget:xAI.GrokBuild": "confirmed"
+  },
+  "commands": {
+   "grok": "confirmed",
+   "agent": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "docs.x.ai page is titled \"Grok Build: SpaceXSI's Coding Agent\"; confirms grok command and ~/.grok/config.toml.",
+  "evidence": {
+   "packages": {
+    "npm:@xai-official/grok": "Not mentioned in docs.x.ai, but sole maintainer is xai-security <security@x.ai> and version 1.0.50 matches the x.ai-hosted cask and winget xAI.GrokBuild. v1.0.50 bin=grok repo= maint=security@x.ai",
+    "brew:cask:grok-build": "cask \"Grok Build\" homepage=https://x.ai/build bins=agent,grok",
+    "winget:xAI.GrokBuild": "index: name=Grok Build latest=1.0.50 commands=grok publisher=xAI Corp. url=https://x.ai/cli"
+   },
+   "commands": {
+    "grok": "registry bin in npm:@xai-official/grok, brew:cask:grok-build, winget:xAI.GrokBuild; docs: https://docs.x.ai/build/overview",
+    "agent": "registry bin in brew:cask:grok-build"
+   }
+  }
+ },
+ "grok-cli-community": {
+  "packages": {
+   "npm:grok-dev": "confirmed"
+  },
+  "commands": {
+   "grok": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:grok-dev": "Confirmed as superagent-ai/grok-cli's package: repo package.json name \"grok-dev\", README npm badge + \"bun add -g grok-dev\". Community project, not xAI. v1.1.7 bin=grok repo= maint=ismail@superagent.sh"
+   },
+   "commands": {
+    "grok": "registry bin in npm:grok-dev"
+   }
+  }
+ },
+ "kimi-code": {
+  "packages": {
+   "npm:@moonshot-ai/kimi-code": "confirmed",
+   "brew:kimi-code": "confirmed",
+   "scoop:kimi-code": "confirmed",
+   "winget:MoonshotAI.KimiCodeCLI": "confirmed"
+  },
+  "commands": {
+   "kimi": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "configDirs: ~/.kimi-code (KIMI_CODE_HOME override): https://moonshotai.github.io/kimi-code/en/configuration/config-files.html",
+  "evidence": {
+   "packages": {
+    "npm:@moonshot-ai/kimi-code": "v2.1.1 bin=kimi repo=git+https://github.com/MoonshotAI/kimi-code.git maint=541149506@qq.com;zhangkaiyi42@gmail.com;llcan1120@gmail.com",
+    "brew:kimi-code": "formula homepage=https://moonshotai.github.io/kimi-code/ src=https://registry.npmjs.org/@moonshot-ai/kimi-code/-/kimi-code-2.1.1.tg",
+    "scoop:kimi-code": "manifest https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/kimi-code.json homepage=https://www.kimi.com/code/ bin=kimi",
+    "winget:MoonshotAI.KimiCodeCLI": "index: name=Kimi Code CLI latest=2.1.1 commands=kimi publisher=Beijing Yuezhi Dark Face Technology Co., Ltd. url=https://moonshotai.github.io/kimi-code/"
+   },
+   "commands": {
+    "kimi": "registry bin in npm:@moonshot-ai/kimi-code, scoop:kimi-code, winget:MoonshotAI.KimiCodeCLI"
+   }
+  }
+ },
+ "kimi-cli": {
+  "packages": {
+   "pypi:kimi-cli": "confirmed",
+   "pypi:kimi-code": "confirmed",
+   "brew:kimi-cli": "confirmed",
+   "scoop:kimi-cli": "confirmed",
+   "winget:MoonshotAI.KimiCLI": "confirmed"
+  },
+  "commands": {
+   "kimi": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "Wheel console_scripts are kimi and kimi-cli; consider adding \"kimi-cli\" to commands. Legacy PyPI kimi-code installs a \"kimi-code\" executable. configDirs: ~/.kimi: https://raw.githubusercontent.com/MoonshotAI/kimi-cli/HEAD/README.md (migration section)",
+  "evidence": {
+   "packages": {
+    "pypi:kimi-cli": "Archived (Development Status 7 - Inactive); console scripts kimi, kimi-cli. v1.52.0 console_scripts=kimi,kimi-cli summary=[Archived] Legacy Python Kimi CLI, no longer maintained. Use Kimi Code CLI instead: https:",
+    "pypi:kimi-code": "Official Moonshot but archived alias; its console script is \"kimi-code\", NOT \"kimi\" (wheel entry_points). Summary: \"Legacy PyPI package, NOT the new Kimi Code CLI\". v1.52.0 console_scripts=kimi-code summary=[Archived] Legacy PyPI package, NOT the new Kimi Code CLI. Install Kimi Code CLI from http",
+    "brew:kimi-cli": "Formula deprecated 2026-07-17 (deprecated_upstream, replacement kimi-code). formula homepage=https://moonshotai.github.io/kimi-cli/ src=https://files.pythonhosted.org/packages/96/3a/1013a733e39e4bd0bf16d3c2",
+    "scoop:kimi-cli": "manifest https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/kimi-cli.json homepage=https://moonshotai.github.io/kimi-code/en/guides/migration bin=kimi",
+    "winget:MoonshotAI.KimiCLI": "index: name=Kimi CLI latest=1.52.0 commands=kimi publisher=Beijing Yuezhi Dark Face Technology Co., Ltd. url=https://www.kimi.com/coding/docs/en/kimi-cli.html"
+   },
+   "commands": {
+    "kimi": "registry bin in pypi:kimi-cli, scoop:kimi-cli, winget:MoonshotAI.KimiCLI"
+   }
+  }
+ },
+ "opencode": {
+  "packages": {
+   "npm:opencode-ai": "confirmed",
+   "brew:opencode": "confirmed",
+   "brew:anomalyco/tap/opencode": "confirmed",
+   "scoop:opencode": "confirmed",
+   "choco:opencode": "confirmed",
+   "winget:SST.opencode": "confirmed"
+  },
+  "commands": {
+   "opencode": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "configDirs: ~/.config/opencode/opencode.json: https://opencode.ai/docs/config (data dir ~/.local/share/opencode not listed - optional add)",
+  "evidence": {
+   "packages": {
+    "npm:opencode-ai": "v1.19.0 bin=opencode repo= maint=d@ironbay.co",
+    "brew:opencode": "formula homepage=https://opencode.ai src=https://github.com/anomalyco/opencode/archive/refs/tags/v2.0.25.tar.gz",
+    "brew:anomalyco/tap/opencode": "tap formula https://raw.githubusercontent.com/anomalyco/homebrew-tap/HEAD/opencode.rb desc=The AI coding agent built for the terminal.",
+    "scoop:opencode": "manifest https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/opencode.json homepage=https://opencode.ai/ bin=opencode",
+    "choco:opencode": "\"opencode\" v1.18.35 published=2026-10-06 project=https://opencode.ai/ pkgsrc=https://github.com/itsrainingmani/opencode-chocolatey",
+    "winget:SST.opencode": "index: name=opencode latest=1.18.23 commands=opencode publisher=SST url=https://opencode.ai/"
+   },
+   "commands": {
+    "opencode": "registry bin in npm:opencode-ai, brew:anomalyco/tap/opencode, scoop:opencode, winget:SST.opencode"
+   }
+  }
+ },
+ "openclaw": {
+  "packages": {
+   "npm:openclaw": "confirmed"
+  },
+  "commands": {
+   "openclaw": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:openclaw": "v2026.10.1 bin=openclaw repo=git+https://github.com/openclaw/openclaw.git maint=steipete@gmail.com;vincentkoc@ieee.org"
+   },
+   "commands": {
+    "openclaw": "registry bin in npm:openclaw"
+   }
+  }
+ },
+ "qwen-code": {
+  "packages": {
+   "npm:@qwen-code/qwen-code": "confirmed",
+   "brew:qwen-code": "confirmed",
+   "choco:qwen-code": "confirmed"
+  },
+  "commands": {
+   "qwen": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "configDirs: ~/.qwen/settings.json: https://qwenlm.github.io/qwen-code-docs/en/users/configuration/settings/",
+  "evidence": {
+   "packages": {
+    "npm:@qwen-code/qwen-code": "v0.25.0 bin=qwen repo=git+https://github.com/QwenLM/qwen-code.git maint=731557579@qq.com;1204183885@qq.com;zeusdream7@gmail.com",
+    "brew:qwen-code": "formula homepage=https://github.com/QwenLM/qwen-code src=https://registry.npmjs.org/@qwen-code/qwen-code/-/qwen-code-0.25.0.tgz",
+    "choco:qwen-code": "\"Qwen Code\" v0.25.0 published=2026-10-05 project=https://qwenlm.github.io/qwen-code-docs/en/users/overview pkgsrc=https://github.com/MKAbuMattar/chocolatey-packages/tree/main/automatic/qwen-code"
+   },
+   "commands": {
+    "qwen": "registry bin in npm:@qwen-code/qwen-code"
+   }
+  }
+ },
+ "jcode": {
+  "packages": {
+   "brew:jcode": "confirmed",
+   "scoop:jcode": "confirmed"
+  },
+  "commands": {
+   "jcode": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "brew:jcode": "formula homepage=https://jcode.sh src=https://github.com/1jehuang/jcode/archive/refs/tags/v0.94.0.tar.gz",
+    "scoop:jcode": "manifest https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/jcode.json homepage=https://jcode.sh bin=jcode"
+   },
+   "commands": {
+    "jcode": "registry bin in brew:jcode, scoop:jcode; docs: https://raw.githubusercontent.com/Homebrew/homebrew-core/HEAD/Formula/j/jcode.rb (bin/jcode)"
+   }
+  }
+ },
+ "mimo-code": {
+  "packages": {
+   "npm:@mimo-ai/cli": "confirmed",
+   "scoop:mimo-code": "confirmed",
+   "winget:Xiaomi.MiMoCode": "confirmed",
+   "winget:Xiaomi.MiMoCode.Baseline": "confirmed"
+  },
+  "commands": {
+   "mimo": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:@mimo-ai/cli": "v0.1.15 bin=mimo repo=git+https://github.com/XiaomiMiMo/MiMo-Code.git maint=mimo@xiaomi.com",
+    "scoop:mimo-code": "manifest https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/mimo-code.json homepage=https://mimo.xiaomi.com/mimocode bin=mimo",
+    "winget:Xiaomi.MiMoCode": "index: name=MiMoCode latest=0.1.15 commands=mimo publisher=Beijing Xiaomi Mobile Software Co., Ltd. url=https://mimo.xiaomi.com/mimocode",
+    "winget:Xiaomi.MiMoCode.Baseline": "index: name=MiMoCode (Baseline) latest=0.1.15 commands=mimo publisher=Beijing Xiaomi Mobile Software Co., Ltd. url=https://mimo.xiaomi.com/mimocode"
+   },
+   "commands": {
+    "mimo": "registry bin in npm:@mimo-ai/cli, scoop:mimo-code, winget:Xiaomi.MiMoCode, winget:Xiaomi.MiMoCode.Baseline"
+   }
+  }
+ },
+ "aider": {
+  "packages": {
+   "pypi:aider-chat": "confirmed",
+   "pypi:aider-install": "confirmed",
+   "brew:aider": "confirmed"
+  },
+  "commands": {
+   "aider": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "configDirs: .aider.conf.yml searched in home dir: https://aider.chat/docs/config/aider_conf.html (it is a file, not a dir)",
+  "evidence": {
+   "packages": {
+    "pypi:aider-chat": "v0.86.2 console_scripts=aider summary=Aider is AI pair programming in your terminal",
+    "pypi:aider-install": "v0.2.0 console_scripts=aider-install summary=Installer for the aider AI pair programming CLI tool.",
+    "brew:aider": "formula homepage=https://aider.chat/ src=https://files.pythonhosted.org/packages/39/45/71111a018c653b7e74321618"
+   },
+   "commands": {
+    "aider": "registry bin in pypi:aider-chat"
+   }
+  }
+ },
+ "cody-cli": {
+  "packages": {
+   "npm:@sourcegraph/cody": "confirmed",
+   "vscode:sourcegraph.cody-ai": "confirmed"
+  },
+  "commands": {
+   "cody": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:@sourcegraph/cody": "v5.5.26 bin=cody repo=git+https://github.com/sourcegraph/cody.git maint=dev@sourcegraph.com;sqs@sourcegraph.com;beyang@sourcegraph.com",
+    "vscode:sourcegraph.cody-ai": "\"Cody: AI Code Assistant\" by Sourcegraph (verified domain https://sourcegraph.com, True) installs=894754 flags=validated, public"
+   },
+   "commands": {
+    "cody": "registry bin in npm:@sourcegraph/cody"
+   }
+  }
+ },
+ "crush": {
+  "packages": {
+   "npm:@charmland/crush": "confirmed",
+   "brew:charmbracelet/tap/crush": "confirmed",
+   "scoop:charm/crush": "confirmed",
+   "choco:crush": "confirmed",
+   "winget:charmbracelet.crush": "confirmed"
+  },
+  "commands": {
+   "crush": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "configDirs: ~/.config/crush, ~/.local/share/crush, %LOCALAPPDATA%\\crush, XDG respected: https://raw.githubusercontent.com/charmbracelet/crush/HEAD/README.md",
+  "evidence": {
+   "packages": {
+    "npm:@charmland/crush": "v0.98.1 bin=crush repo=git+https://github.com/charmbracelet/crush.git maint=amolith@secluded.site;andrey@nering.com.br;vt100@charm.sh",
+    "brew:charmbracelet/tap/crush": "tap formula https://raw.githubusercontent.com/charmbracelet/homebrew-tap/HEAD/crush.rb desc=A powerful terminal-based AI assistant for developers, providing intelligent coding assistance directly in your terminal.",
+    "scoop:charm/crush": "manifest https://raw.githubusercontent.com/charmbracelet/scoop-bucket/HEAD/crush.json homepage=https://charm.sh/crush bin=crush",
+    "choco:crush": "\"Crush\" v0.98.1 published=2026-10-09 project=https://github.com/charmbracelet/crush pkgsrc=https://github.com/MKAbuMattar/chocolatey-packages/tree/main/automatic/crush",
+    "winget:charmbracelet.crush": "index: name=crush latest=0.95.0 commands=- publisher=charmbracelet url=https://charm.sh/crush"
+   },
+   "commands": {
+    "crush": "registry bin in npm:@charmland/crush, brew:charmbracelet/tap/crush, scoop:charm/crush, winget:charmbracelet.crush"
+   }
+  }
+ },
+ "droid": {
+  "packages": {
+   "npm:@factory/cli": "confirmed",
+   "npm:droid": "confirmed",
+   "brew:cask:droid": "confirmed",
+   "vscode:Factory.factory-vscode-extension": "confirmed"
+  },
+  "commands": {
+   "droid": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "configDirs: ~/.factory/settings.json: https://docs.factory.ai/cli/configuration/settings.md (also Homebrew zap)",
+  "evidence": {
+   "packages": {
+    "npm:@factory/cli": "v0.238.0 bin=droid repo=git+https://github.com/Factory-AI/factory.git maint=admin@alvinsng.com;davidgu@factory.ai;varin@factory.ai",
+    "npm:droid": "v0.238.0 bin=droid repo=git+https://github.com/Factory-AI/factory.git maint=davidgu@factory.ai;arman@factory.ai",
+    "brew:cask:droid": "cask \"Droid\" homepage=https://docs.factory.ai/cli/getting-started/overview bins=droid",
+    "vscode:Factory.factory-vscode-extension": "\"Droid - Factory's AI Coding Agent\" by Factory (verified domain https://factory.ai, False) installs=39631 flags=validated, public"
+   },
+   "commands": {
+    "droid": "registry bin in npm:@factory/cli, npm:droid, brew:cask:droid"
+   }
+  }
+ },
+ "factory-desktop": {
+  "packages": {
+   "brew:cask:factory": "confirmed",
+   "winget:FactoryAI.Factory": "confirmed"
+  },
+  "commands": {},
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "brew:cask:factory": "cask \"Factory\" homepage=https://www.factory.ai/ bins=(app only)",
+    "winget:FactoryAI.Factory": "index: name=Factory latest=0.195.0 commands=- publisher=Factory AI url=https://factory.ai/"
+   },
+   "commands": {}
+  }
+ },
+ "goose": {
+  "packages": {
+   "brew:block-goose-cli": "confirmed",
+   "brew:cask:block-goose": "confirmed",
+   "scoop:extras/goose": "confirmed",
+   "choco:goose": "confirmed"
+  },
+  "commands": {
+   "goose": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "Scoop extras/goose only creates a Start-menu shortcut (no PATH shim), so it does not provide the goose command on PATH; cask block-goose is the desktop app. configDirs: macOS/Linux ~/.config/goose/config.yaml; Windows %APPDATA%\\Block\\goose\\config\\config.yaml: https://goose-docs.ai/docs/guides/config-files",
+  "evidence": {
+   "packages": {
+    "brew:block-goose-cli": "formula homepage=https://goose-docs.ai/ src=https://github.com/aaif-goose/goose/archive/refs/tags/v1.54.0.tar.gz",
+    "brew:cask:block-goose": "cask \"Goose\" homepage=https://block.github.io/goose/ bins=(app only)",
+    "scoop:extras/goose": "manifest https://raw.githubusercontent.com/ScoopInstaller/Extras/master/bucket/goose.json homepage=https://block.github.io/goose/ bin=(shortcut only)",
+    "choco:goose": "\"Goose\" v1.54.0 published=2026-10-08 project=https://github.com/block/goose pkgsrc=https://community.chocolatey.org/packages/goose"
+   },
+   "commands": {
+    "goose": "registry bin in brew:block-goose-cli; docs: https://raw.githubusercontent.com/Homebrew/homebrew-core/HEAD/Formula/b/block-goose-cli.rb (bin/\"goose\")"
+   }
+  }
+ },
+ "cline": {
+  "packages": {
+   "npm:cline": "confirmed",
+   "brew:cline": "confirmed",
+   "brew:cask:cline-app": "confirmed",
+   "vscode:saoudrizwan.claude-dev": "confirmed"
+  },
+  "commands": {
+   "cline": "confirmed"
+  },
+  "configDirs": "partly",
+  "notes": "configDirs: Catalog lists no configDirs, but docs say global config root is ~/.cline/ (CLINE_DIR override), shared by IDE/CLI/SDK: https://docs.cline.bot/getting-started/config.md",
+  "evidence": {
+   "packages": {
+    "npm:cline": "v3.0.70 bin=cline repo=git+https://github.com/cline/cline.git maint=john@cline.bot;saoud@cline.bot;beatrix@cline.bot",
+    "brew:cline": "Formula deprecated 2026-05-18 (uses non-FOSS @anthropic-ai/claude-agent-sdk); still installable. formula homepage=https://cline.bot src=https://registry.npmjs.org/cline/-/cline-3.0.3.tgz",
+    "brew:cask:cline-app": "cask \"Cline\" homepage=https://cline.bot/ bins=(app only)",
+    "vscode:saoudrizwan.claude-dev": "\"Cline\" by Cline (verified domain https://cline.bot, True) installs=5585495 flags=validated, public"
+   },
+   "commands": {
+    "cline": "registry bin in npm:cline"
+   }
+  }
+ },
+ "kilo-code": {
+  "packages": {
+   "npm:@kilocode/cli": "confirmed",
+   "brew:Kilo-Org/tap/kilo": "confirmed",
+   "vscode:kilocode.Kilo-Code": "confirmed"
+  },
+  "commands": {
+   "kilo": "confirmed",
+   "kilocode": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:@kilocode/cli": "v7.8.8 bin=kilo,kilocode repo=git+https://github.com/Kilo-Org/kilocode.git maint=marius@kilocode.ai;olesya@kilocode.ai;scott@kilocode.ai",
+    "brew:Kilo-Org/tap/kilo": "tap formula https://raw.githubusercontent.com/Kilo-Org/homebrew-tap/HEAD/kilo.rb desc=The AI coding agent built for the terminal.",
+    "vscode:kilocode.Kilo-Code": "\"Kilo Code: AI Coding Agent, Copilot, and Autocomplete\" by Kilo Code (verified domain https://kilocode.ai, True) installs=1618119 flags=validated, public"
+   },
+   "commands": {
+    "kilo": "registry bin in npm:@kilocode/cli, brew:Kilo-Org/tap/kilo",
+    "kilocode": "registry bin in npm:@kilocode/cli"
+   }
+  }
+ },
+ "blackbox-cli": {
+  "packages": {
+   "vscode:Blackboxapp.blackbox": "confirmed"
+  },
+  "commands": {
+   "blackbox": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "vscode:Blackboxapp.blackbox": "Marketplace flags include \"unpublished\". \"BLACKBOXAI #1 AI Coding Agent and Coding Copilot\" by BLACKBOXAI (verified domain https://www.blackbox.ai, True) installs=5358281 flags=validated, public, unpublished"
+   },
+   "commands": {
+    "blackbox": "docs: https://docs.blackbox.ai/features/blackbox-cli/getting-started.md (blackbox configure / blackbox session)"
+   }
+  }
+ },
+ "auggie": {
+  "packages": {
+   "npm:@augmentcode/auggie": "confirmed",
+   "vscode:augment.vscode-augment": "confirmed"
+  },
+  "commands": {
+   "auggie": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:@augmentcode/auggie": "v0.36.0 bin=auggie repo=https://augmentcode.com maint=arnab@augmentcode.com;dmitriy@augmentcode.com;matthewm@augmentcode.com",
+    "vscode:augment.vscode-augment": "\"Augment: Coding Agent Built for Large, Complex Codebases\" by Augment Computing (verified domain https://augmentcode.com, True) installs=780910 flags=validated, public"
+   },
+   "commands": {
+    "auggie": "registry bin in npm:@augmentcode/auggie"
+   }
+  }
+ },
+ "cursor-cli": {
+  "packages": {
+   "brew:cask:cursor-cli": "confirmed"
+  },
+  "commands": {
+   "agent": "confirmed",
+   "cursor-agent": "confirmed"
+  },
+  "configDirs": "partly",
+  "notes": "\"agent\" confirmed by cursor.com/docs/cli/installation (docs do not mention cursor-agent at all); \"cursor-agent\" confirmed only by the Homebrew cask binary target. configDirs: Docs: global config is ~/.cursor/cli-config.json (Windows %USERPROFILE%\\.cursor\\cli-config.json; $XDG_CONFIG_HOME/cursor/cli-config.json when XDG_CONFIG_HOME set) https://cursor.com/docs/cli/reference/configuration.md . Catalog only lists ~/.config/cursor-agent (Homebrew zap) - missing ~/.cursor and {XDG_CONFIG_HOME}/cursor.",
+  "evidence": {
+   "packages": {
+    "brew:cask:cursor-cli": "cask \"Cursor CLI\" homepage=https://cursor.com/ bins=cursor-agent"
+   },
+   "commands": {
+    "agent": "docs: https://cursor.com/docs/cli/installation (\"agent --version\", \"agent update\")",
+    "cursor-agent": "registry bin in brew:cask:cursor-cli"
+   }
+  }
+ },
+ "cursor": {
+  "packages": {
+   "brew:cask:cursor": "confirmed",
+   "scoop:extras/cursor": "confirmed",
+   "choco:cursoride": "confirmed",
+   "winget:Anysphere.Cursor": "confirmed"
+  },
+  "commands": {
+   "cursor": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "configDirs: ~/.cursor and ~/Library/Application Support/Cursor in Homebrew cask zap (formulae.brew.sh/api/cask/cursor.json)",
+  "evidence": {
+   "packages": {
+    "brew:cask:cursor": "cask \"Cursor\" homepage=https://www.cursor.com/ bins=cursor",
+    "scoop:extras/cursor": "manifest https://raw.githubusercontent.com/ScoopInstaller/Extras/master/bucket/cursor.json homepage=https://www.cursor.com/ bin=cursor",
+    "choco:cursoride": "\"Cursor\" v3.24.12 published=2026-10-10 project=https://github.com/getcursor/cursor pkgsrc=https://github.com/targed/chocolatey-projects/tree/main/Cursor",
+    "winget:Anysphere.Cursor": "index: name=Cursor latest=3.15.6 commands=- publisher=Anysphere url=https://www.cursor.com/"
+   },
+   "commands": {
+    "cursor": "registry bin in brew:cask:cursor, scoop:extras/cursor"
+   }
+  }
+ },
+ "windsurf": {
+  "packages": {
+   "brew:cask:devin-desktop": "confirmed",
+   "scoop:extras/windsurf": "confirmed",
+   "choco:windsurf": "confirmed",
+   "winget:Codeium.Windsurf": "confirmed",
+   "winget:CognitionAI.DevinDesktop": "confirmed",
+   "vscode:Codeium.codeium": "confirmed"
+  },
+  "commands": {
+   "windsurf": "confirmed",
+   "devin-desktop": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "winget Codeium.Windsurf and Scoop extras/windsurf are frozen at 2.3.15 while winget CognitionAI.DevinDesktop and choco windsurf are at 3.10.48. Devin Desktop FAQ: legacy \"surf\" command also still ships in ~/.codeium/windsurf/bin/ - consider adding \"surf\" (ambiguous short name).",
+  "evidence": {
+   "packages": {
+    "brew:cask:devin-desktop": "cask \"Devin Desktop\" homepage=https://devin.ai/desktop bins=devin-desktop old_tokens=['windsurf']",
+    "scoop:extras/windsurf": "manifest https://raw.githubusercontent.com/ScoopInstaller/Extras/master/bucket/windsurf.json homepage=https://windsurf.com/ bin=windsurf",
+    "choco:windsurf": "\"Windsurf\" v3.10.48 published=2026-09-29 project=https://codeium.com/windsurf pkgsrc=https://github.com/publicfacingusername/choco-windsurf",
+    "winget:Codeium.Windsurf": "index: name=Windsurf latest=2.3.15 commands=- publisher=Codeium url=https://codeium.com/windsurf",
+    "winget:CognitionAI.DevinDesktop": "PackageName \"Devin\", Publisher \"Codeium\", installer on windsurf-stable.codeiumdata.com - consistent with the Windsurf -> Devin Desktop rename. index: name=Devin latest=3.10.48 commands=- publisher=Codeium url=",
+    "vscode:Codeium.codeium": "Marketplace flags include \"unpublished\" (Windsurf Plugin, formerly Codeium). \"Windsurf Plugin (formerly Codeium): AI Coding Autocomplete and Chat for Python, JavaScript, TypeScript, and more\" by Windsurf (verified domain None, False) installs=3977406 flags=validated, public, unpublished"
+   },
+   "commands": {
+    "windsurf": "registry bin in scoop:extras/windsurf; docs: https://docs.devin.ai/desktop/devin-desktop-faq.md (legacy surf/windsurf commands still ship in ~/.codeium/windsurf/bin/)",
+    "devin-desktop": "registry bin in brew:cask:devin-desktop; docs: https://docs.devin.ai/desktop/devin-desktop-faq.md (\"surf\" replaced by \"devin-desktop\")"
+   }
+  }
+ },
+ "devin-cli": {
+  "packages": {
+   "brew:cask:devin-cli": "confirmed",
+   "winget:CognitionAI.DevinCLI": "confirmed"
+  },
+  "commands": {
+   "devin": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "brew:cask:devin-cli": "cask \"Devin CLI\" homepage=https://cli.devin.ai/docs bins=devin",
+    "winget:CognitionAI.DevinCLI": "index: name=Devin CLI/Devin for Terminal latest=3000.11.3 commands=- publisher=Cognition AI, Inc. url=https://cli.devin.ai/docs"
+   },
+   "commands": {
+    "devin": "registry bin in brew:cask:devin-cli, winget:CognitionAI.DevinCLI; docs: https://docs.devin.ai/cli (\"type devin\")"
+   }
+  }
+ },
+ "kiro": {
+  "packages": {
+   "brew:cask:kiro": "confirmed",
+   "scoop:extras/kiro": "confirmed",
+   "choco:kiro": "confirmed",
+   "winget:Amazon.Kiro": "confirmed"
+  },
+  "commands": {
+   "kiro": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "configDirs: ~/.kiro (rmdir) and ~/Library/Application Support/Kiro in Homebrew cask zap; ~/.kiro also per kiro.dev docs",
+  "evidence": {
+   "packages": {
+    "brew:cask:kiro": "cask \"kiro\" homepage=https://kiro.dev/ bins=kiro",
+    "scoop:extras/kiro": "manifest https://raw.githubusercontent.com/ScoopInstaller/Extras/master/bucket/kiro.json homepage=https://kiro.dev bin=kiro",
+    "choco:kiro": "\"Kiro\" v1.2.56 published=2026-10-09 project=https://kiro.dev/ pkgsrc=https://github.com/publicfacingusername/choco-kiro",
+    "winget:Amazon.Kiro": "index: name=Kiro latest=1.2.56 commands=- publisher=Amazon Web Services url=https://kiro.dev/downloads/"
+   },
+   "commands": {
+    "kiro": "registry bin in brew:cask:kiro, scoop:extras/kiro"
+   }
+  }
+ },
+ "kiro-cli": {
+  "packages": {
+   "brew:cask:kiro-cli": "confirmed",
+   "scoop:kiro-cli": "confirmed"
+  },
+  "commands": {
+   "kiro-cli": "confirmed",
+   "q": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "Rename confirmed by kiro.dev upgrade guide and by Homebrew cask old_tokens [amazon-q, codewhisperer]. configDirs: ~/.kiro/settings/cli.json and legacy ~/.aws/amazonq: https://kiro.dev/docs/upgrade-guides/migrating-from-q/",
+  "evidence": {
+   "packages": {
+    "brew:cask:kiro-cli": "cask \"Kiro CLI\" homepage=https://kiro.dev/docs/cli/ bins=kiro-cli old_tokens=['amazon-q', 'codewhisperer']",
+    "scoop:kiro-cli": "manifest https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/kiro-cli.json homepage=https://kiro.dev/cli/ bin=kiro-cli"
+   },
+   "commands": {
+    "kiro-cli": "registry bin in brew:cask:kiro-cli, scoop:kiro-cli",
+    "q": "docs: https://kiro.dev/docs/upgrade-guides/migrating-from-q/ (\"You can still continue using the q and q chat entry points\")"
+   }
+  }
+ },
+ "amazon-q-developer": {
+  "packages": {
+   "vscode:AmazonWebServices.amazon-q-vscode": "confirmed"
+  },
+  "commands": {},
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "vscode:AmazonWebServices.amazon-q-vscode": "\"Amazon Q\" by Amazon Web Services (verified domain https://amazon.com, True) installs=1867608 flags=validated, public"
+   },
+   "commands": {}
+  }
+ },
+ "roo-code": {
+  "packages": {
+   "vscode:RooVeterinaryInc.roo-cline": "confirmed"
+  },
+  "commands": {},
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "vscode:RooVeterinaryInc.roo-cline": "\"Roo Code\" by Roo Code (verified domain https://roocode.com, True) installs=2067173 flags=validated, public"
+   },
+   "commands": {}
+  }
+ },
+ "continue": {
+  "packages": {
+   "npm:@continuedev/cli": "confirmed",
+   "vscode:Continue.continue": "confirmed"
+  },
+  "commands": {
+   "cn": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "README confirms repo is no longer actively maintained and read-only.",
+  "evidence": {
+   "packages": {
+    "npm:@continuedev/cli": "v1.5.47 bin=cn repo=git+https://github.com/continuedev/continue.git maint=sestinj@gmail.com;patrick@continue.dev;dallin@continue.dev",
+    "vscode:Continue.continue": "\"Continue - open-source AI code agent\" by Continue (verified domain https://continue.dev, True) installs=4315821 flags=validated, public"
+   },
+   "commands": {
+    "cn": "registry bin in npm:@continuedev/cli"
+   }
+  }
+ },
+ "copilot-cli": {
+  "packages": {
+   "npm:@github/copilot": "confirmed",
+   "brew:cask:copilot-cli": "confirmed",
+   "brew:cask:copilot-cli@prerelease": "confirmed",
+   "scoop:copilot-cli": "confirmed",
+   "choco:github-copilot-cli": "confirmed",
+   "choco:copilot-cli": "unofficial",
+   "winget:GitHub.Copilot": "confirmed",
+   "winget:GitHub.Copilot.Prerelease": "confirmed",
+   "vscode:GitHub.copilot": "confirmed",
+   "vscode:GitHub.copilot-chat": "confirmed"
+  },
+  "commands": {
+   "copilot": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "DROP choco:copilot-cli - unapproved, stale 1.0.12 (2026-03-29), 12 downloads; choco github-copilot-cli (approved, 1.0.91) is the live one. configDirs: ~/.copilot (COPILOT_HOME override): docs.github.com use-copilot-cli article",
+  "evidence": {
+   "packages": {
+    "npm:@github/copilot": "v1.0.95 bin=copilot repo=git+https://github.com/github/copilot-cli.git maint=mxie@github.com;tidy-dev@github.com;croffz@outlook.com",
+    "brew:cask:copilot-cli": "cask \"GitHub Copilot CLI\" homepage=https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli bins=copilot",
+    "brew:cask:copilot-cli@prerelease": "cask \"GitHub Copilot CLI\" homepage=https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli bins=copilot",
+    "scoop:copilot-cli": "manifest https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/copilot-cli.json homepage=https://github.com/features/copilot/cli bin=copilot",
+    "choco:github-copilot-cli": "\"GitHub Copilot CLI\" v1.0.91 published=2026-10-05 project=https://github.com/features/copilot/cli pkgsrc=https://github.com/mu88/chocolatey-packages/tree/main/_auto/github-copilot-cli",
+    "choco:copilot-cli": "Exists but not approved/not in the approved-latest feed, v1.0.12 (29 Mar 2026), 12 downloads, maintainer steviecoaster. Superseded by approved choco \"github-copilot-cli\" (1.0.91).",
+    "winget:GitHub.Copilot": "index: name=Copilot CLI latest=v1.0.95 commands=copilot publisher=GitHub, Inc. url=https://github.com/github/copilot-cli",
+    "winget:GitHub.Copilot.Prerelease": "index: name=Copilot CLI (Preview) latest=v1.0.77-0 commands=- publisher=GitHub, Inc. url=https://github.com/github/copilot-cli",
+    "vscode:GitHub.copilot": "\"GitHub Copilot\" by GitHub (verified domain https://github.com, True) installs=74726431 flags=validated, public, trial",
+    "vscode:GitHub.copilot-chat": "\"GitHub Copilot Chat\" by GitHub (verified domain https://github.com, True) installs=78723340 flags=validated, public, trial"
+   },
+   "commands": {
+    "copilot": "registry bin in npm:@github/copilot, brew:cask:copilot-cli, brew:cask:copilot-cli@prerelease, scoop:copilot-cli, winget:GitHub.Copilot, winget:GitHub.Copilot.Prerelease"
+   }
+  }
+ },
+ "gh-copilot": {
+  "packages": {},
+  "commands": {},
+  "configDirs": "unchecked",
+  "notes": "github/gh-copilot README: deprecated on October 25, 2025 in favor of GitHub Copilot CLI.",
+  "evidence": {
+   "packages": {},
+   "commands": {}
+  }
+ },
+ "openhands": {
+  "packages": {
+   "pypi:openhands": "confirmed",
+   "pypi:openhands-ai": "confirmed"
+  },
+  "commands": {
+   "openhands": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "PyPI openhands wheel console_scripts: openhands, openhands-acp.",
+  "evidence": {
+   "packages": {
+    "pypi:openhands": "v1.16.0 console_scripts=openhands,openhands-acp summary=OpenHands CLI - Terminal User Interface for OpenHands AI Agent",
+    "pypi:openhands-ai": "Official OpenHands package but its wheel has NO console_scripts - it does not install an \"openhands\" executable. Keep only as a package-presence signal. v1.11.0 console_scripts=(none) summary=OpenHands: Code Less, Make More"
+   },
+   "commands": {
+    "openhands": "registry bin in pypi:openhands"
+   }
+  }
+ },
+ "codebuddy-code": {
+  "packages": {
+   "npm:@tencent-ai/codebuddy-code": "confirmed"
+  },
+  "commands": {
+   "codebuddy": "confirmed",
+   "cbc": "confirmed",
+   "codebuddy-code": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:@tencent-ai/codebuddy-code": "Maintainers use personal gmail/qq addresses, but Tencent CodeBuddy docs (workbuddy.ai/docs/cli/quickstart, support codebuddy@tencent.com) document this exact package. v2.164.0 bin=cbc,cbc-prewarm,codebuddy,codebuddy-code,codebuddy-lowmem repo=https://cnb.cool/codebuddy/codebuddy-code maint=muxiangqiu@gmail.com;1239746898@qq.com"
+   },
+   "commands": {
+    "codebuddy": "registry bin in npm:@tencent-ai/codebuddy-code; docs: https://www.workbuddy.ai/docs/cli/quickstart (Tencent CodeBuddy docs: npm install -g @tencent-ai/codebuddy-code; codebuddy --version)",
+    "cbc": "registry bin in npm:@tencent-ai/codebuddy-code",
+    "codebuddy-code": "registry bin in npm:@tencent-ai/codebuddy-code"
+   }
+  }
+ },
+ "codebuddy-ide": {
+  "packages": {
+   "brew:cask:codebuddy": "confirmed",
+   "brew:cask:codebuddy-cn": "confirmed",
+   "winget:Tencent.CodeBuddy": "confirmed",
+   "vscode:Tencent-Cloud.coding-copilot": "confirmed"
+  },
+  "commands": {},
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "brew:cask:codebuddy": "cask \"CodeBuddy\" homepage=https://www.codebuddy.ai/ide/ bins=(app only)",
+    "brew:cask:codebuddy-cn": "cask \"CodeBuddy CN\" homepage=https://copilot.tencent.com/ide/ bins=(app only)",
+    "winget:Tencent.CodeBuddy": "Manifest Publisher field says \"Microsoft Corporation\" (VS Code-fork installer metadata), but PackageUrl codebuddy.ai, PublisherUrl tencentcloud.com, installer on Tencent COS. index: name=CodeBuddy latest=1.106.1 commands=- publisher=Microsoft Corporation url=https://www.codebuddy.ai/",
+    "vscode:Tencent-Cloud.coding-copilot": "\"Tencent Cloud CodeBuddy\" by Tencent Cloud (verified domain None, False) installs=655437 flags=validated, public"
+   },
+   "commands": {}
+  }
+ },
+ "iflow-cli": {
+  "packages": {
+   "npm:@iflow-ai/iflow-cli": "confirmed",
+   "brew:iflow-ai/iflow-cli/iflow-cli": "confirmed"
+  },
+  "commands": {
+   "iflow": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "iFlow CLI was shut down on 2026-04-17 (README banner). Catalog notes do not mention this.",
+  "evidence": {
+   "packages": {
+    "npm:@iflow-ai/iflow-cli": "Package exists, but README banner: \"iFlow CLI will be shutting down on April 17, 2026 (UTC+8)\" - product is discontinued. v0.5.19 bin=iflow repo=git+https://github.com/iflow-ai/iflow-cli.git maint=zhangqipeng.zqp@alibaba-inc.com;creamidea@gmail.com;13275979073@163.com",
+    "brew:iflow-ai/iflow-cli/iflow-cli": "Tap formula exists (raw.githubusercontent.com/iflow-ai/homebrew-iflow-cli/HEAD/Formula/iflow-cli.rb); product discontinued 2026-04-17. tap formula https://raw.githubusercontent.com/iflow-ai/homebrew-iflow-cli/HEAD/Formula/iflow-cli.rb desc=AI-powered CLI that embeds in your terminal for coding tasks and workflow automation"
+   },
+   "commands": {
+    "iflow": "registry bin in npm:@iflow-ai/iflow-cli"
+   }
+  }
+ },
+ "xum": {
+  "packages": {
+   "npm:@coder/xum": "confirmed",
+   "npm:mux": "confirmed"
+  },
+  "commands": {
+   "xum": "confirmed",
+   "mux": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:@coder/xum": "v0.31.0 bin=mux,xum repo=git+https://github.com/coder/xum.git maint=kayla@tree.camp;seth@coder.com;jon@coder.com",
+    "npm:mux": "Official compatibility package (\"forwarding the legacy mux command to @coder/xum\"). v0.31.0 bin=mux repo=git+https://github.com/coder/xum.git maint=kayla@tree.camp;seth@coder.com;jon@coder.com"
+   },
+   "commands": {
+    "xum": "registry bin in npm:@coder/xum",
+    "mux": "registry bin in npm:@coder/xum, npm:mux"
+   }
+  }
+ },
+ "zencoder": {
+  "packages": {
+   "vscode:ZencoderAI.zencoder": "confirmed"
+  },
+  "commands": {},
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "vscode:ZencoderAI.zencoder": "\"Zencoder: AI Coding Agent and Chat for Python, Javascript, Typescript, Java, Go, and more\" by Zencoder (verified domain https://zencoder.ai, True) installs=159418 flags=validated, public"
+   },
+   "commands": {}
+  }
+ },
+ "hermes-agent": {
+  "packages": {
+   "brew:hermes-agent": "confirmed",
+   "brew:cask:hermes-desktop": "confirmed"
+  },
+  "commands": {
+   "hermes": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "PyPI hermes-agent (excluded by draft) looks upstream-built: Author \"Nous Research\", summary identical to upstream pyproject, wheel console_scripts hermes/hermes-acp/hermes-agent with upstream module names; but no project URLs, not in README, and lags (0.19.0 2026-07-20 vs formula 0.21.6) - could add with verified:false. hermes-agent IS an executable: upstream pyproject [project.scripts] defines hermes, hermes-agent (legacy CLI) and hermes-acp; Homebrew formula tests hermes and hermes-acp. Consider adding \"hermes-agent\" (and \"hermes-acp\") to commands.",
+  "evidence": {
+   "packages": {
+    "brew:hermes-agent": "formula homepage=https://hermes-agent.nousresearch.com src=https://github.com/NousResearch/hermes-agent/archive/refs/tags/v0.21.6",
+    "brew:cask:hermes-desktop": "cask \"Hermes Agent Desktop\" homepage=https://hermes-agent.nousresearch.com/desktop bins=(app only)"
+   },
+   "commands": {
+    "hermes": "registry bin in brew:hermes-agent; docs: https://raw.githubusercontent.com/NousResearch/hermes-agent/HEAD/pyproject.toml ([project.scripts] hermes) + homebrew-core Formula/h/hermes-agent.rb"
+   }
+  }
+ },
+ "letta-code": {
+  "packages": {
+   "npm:@letta-ai/letta-code": "confirmed",
+   "brew:letta-code": "confirmed",
+   "winget:Letta.LettaCode": "confirmed"
+  },
+  "commands": {
+   "letta": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:@letta-ai/letta-code": "v0.34.10 bin=letta repo=git+https://github.com/letta-ai/letta-code.git maint=packercharles@gmail.com;shub@shub.club;sarah@letta.com",
+    "brew:letta-code": "formula homepage=https://docs.letta.com/letta-code src=https://registry.npmjs.org/@letta-ai/letta-code/-/letta-code-0.34.9.tg",
+    "winget:Letta.LettaCode": "index: name=Letta Code latest=0.34.8 commands=- publisher=Letta url=https://www.letta.com/"
+   },
+   "commands": {
+    "letta": "registry bin in npm:@letta-ai/letta-code"
+   }
+  }
+ },
+ "trae": {
+  "packages": {
+   "brew:cask:trae": "confirmed",
+   "scoop:extras/trae": "confirmed",
+   "winget:ByteDance.Trae": "confirmed"
+  },
+  "commands": {
+   "trae": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "brew:cask:trae": "cask \"Trae\" homepage=https://www.trae.ai/ bins=(app only)",
+    "scoop:extras/trae": "manifest https://raw.githubusercontent.com/ScoopInstaller/Extras/master/bucket/trae.json homepage=https://www.trae.ai bin=trae",
+    "winget:ByteDance.Trae": "index: name=Trae latest=3.6.2 commands=- publisher=SPRING (SG) PTE. LTD url=https://www.trae.ai/"
+   },
+   "commands": {
+    "trae": "registry bin in scoop:extras/trae"
+   }
+  }
+ },
+ "trae-cn": {
+  "packages": {
+   "brew:cask:trae-cn": "confirmed",
+   "winget:ByteDance.Trae.CN": "confirmed"
+  },
+  "commands": {},
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "brew:cask:trae-cn": "cask \"Trae CN\" homepage=https://www.trae.com.cn/ bins=(app only)",
+    "winget:ByteDance.Trae.CN": "index: name=Trae CN latest=3.4.2 commands=- publisher=Beijing Yinli Catapult Technology Co., Ltd. url=https://www.trae.com.cn/"
+   },
+   "commands": {}
+  }
+ },
+ "amp": {
+  "packages": {
+   "npm:@ampcode/cli": "confirmed",
+   "npm:@sourcegraph/amp": "confirmed",
+   "brew:cask:amp-app": "confirmed",
+   "choco:amp": "confirmed",
+   "winget:Sourcegraph.Amp": "confirmed",
+   "vscode:sourcegraph.amp": "confirmed"
+  },
+  "commands": {
+   "amp": "confirmed"
+  },
+  "configDirs": "confirmed",
+  "notes": "configDirs: ~/.config/amp/settings.json (Windows %USERPROFILE%\\.config\\amp): https://ampcode.com/docs/markdown/cli/settings",
+  "evidence": {
+   "packages": {
+    "npm:@ampcode/cli": "v0.0.1791691375-g3bdda1 bin=amp repo=https://ampcode.com/ maint=sqs@sourcegraph.com;svc-npm@ampcode.com;will@ampcode.com",
+    "npm:@sourcegraph/amp": "Description says \"Renamed to @ampcode/cli\" (still published in lockstep, not formally deprecated). v0.0.1791691375-g3bdda1 bin=amp repo=https://ampcode.com/ maint=dev@sourcegraph.com;stephen.gutekanst@gmail.com;me@andreeleuterio.com",
+    "brew:cask:amp-app": "cask \"Amp\" homepage=https://ampcode.com/app bins=(app only)",
+    "choco:amp": "Official (maintainer ampcode-com, source sourcegraph/amp-packages) but STALE: last version 0.0.1753960840 published 2025-07-31. \"Amp CLI\" v0.0.1753960840 published=2025-07-31 project=https://github.com/sourcegraph/amp-packages pkgsrc=https://github.com/sourcegraph/amp-packages/tree/main/chocolatey",
+    "winget:Sourcegraph.Amp": "index: name=Amp CLI latest=0.0.1791676897-g77c125 commands=amp publisher=Sourcegraph, Inc. url=https://ampcode.com/",
+    "vscode:sourcegraph.amp": "Marketplace flags include \"unpublished\" (Amp Research Preview). \"Amp (Research Preview)\" by Sourcegraph (verified domain https://sourcegraph.com, True) installs=108457 flags=validated, public, unpublished"
+   },
+   "commands": {
+    "amp": "registry bin in npm:@ampcode/cli, npm:@sourcegraph/amp, winget:Sourcegraph.Amp"
+   }
+  }
+ },
+ "qodo": {
+  "packages": {
+   "npm:@qodo/command": "confirmed",
+   "npm:@qodo/gen": "confirmed",
+   "vscode:Codium.codium": "confirmed"
+  },
+  "commands": {
+   "qodo": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "Claim that the replacement is the \"Qodo Agentic Toolbox\" (get.qodo.ai) was NOT checked by the cross-checker.",
+  "evidence": {
+   "packages": {
+    "npm:@qodo/command": "Deprecated on npm: \"Package no longer supported\". v0.36.0 bin=qodo repo=git+https://github.com/qodo-ai/command.git maint=addie.c@codium.ai;me@goldbergyoni.com;ori.k@codium.ai",
+    "npm:@qodo/gen": "Deprecated on npm: \"Package renamed to @qodo/command\". v0.20.5 bin=qodo repo=git+https://github.com/qodo-ai/command.git maint=ori.k@codium.ai;itamar.f@qodo.ai;mor.m@codium.ai",
+    "vscode:Codium.codium": "\"Qodo: AI Code Review\" by Qodo (formerly Codium) (verified domain https://qodo.ai, True) installs=909256 flags=validated, public"
+   },
+   "commands": {
+    "qodo": "registry bin in npm:@qodo/command, npm:@qodo/gen"
+   }
+  }
+ },
+ "plandex": {
+  "packages": {},
+  "commands": {
+   "plandex": "confirmed",
+   "pdx": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "README: Plandex Cloud winding down as of 2025-10-03; self-hosted/local mode only.",
+  "evidence": {
+   "packages": {},
+   "commands": {
+    "plandex": "docs: https://raw.githubusercontent.com/plandex-ai/plandex/HEAD/app/cli/install.sh (mv plandex /usr/local/bin)",
+    "pdx": "docs: https://raw.githubusercontent.com/plandex-ai/plandex/HEAD/app/cli/install.sh (creates pdx symlink)"
+   }
+  }
+ },
+ "gptme": {
+  "packages": {
+   "pypi:gptme": "confirmed",
+   "brew:gptme": "confirmed"
+  },
+  "commands": {
+   "gptme": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "pypi:gptme": "v0.34.0 console_scripts=gptme,gptme-acp,gptme-agent,gptme-attest,gptme-auth,gptme-checkpoint,gptme-convert,gptme-dataset,gptme-doctor,gptme-dspy,gptme-eval,gptme-eval-swebench,gptme-eval-tbench,gptme-eval-trends,gptme-init,gptme-mcp-server,gptme-onboard,gptme-resume,gptme-server,gptme-service,gptme-stats,gptme-status,gptme-tui,gptme-tutorial,gptme-util,gptme-wut summary=Powerful AI agent for coding and general tasks. Terminal-first with shell, code execution,",
+    "brew:gptme": "formula homepage=https://gptme.org/docs/ src=https://files.pythonhosted.org/packages/3a/99/498a6a2b05a857a82ddb4aa5"
+   },
+   "commands": {
+    "gptme": "registry bin in pypi:gptme, brew:gptme"
+   }
+  }
+ },
+ "open-interpreter": {
+  "packages": {
+   "pypi:open-interpreter": "confirmed"
+  },
+  "commands": {
+   "interpreter": "confirmed",
+   "i": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "README confirms fork of OpenAI Codex, install via openinterpreter.com/install script, commands i / interpreter.",
+  "evidence": {
+   "packages": {
+    "pypi:open-interpreter": "Legacy Python version (0.4.3, 2024-10); console scripts i, interpreter, interpreter-classic, wtf. Current product is a Rust Codex fork installed by script. v0.4.3 console_scripts=i,interpreter,interpreter-classic,wtf summary=Let language models run code"
+   },
+   "commands": {
+    "interpreter": "registry bin in pypi:open-interpreter; docs: https://raw.githubusercontent.com/openinterpreter/open-interpreter/HEAD/README.md (\"type i or interpreter\")",
+    "i": "registry bin in pypi:open-interpreter; docs: https://raw.githubusercontent.com/openinterpreter/open-interpreter/HEAD/README.md (\"type i or interpreter\")"
+   }
+  }
+ },
+ "jules": {
+  "packages": {
+   "npm:@google/jules": "confirmed"
+  },
+  "commands": {
+   "jules": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:@google/jules": "v0.1.42 bin=jules repo=git+https://github.com/google-labs-code/jules-awesome-list.git maint=node-team-npm+wombot@google.com;ofrobots@google.com;info@mrdoob.com"
+   },
+   "commands": {
+    "jules": "registry bin in npm:@google/jules"
+   }
+  }
+ },
+ "rovo-dev": {
+  "packages": {
+   "scoop:acli": "confirmed",
+   "winget:Atlassian.AtlassianCLI": "confirmed"
+  },
+  "commands": {
+   "acli": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "scoop:acli": "manifest https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/acli.json homepage=https://developer.atlassian.com/cloud/acli/ bin=acli",
+    "winget:Atlassian.AtlassianCLI": "index: name=Atlassian CLI latest=1.3.39-stable commands=acli publisher=Atlassian url=https://developer.atlassian.com/cloud/acli/"
+   },
+   "commands": {
+    "acli": "registry bin in scoop:acli, winget:Atlassian.AtlassianCLI; docs: https://support.atlassian.com/rovo/docs/install-and-run-rovo-dev-cli-on-your-device/ (acli rovodev run)"
+   }
+  }
+ },
+ "warp": {
+  "packages": {
+   "brew:cask:warp": "confirmed",
+   "scoop:extras/warp-terminal": "confirmed",
+   "choco:warp-terminal": "confirmed",
+   "winget:Warp.Warp": "confirmed"
+  },
+  "commands": {},
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "brew:cask:warp": "cask \"Warp\" homepage=https://www.warp.dev/terminal bins=(app only)",
+    "scoop:extras/warp-terminal": "manifest https://raw.githubusercontent.com/ScoopInstaller/Extras/master/bucket/warp-terminal.json homepage=https://www.warp.dev/ bin=(shortcut only)",
+    "choco:warp-terminal": "\"Warp\" v2026.9.30.82901 published=2026-10-02 project=https://www.warp.dev/windows-terminal pkgsrc=https://github.com/virtualex-itv/chocolatey-packages/tree/master/automatic/warp-terminal",
+    "winget:Warp.Warp": "index: name=Warp latest=v0.2026.09.23.14.34.stable_01 commands=- publisher=Denver Technologies, Inc. url=https://www.warp.dev/windows-terminal"
+   },
+   "commands": {}
+  }
+ },
+ "warp-agent-cli": {
+  "packages": {
+   "brew:cask:warp-agent-cli": "confirmed"
+  },
+  "commands": {
+   "warp": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "brew:cask:warp-agent-cli": "cask \"Warp Agent CLI\" homepage=https://www.warp.dev/agent-cli bins=warp"
+   },
+   "commands": {
+    "warp": "registry bin in brew:cask:warp-agent-cli"
+   }
+  }
+ },
+ "zed": {
+  "packages": {
+   "brew:cask:zed": "confirmed",
+   "brew:cask:zed@preview": "confirmed",
+   "scoop:extras/zed": "confirmed",
+   "choco:zed": "unofficial",
+   "winget:ZedIndustries.Zed": "confirmed",
+   "winget:ZedIndustries.Zed.Preview": "confirmed"
+  },
+  "commands": {
+   "zed": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "DROP choco:zed - it is AuthZed's SpiceDB CLI (github.com/authzed/zed), not the Zed editor; Chocolatey search found no Zed-editor package.",
+  "evidence": {
+   "packages": {
+    "brew:cask:zed": "cask \"Zed\" homepage=https://zed.dev/ bins=zed",
+    "brew:cask:zed@preview": "cask \"Zed Preview\" homepage=https://zed.dev/ bins=zed-preview",
+    "scoop:extras/zed": "manifest https://raw.githubusercontent.com/ScoopInstaller/Extras/master/bucket/zed.json homepage=https://zed.dev/ bin=zed",
+    "choco:zed": "WRONG PRODUCT: Chocolatey \"zed\" is AuthZed's SpiceDB CLI (ProjectUrl github.com/authzed/zed, maintainer authzed, \"Official command-line tool for managing SpiceDB\"). Not the Zed editor. No Zed-editor package found by Chocolatey search. | \"Zed\" v1.2.1 published=2026-08-26 project=https://github.com/authzed/zed pkgsrc=https://github.com/authzed/zed/releases",
+    "winget:ZedIndustries.Zed": "index: name=Zed latest=1.23.2 commands=- publisher=Zed Industries url=https://zed.dev/windows",
+    "winget:ZedIndustries.Zed.Preview": "index: name=Zed Preview latest=1.24.1-pre commands=- publisher=Zed Industries url=https://zed.dev/windows"
+   },
+   "commands": {
+    "zed": "registry bin in brew:cask:zed, scoop:extras/zed"
+   }
+  }
+ },
+ "mistral-vibe": {
+  "packages": {
+   "pypi:mistral-vibe": "confirmed",
+   "brew:mistral-vibe": "confirmed",
+   "winget:MistralAI.MistralVibe.ACP": "confirmed"
+  },
+  "commands": {
+   "vibe": "confirmed",
+   "vibe-acp": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "Wheel console_scripts: vibe, vibe-acp, vibe-app-server.",
+  "evidence": {
+   "packages": {
+    "pypi:mistral-vibe": "v2.26.1 console_scripts=vibe,vibe-acp,vibe-app-server summary=Minimal CLI coding agent by Mistral",
+    "brew:mistral-vibe": "formula homepage=https://github.com/mistralai/mistral-vibe src=https://files.pythonhosted.org/packages/36/a3/ab0ebab5586cdd56094d43b9",
+    "winget:MistralAI.MistralVibe.ACP": "index: name=Mistral Vibe (ACP mode) latest=2.26.1 commands=vibe-acp publisher=Mistral AI url=https://github.com/mistralai/mistral-vibe"
+   },
+   "commands": {
+    "vibe": "registry bin in pypi:mistral-vibe",
+    "vibe-acp": "registry bin in pypi:mistral-vibe, winget:MistralAI.MistralVibe.ACP"
+   }
+  }
+ },
+ "pi": {
+  "packages": {
+   "npm:@earendil-works/pi-coding-agent": "confirmed",
+   "npm:@mariozechner/pi-coding-agent": "confirmed",
+   "brew:pi-coding-agent": "confirmed",
+   "scoop:pi-coding-agent": "confirmed",
+   "winget:EarendilWorks.pi": "confirmed"
+  },
+  "commands": {
+   "pi": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:@earendil-works/pi-coding-agent": "v1.1.0 bin=pi repo=git+https://github.com/earendil-works/pi.git maint=armin.ronacher@active-4.com;mario@badlogicgames.com;r.wachtler@outlook.com",
+    "npm:@mariozechner/pi-coding-agent": "Deprecated on npm: \"please use @earendil-works/pi-coding-agent instead\". v0.73.1 bin=pi repo=git+https://github.com/badlogic/pi-mono.git maint=mario@badlogicgames.com;armin.ronacher@active-4.com",
+    "brew:pi-coding-agent": "formula homepage=https://pi.dev/ src=https://registry.npmjs.org/@earendil-works/pi-coding-agent/-/pi-coding",
+    "scoop:pi-coding-agent": "manifest https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/pi-coding-agent.json homepage=https://pi.dev bin=pi",
+    "winget:EarendilWorks.pi": "index: name=pi latest=1.1.0 commands=pi publisher=EARENDIL INC. url=https://github.com/earendil-works/pi"
+   },
+   "commands": {
+    "pi": "registry bin in npm:@earendil-works/pi-coding-agent, npm:@mariozechner/pi-coding-agent, scoop:pi-coding-agent, winget:EarendilWorks.pi"
+   }
+  }
+ },
+ "forge": {
+  "packages": {
+   "npm:forgecode": "confirmed",
+   "npm:@antinomyhq/forge": "confirmed"
+  },
+  "commands": {
+   "forge": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "Repo README badges point to tailcallhq/forgecode (antinomyhq/forge serves identical README); repo field may need updating.",
+  "evidence": {
+   "packages": {
+    "npm:forgecode": "v2.13.21 bin=forge repo=git+https://github.com/antinomyhq/forge.git maint=amit@tailcall.run",
+    "npm:@antinomyhq/forge": "v2.13.21 bin=forge repo=git+https://github.com/antinomyhq/forge.git maint=tushar@tailcall.run;amit@tailcall.run"
+   },
+   "commands": {
+    "forge": "registry bin in npm:forgecode, npm:@antinomyhq/forge"
+   }
+  }
+ },
+ "junie": {
+  "packages": {
+   "npm:@jetbrains/junie": "confirmed",
+   "npm:@jetbrains/junie-cli": "confirmed",
+   "brew:jetbrains-junie/junie/junie": "confirmed"
+  },
+  "commands": {
+   "junie": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:@jetbrains/junie": "v3110.7.0 bin=junie repo=git+https://github.com/JetBrains/junie.git maint=npmjs-admin@jetbrains.com;npmjs-kotlin@jetbrains.com;npmjs-buildserver@jetbrains.com",
+    "npm:@jetbrains/junie-cli": "JetBrains-owned but older line (last modified 2026-07); README now documents @jetbrains/junie. v1468.30.0 bin=junie repo=git+https://github.com/JetBrains/junie.git maint=npmjs-admin@jetbrains.com;npmjs-kotlin@jetbrains.com;npmjs-buildserver@jetbrains.com",
+    "brew:jetbrains-junie/junie/junie": "tap formula https://raw.githubusercontent.com/jetbrains-junie/homebrew-junie/HEAD/Formula/junie.rb desc=Junie CLI"
+   },
+   "commands": {
+    "junie": "registry bin in npm:@jetbrains/junie, npm:@jetbrains/junie-cli, brew:jetbrains-junie/junie/junie"
+   }
+  }
+ },
+ "qoder-cli": {
+  "packages": {
+   "npm:@qoder-ai/qodercli": "confirmed",
+   "winget:Alibaba.QoderCLI.CN": "confirmed"
+  },
+  "commands": {
+   "qoder": "confirmed",
+   "qodercli": "confirmed",
+   "qodercn": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:@qoder-ai/qodercli": "v1.1.68 bin=qoder,qodercli repo=https://qoder.com/cli maint=yannan.cr@alibaba-inc.com;dev@qoder.com",
+    "winget:Alibaba.QoderCLI.CN": "index: name=Qoder CN CLI latest=1.1.66 commands=qodercn publisher=Qoder url=https://qoder.cn/download"
+   },
+   "commands": {
+    "qoder": "registry bin in npm:@qoder-ai/qodercli",
+    "qodercli": "registry bin in npm:@qoder-ai/qodercli",
+    "qodercn": "registry bin in winget:Alibaba.QoderCLI.CN"
+   }
+  }
+ },
+ "qoder": {
+  "packages": {
+   "winget:Alibaba.Qoder": "confirmed"
+  },
+  "commands": {},
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "winget:Alibaba.Qoder": "index: name=Qoder latest=1.106.3 commands=- publisher=Qoder url=https://qoder.com/download"
+   },
+   "commands": {}
+  }
+ },
+ "lingma": {
+  "packages": {
+   "winget:Alibaba.Lingma": "confirmed",
+   "vscode:Alibaba-Cloud.tongyi-lingma": "confirmed"
+  },
+  "commands": {},
+  "configDirs": "unchecked",
+  "notes": "VS Code extension displayName is now \"Qoder CN (Formerly Lingma)\".",
+  "evidence": {
+   "packages": {
+    "winget:Alibaba.Lingma": "index: name=Lingma latest=1.99.0 commands=- publisher=Alibaba Cloud url=https://lingma.aliyun.com/",
+    "vscode:Alibaba-Cloud.tongyi-lingma": "\"Qoder CN （Formerly Lingma） - Alibaba Cloud AI Agentic Coding Platform\" by Alibaba-Cloud (verified domain https://aliyun.com, False) installs=2727893 flags=validated, public"
+   },
+   "commands": {}
+  }
+ },
+ "neovate": {
+  "packages": {
+   "npm:@neovate/code": "confirmed"
+  },
+  "commands": {
+   "neovate": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {
+    "npm:@neovate/code": "v0.28.5 bin=neovate repo=git+https://github.com/neovateai/neovate-code.git maint=sorrycc@gmail.com"
+   },
+   "commands": {
+    "neovate": "registry bin in npm:@neovate/code"
+   }
+  }
+ },
+ "trae-agent": {
+  "packages": {},
+  "commands": {
+   "trae-cli": "confirmed"
+  },
+  "configDirs": "unchecked",
+  "notes": "",
+  "evidence": {
+   "packages": {},
+   "commands": {
+    "trae-cli": "docs: https://raw.githubusercontent.com/bytedance/trae-agent/HEAD/pyproject.toml ([project.scripts] trae-cli)"
+   }
+  }
+ }
+}
