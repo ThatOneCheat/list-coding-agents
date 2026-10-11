@@ -464,6 +464,9 @@ function Get-NpmMeta {
 
     $pkgDirs = [System.Collections.Generic.List[string]]::new()
     foreach ($d in Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue) {
+        # npm leaves .pkgname-XXXXXX dirs behind after an interrupted install;
+        # their package.json would map the same bins to a half-installed copy
+        if ($d.Name.StartsWith('.')) { continue }
         if ($d.Name -like '@*') {
             foreach ($sub in Get-ChildItem -LiteralPath $d.FullName -Directory -ErrorAction SilentlyContinue) {
                 $pkgDirs.Add($sub.FullName)
