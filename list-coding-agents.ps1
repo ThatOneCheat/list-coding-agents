@@ -339,12 +339,16 @@ function Get-McpCountFromRaw([string]$Raw) {
     $total
 }
 
-function Get-AgentIntel([string]$Name) {
+function Get-AgentIntel([string[]]$Names, [string[]]$ExtraDirs = @()) {
     # One walk over the agent's config dirs: newest write (last used), count of
     # session-ish files touched in the last 30 days, MCP servers configured,
     # and a credentials hint (probably logged in). All heuristic, all generic.
+    # Several names can be tried (a winget row has no command, only a display
+    # name and a package id), plus known-good dirs the caller worked out.
     $res = [pscustomobject]@{ LastUsed = $null; Sessions30d = 0; McpCount = 0; Auth = $false }
-    $dirs = @(Get-ConfigDirs $Name)
+    $dirs = @()
+    foreach ($n in $Names) { foreach ($d in (Get-ConfigDirs $n)) { if ($dirs -notcontains $d) { $dirs += $d } } }
+    foreach ($d in $ExtraDirs) { if ($d -and (Test-Path -LiteralPath $d) -and ($dirs -notcontains $d)) { $dirs += $d } }
     if (-not $dirs.Count) { return $res }
     $cut     = (Get-Date).AddDays(-30)
     $sessRx  = '(?i)\.jsonl$|[\\/](history|sessions?|logs?|chats?|threads?|projects|transcripts?)([\\/]|$)'
@@ -684,7 +688,7 @@ foreach ($c in Get-PathCandidates) {
     [void]$haveNames.Add($name)
     $rows.Add([pscustomobject]@{
         Name=$name; Command=$name; Source=$path; Method=$method; Kind=$kind; Score=$s.Score; Why=$s.Why
-        Version=$version; Package=$package; PkgDir=$pkgDir
+        Version=$version; Package=$package; PkgDir=$pkgDir; Product=''
         SizeMB=$null; LastUsed=$null; Latest=''; UpdateCmd=''; UpdateArgs=@()
         Sessions30d=0; McpCount=0; Auth=$false; Stale=$false; UninstallCmd=''; Shadows=@($c.Shadows)
     })
@@ -721,7 +725,7 @@ if (-not $SkipWinget -and (Get-Command winget -ErrorAction SilentlyContinue)) {
             [void]$haveNames.Add($w.Product.ToLowerInvariant())
             $rows.Add([pscustomobject]@{
                 Name=$w.Name; Command='(winget)'; Source=$w.Id; Method='winget'; Kind=$w.Kind; Score=$s.Score; Why=$s.Why
-                Version=$w.Version; Package=''; PkgDir=''
+                Version=$w.Version; Package=''; PkgDir=''; Product=$w.Product
                 SizeMB=$null; LastUsed=$null; Latest=''; UpdateCmd=''; UpdateArgs=@()
                 Sessions30d=0; McpCount=0; Auth=$false; Stale=$false; UninstallCmd=''; Shadows=@()
             })
@@ -772,7 +776,17 @@ Write-Host "enriching: sizes + usage intel + mcp configs + versions..." -Foregro
 foreach ($r in ($detected + $possible)) {
     if ($r.Method -eq 'npm' -and $r.PkgDir) { $r.SizeMB = Get-SizeMB $r.PkgDir }
     elseif ($r.Source -match '(?i)\.exe$')  { $r.SizeMB = Get-SizeMB $r.Source }
-    $intel = Get-AgentIntel $r.Command
+    # winget rows have no command to go on: try the product half of the id and
+    # each word of the display name ("Codex", "ChatGPT" -> ~/.codex), and for a
+    # store app its package data folder, which is where a GUI keeps its state
+    $intelNames = @($r.Command); $intelDirs = @()
+    if ($r.Command -eq '(winget)') {
+        $intelNames = @($r.Product) + @($r.Name -split '\s+')
+        if ($env:LOCALAPPDATA -and $r.Source -match '^MSIX\\([^_\\]+)_.*__([^_\\]+)$') {
+            $intelDirs += (Join-Path $env:LOCALAPPDATA ("Packages\" + $Matches[1] + '_' + $Matches[2]))
+        }
+    }
+    $intel = Get-AgentIntel -Names $intelNames -ExtraDirs $intelDirs
     $r.LastUsed  = $intel.LastUsed
     $r.Sessions30d = $intel.Sessions30d
     $r.McpCount  = $intel.McpCount
@@ -839,8 +853,12 @@ $updates = @($detected | Where-Object { $_.Latest })
 # --- fleet health: dead weight, conflicts, totals, rank ----------------------
 $staleDays = 60
 foreach ($r in ($detected + $possible)) {
-    $r.Stale = $true
-    if ($r.LastUsed -and ((Get-Date) - $r.LastUsed).TotalDays -le $staleDays) { $r.Stale = $false }
+    # untouched for 60+ days = dead weight. No usage info at all means a PATH
+    # cli that never made a config folder (so probably never ran), but for a
+    # winget row it just means we found nowhere to look, so don't accuse it.
+    $r.Stale = $false
+    if ($r.LastUsed) { $r.Stale = (((Get-Date) - $r.LastUsed).TotalDays -gt $staleDays) }
+    elseif ($r.Command -ne '(winget)') { $r.Stale = $true }
     if     ($r.Method -eq 'npm' -and $r.Package)                   { $r.UninstallCmd = "npm rm -g $($r.Package)" }
     elseif ($r.Method -eq 'winget' -and $r.Command -eq '(winget)') { $r.UninstallCmd = "winget uninstall --id `"$($r.Source)`"" }
     elseif ($r.Method -eq 'winget')                                { $r.UninstallCmd = "winget uninstall `"$($r.Name)`"" }
