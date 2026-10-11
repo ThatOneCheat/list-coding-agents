@@ -509,6 +509,30 @@ function Get-NpmMeta {
     $map
 }
 
+function Select-NpmPrimaryRow([System.Collections.Generic.List[object]]$Rows) {
+    # One row per npm package: vercel ships both "vercel" and "vc", and that is
+    # one tool, not two. Keep the bin that is named like the package.
+    $byPkg = @{}
+    foreach ($r in $Rows) {
+        if ($r.Method -eq 'npm' -and $r.Package) {
+            if (-not $byPkg.ContainsKey($r.Package)) { $byPkg[$r.Package] = @() }
+            $byPkg[$r.Package] += $r
+        }
+    }
+    $drop = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($pkg in @($byPkg.Keys)) {
+        $group = @($byPkg[$pkg])
+        if ($group.Count -lt 2) { continue }
+        $base = ($pkg -split '/')[-1]
+        $keep = $group | Where-Object { $_.Command -eq $base } | Select-Object -First 1
+        if (-not $keep) { $keep = $group[0] }
+        foreach ($r in $group) { if ($r.Command -ne $keep.Command) { [void]$drop.Add($r.Command) } }
+    }
+    $out = [System.Collections.Generic.List[object]]::new()
+    foreach ($r in $Rows) { if (-not ($r.Method -eq 'npm' -and $drop.Contains($r.Command))) { $out.Add($r) } }
+    ,$out
+}
+
 # --- candidate commands: PATH (outside Windows) -----------------------------
 function Get-PathCandidates {
     $exts = @(
@@ -695,6 +719,8 @@ foreach ($c in Get-PathCandidates) {
         Sessions30d=0; McpCount=0; Auth=$false; Stale=$false; UninstallCmd=''; Shadows=@($c.Shadows)
     })
 }
+
+$rows = Select-NpmPrimaryRow $rows
 
 # --- evaluate winget packages (catches agents that aren't on PATH, e.g. Codex)
 # $wingetScanned drives the partial-scan handling further down: a run that never

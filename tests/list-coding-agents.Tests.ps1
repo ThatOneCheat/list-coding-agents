@@ -196,3 +196,21 @@ Describe 'Get-AgentScore precision' {
         $s.Score | Should -BeLessThan 0
     }
 }
+
+Describe 'Select-NpmPrimaryRow' {
+    It 'keeps one row per npm package, the bin named like the package' {
+        $rows = [System.Collections.Generic.List[object]]::new()
+        $rows.Add([pscustomobject]@{ Command = 'vc';     Method = 'npm'; Package = 'vercel' })
+        $rows.Add([pscustomobject]@{ Command = 'vercel'; Method = 'npm'; Package = 'vercel' })
+        $rows.Add([pscustomobject]@{ Command = 'claude'; Method = 'npm'; Package = '@anthropic-ai/claude-code' })
+        $rows.Add([pscustomobject]@{ Command = 'kimi';   Method = 'standalone installer'; Package = '' })
+        $out = Select-NpmPrimaryRow $rows
+        @($out | ForEach-Object { $_.Command }) | Should -Be @('vercel', 'claude', 'kimi')
+    }
+    It 'falls back to the first bin when none is named like the package' {
+        $rows = [System.Collections.Generic.List[object]]::new()
+        $rows.Add([pscustomobject]@{ Command = 'cc';   Method = 'npm'; Package = '@acme/cool-cli' })
+        $rows.Add([pscustomobject]@{ Command = 'cool'; Method = 'npm'; Package = '@acme/cool-cli' })
+        @((Select-NpmPrimaryRow $rows) | ForEach-Object { $_.Command }) | Should -Be @('cc')
+    }
+}
