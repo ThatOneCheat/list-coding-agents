@@ -8,7 +8,7 @@ Branch: `ccr-82f8cba4-qqa6vr` (the session's designated branch; see D-01).
 ## Phase checklist
 
 - [x] Phase 0 - Recon (parity spec, verified defects, catalog draft, toolchain facts, baseline)
-- [ ] Phase 1 - Foundation (module skeleton, provider seam, result model + schema, build + bundle, lint + Pester config, CI skeleton, fixture builder + shims, v1 port, frozen contracts)
+- [x] Phase 1 - Foundation (module skeleton, provider seam, result model + schema, build + bundle, lint + Pester config, CI skeleton, fixture builder + shims, v1 port, frozen contracts)
 - [ ] Phase 2 - Workstreams A Detection / B Enrichment / C Updates / D State & CLI / E Report / F Repo & docs
 - [ ] Phase 3 - Integrate, adversarial review, gates
 - [ ] Phase 4 - Ship-ready (docs, final gates, progress file removed, push, draft PR)
@@ -32,6 +32,12 @@ Measured (Linux, pwsh 7.6.6):
 - Pester: **310 passed**, 0 failed, 4 skipped (Windows-only / 5.1-only), ~40 s; line coverage **74.0%** of src/ (gate is 80%, Phase 2 must add tests).
 - Bundle: 183.9 KB, byte-identical across rebuilds.
 - Fixture scan (1 npm agent, Linux): detects claude (v1 on the same fixture: 0).
+
+Independent verification (Phase 1 verifier agent, read-only, at 6c86657): 1 blocker + 7 majors + 15 minors, all reproduced with fixture scripts. Fixed in b877fce: ValidateSet broke a real `irm | iex` (blocker); stale PATH entries threw in `Find-LcaExecutable`; relative `-OutDir` resolved against the process dir; RunspacePool ignored its timeout and lost errors/diagnostics; the timeout test did not prove the tree kill (now asserts recorded PIDs die - and fails when the kill is mocked out); command `Display` not paste-safe; `-Redact` over-matched (user `vscode` rewrote channel `vscode`); `-WhatIf` wrote state and reports; plus diagnostics wiped by the scan, N6 half-applied in history, `-Format json` stdout polluted, ISO dates becoming DateTime on pwsh 7, shim/process encodings, registry casts, batch path quoting, report opening outside the seam, contract gaps (`Installs`, `EditorHost`, Options, `wingetPackages`), build guard against top-level return/param/using, iex variable cleanup. Left for workstreams: 5.1 junction-following size walks (B), Update-CodingAgent re-probe (C).
+
+CI (GitHub Actions) at e14f32e: windows pwsh 7 green (incl. the real v1-vs-v2 run: same detections), macOS green, ubuntu red only on the coverage gate (73.9%), windows 5.1 red on 3 issues fixed in 6c86657 (5.1 `-Include` quirk in a test, v1 JSON array unrolling in a test, stdin BOM on .NET Framework). Speed on the windows-latest fixture: v1 1547 ms vs v2 1875 ms (pwsh 7), v1 1699 ms vs v2 2441 ms (5.1) - gate 10 is NOT met yet (workstreams A/B).
+
+After the fixes (Linux): 361 tests passed, 0 failed, 5 skipped; lint 0; coverage 73.0%.
 
 Known gaps handed to Phase 2 (beyond the brief's workstream scope):
 - A: scoring every binary in `/usr/bin` takes ~2.8 s on this box; `/bin` -> `/usr/bin` symlink produces a false PATH conflict (`sg`); on Linux `sg` (shadow-utils) shows as POSSIBLE.
