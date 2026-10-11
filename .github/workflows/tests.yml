@@ -1,0 +1,39 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pester:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # windows powershell 5.1 and pwsh 7, the script has to work on both
+        shell: [powershell, pwsh]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: pester tests (${{ matrix.shell }})
+        shell: ${{ matrix.shell }}
+        run: |
+          if (-not (Get-Module -ListAvailable Pester | Where-Object { $_.Version -ge [version]'5.5' })) {
+            Install-PackageProvider NuGet -Force -Scope CurrentUser | Out-Null
+            Install-Module Pester -MinimumVersion 5.5 -Force -Scope CurrentUser -SkipPublisherCheck
+          }
+          Import-Module Pester -MinimumVersion 5.5
+          $c = New-PesterConfiguration
+          $c.Run.Path = './tests'
+          $c.Run.Exit = $true
+          $c.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $c
+
+      - name: smoke scan (${{ matrix.shell }})
+        shell: ${{ matrix.shell }}
+        run: |
+          $ErrorActionPreference = 'Continue'
+          .\list-coding-agents.ps1 -NoHtml -SkipWinget -Json -ShowReasons
+          if (-not (Test-Path .\coding-agents.json)) { throw 'no coding-agents.json written' }
+          $null = Get-Content .\coding-agents.json -Raw | ConvertFrom-Json
+          Write-Host 'json parses ok'
