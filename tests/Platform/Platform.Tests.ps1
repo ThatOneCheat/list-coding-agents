@@ -231,7 +231,9 @@ Describe 'Invoke-LcaProcess' {
             $cmd = '"$env:CI|$env:NO_COLOR|$env:TERM"; $x = [Console]::In.ReadToEnd(); "stdin=[" + $x + "]"'
             $r = Invoke-LcaProcess -FilePath $exe -ArgumentList @('-NoProfile', '-NonInteractive', '-Command', $cmd) -TimeoutSec 60
             $r.StdOut | Should -Match '1\|1\|dumb'
-            $r.StdOut | Should -Match 'stdin=\[\]'
+            # .NET Framework writes a BOM into the child's stdin when the console
+            # input code page is UTF-8 (documented limitation in Open-LcaProcess)
+            $r.StdOut | Should -Match ('stdin=\[' + [char]0xFEFF + '?\]')
         }
     }
 }
