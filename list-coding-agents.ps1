@@ -609,6 +609,14 @@ function Get-Kind {
     return 'cli'
 }
 
+function Format-ExeVersion([string]$V) {
+    # Windows version-info is always four numbers, so a 2.1.296 build shows up
+    # as 2.1.296.0. Drop a trailing .0 when the first three parts are there;
+    # a real four-part version (155.0.4283.45) stays as it is.
+    if ($V -match '^(\d+\.\d+\.\d+)\.0$') { return $Matches[1] }
+    $V
+}
+
 function Get-PeText {
     param([string]$Path)
     if (-not $Path -or $Path -notmatch '\.exe$') {
@@ -713,7 +721,7 @@ foreach ($c in Get-PathCandidates) {
     $pe = Get-PeText -Path $path
     if ($pe.Text) { $text = (@($text, $pe.Text) -join ' ').Trim() }
     if ($pe.Publisher) { $publisher = $pe.Publisher }
-    if (-not $version -and $pe.Version -match '(\d+(\.\d+)+)') { $version = $Matches[1] }
+    if (-not $version -and $pe.Version -match '(\d+(\.\d+)+)') { $version = Format-ExeVersion $Matches[1] }
 
     $s = Get-AgentScore -Text $text -Deps $deps -Publisher $publisher -Name $name -Path $path
     if ($extra.Contains($name) -and $s.Score -lt 4) { $s = [pscustomobject]@{ Score = 5; Why = 'agents-extra.txt override' } }

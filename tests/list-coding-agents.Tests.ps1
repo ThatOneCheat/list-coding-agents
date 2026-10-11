@@ -226,3 +226,9 @@ Describe 'Write-Utf8File' {
         } finally { Remove-Item -LiteralPath $f -ErrorAction SilentlyContinue }
     }
 }
+
+Describe 'Format-ExeVersion' {
+    It 'drops the trailing .0 that windows version-info adds' { Format-ExeVersion '2.1.296.0' | Should -Be '2.1.296' }
+    It 'keeps a real four-part version' { Format-ExeVersion '155.0.4283.45' | Should -Be '155.0.4283.45' }
+    It 'leaves three-part versions alone' { Format-ExeVersion '1.2.3' | Should -Be '1.2.3' }
+}
