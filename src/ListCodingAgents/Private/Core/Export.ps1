@@ -87,6 +87,7 @@ function ConvertTo-LcaExport {
         tool          = [ordered]@{ name = 'list-coding-agents'; version = $Scan.ToolVersion }
         generatedAt   = (ConvertTo-LcaIsoString -Value $Scan.GeneratedAt)
         host          = $Scan.HostName
+        user          = $Scan.UserName
         platform      = $Scan.Platform
         powershell    = $Scan.PowerShell
         redacted      = [bool]$Redact
@@ -127,6 +128,7 @@ function ConvertTo-LcaExport {
     if ($Redact) {
         $export = ConvertTo-LcaRedacted -InputObject $export -HomeDir $Scan.HomeDir -UserName $Scan.UserName
         $export['host'] = $null
+        $export['user'] = $null
         $export['redacted'] = $true
     }
     $export

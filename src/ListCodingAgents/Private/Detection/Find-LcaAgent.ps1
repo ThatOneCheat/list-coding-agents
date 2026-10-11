@@ -7,9 +7,13 @@ function Find-LcaAgent {
     <#
     Runs every detection source and returns Agent rows with Tier 'detected'
     or 'possible' (plus 'excluded' rows for the -Explain target only).
-    Side data for later phases goes to $Context.Data:
-      npm           command -> npm package metadata
-      wingetScanned $true when the winget list was read
+    Side data for later phases goes to $Context.Data (contract):
+      npm             command -> npm package metadata
+      npmRoot         npm global root
+      wingetAvailable winget is installed
+      wingetScanned   the winget list was read (a full scan)
+      wingetPackages  every parsed winget row { Name, Id, Version, Available, Source }
+                      (C reads Available from here: one winget call per scan)
     #>
     [CmdletBinding()]
     [OutputType([pscustomobject[]])]
@@ -79,7 +83,8 @@ function Find-LcaAgent {
     # wingetScanned drives the partial-scan handling: a run that never looked
     # at winget must not claim winget-only agents disappeared.
     $Context.Data['wingetScanned'] = $false
-    if (-not $Context.Options.SkipWinget) {
+    $Context.Data['wingetAvailable'] = [bool](Find-LcaExecutable -Name 'winget')
+    if (-not $Context.Options.SkipWinget -and $Context.Data['wingetAvailable']) {
         $wg = Measure-LcaPhase -Context $Context -Name 'winget' -ScriptBlock { Get-LcaWingetPackage }
         if ($wg.Scanned) {
             $Context.Data['wingetScanned'] = $true

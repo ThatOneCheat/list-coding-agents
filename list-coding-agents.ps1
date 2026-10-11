@@ -2029,16 +2029,25 @@ function Invoke-LcaCli {
             Explain = $opt.Explain; ShowReasons = $opt.ShowReasons; Redact = $opt.Redact
         }
         $ctx = New-LcaContext -Options $ctxOptions -ScriptRoot $ScriptRoot
+        $ctx.Data['quiet'] = [bool]$opt.Quiet
         $scan = Invoke-LcaScan -Context $ctx
 
-        if (-not $opt.Quiet) { Write-LcaConsoleReport -Context $ctx -Scan $scan }
+        if ($opt.Explain) {
+            foreach ($l in (Get-LcaExplanation -Context $ctx -Scan $scan -Name $opt.Explain).Lines) { Write-LcaConsoleLine $l }
+        } elseif (-not $opt.Quiet -and -not $opt.Format) {
+            Write-LcaConsoleReport -Context $ctx -Scan $scan
+        }
 
         $exit = $script:LcaExitCode.Ok
         if ($opt.UpdateAll) {
-            $outdated = @(Select-LcaAgentInScope -Context $ctx -Agent $scan.Agents -Tier 'detected' | Where-Object { $_.UpdateStatus -eq 'outdated' })
-            if ($outdated.Count) {
-                $res = @($outdated | Update-CodingAgent -Force:$opt.Force -WhatIf:([bool]$opt.WhatIf) -Confirm:([bool]$opt.Confirm) -PassThru)
-                if (@($res | Where-Object { $_.Status -eq 'failed' }).Count) { $exit = $script:LcaExitCode.UpdateFailed }
+            $res = @(Invoke-LcaUpdateAll -Context $ctx -Scan $scan -Force:$opt.Force -DryRun:([bool]$opt.WhatIf) -AskConfirm:([bool]$opt.Confirm))
+            if (@($res | Where-Object { $_.Status -eq 'failed' }).Count) { $exit = $script:LcaExitCode.UpdateFailed }
+        }
+        if ($opt.FailOn) {
+            $failed = @(Test-LcaFailOn -Context $ctx -Scan $scan -FailOn $opt.FailOn)
+            if ($failed.Count -and $exit -eq $script:LcaExitCode.Ok) {
+                $exit = $script:LcaExitCode.FailOn
+                if (-not $opt.Quiet) { Write-LcaConsoleLine ('-FailOn matched: ' + ($failed -join ', ')) 'Red' }
             }
         }
 
@@ -2081,6 +2090,25 @@ function Open-LcaReport {
     } catch {
         Add-LcaDiagnostic -Source 'report' -Level 'info' -Message "could not open $Path" -ErrorRecord $_
     }
+}
+# ---- Private/Console/Progress.ps1 ----
+# Progress reporting for the scan phases. Workstream D owns the rendering.
+
+function Write-LcaProgress {
+    <#
+    Reports scan progress (Write-Progress) unless the context says to stay
+    quiet. -Completed clears the bar.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]$Context,
+        [string]$Status = '',
+        [int]$PercentComplete = -1,
+        [switch]$Completed
+    )
+    if ($Context.Data.ContainsKey('quiet') -and $Context.Data['quiet']) { return }
+    if ($Completed) { Write-Progress -Activity 'list-coding-agents' -Completed; return }
+    Write-Progress -Activity 'list-coding-agents' -Status $Status -PercentComplete $PercentComplete
 }
 # ---- Private/Console/Write-LcaConsoleReport.ps1 ----
 # Terminal report (ported from v1). Workstream D replaces this with a
@@ -2511,6 +2539,7 @@ function ConvertTo-LcaExport {
         tool          = [ordered]@{ name = 'list-coding-agents'; version = $Scan.ToolVersion }
         generatedAt   = (ConvertTo-LcaIsoString -Value $Scan.GeneratedAt)
         host          = $Scan.HostName
+        user          = $Scan.UserName
         platform      = $Scan.Platform
         powershell    = $Scan.PowerShell
         redacted      = [bool]$Redact
@@ -2551,6 +2580,7 @@ function ConvertTo-LcaExport {
     if ($Redact) {
         $export = ConvertTo-LcaRedacted -InputObject $export -HomeDir $Scan.HomeDir -UserName $Scan.UserName
         $export['host'] = $null
+        $export['user'] = $null
         $export['redacted'] = $true
     }
     $export
@@ -2788,6 +2818,8 @@ $script:LcaAgentDefaults = [ordered]@{
     Package       = $null      # package name / id in its channel
     PackageDir    = $null      # package directory when known (npm, pipx venv, extension dir ...)
     Sources       = @()        # scanners that saw it: path npm winget registry pipx uv cargo brew scoop choco vscode ...
+    ChannelData   = $null      # hashtable of channel-specific facts for later phases (registry UninstallString,
+                               # InstallLocation, pipx venv, brew formula, winget Available ...). Not exported.
     Shadows       = @()        # later PATH entries with the same command name
     # versions / updates
     Version       = $null
@@ -2824,6 +2856,7 @@ function New-LcaAgent {
     foreach ($k in $script:LcaAgentDefaults.Keys) {
         $v = $script:LcaAgentDefaults[$k]
         if ($v -is [array]) { $v = @() }
+        if ($k -eq 'ChannelData') { $v = @{} }
         $o[$k] = $v
     }
     foreach ($k in $Property.Keys) {
@@ -3014,18 +3047,25 @@ function Invoke-LcaScan {
     $state = Measure-LcaPhase -Context $Context -Name 'state-read' -ScriptBlock { Read-LcaState -Context $Context }
     foreach ($k in $state.Probes.Keys) { $Context.ProbeCache[$k] = $state.Probes[$k] }
 
+    Write-LcaProgress -Context $Context -Status 'detecting agents' -PercentComplete 5
     $agents = Measure-LcaPhase -Context $Context -Name 'detect' -ScriptBlock { Find-LcaAgent -Context $Context }
     $agents = @($agents)
+    Write-LcaProgress -Context $Context -Status 'sizes, usage, versions' -PercentComplete 45
     Measure-LcaPhase -Context $Context -Name 'enrich' -ScriptBlock { Add-LcaEnrichment -Context $Context -Agent $agents }
+    Write-LcaProgress -Context $Context -Status 'update information' -PercentComplete 75
     Measure-LcaPhase -Context $Context -Name 'updates' -ScriptBlock { Add-LcaUpdateInfo -Context $Context -Agent $agents }
+    Write-LcaProgress -Context $Context -Completed
     $health = Get-LcaFleetHealth -Context $Context -Agent $agents
     $changes = Measure-LcaPhase -Context $Context -Name 'history' -ScriptBlock {
         Get-LcaHistoryChange -Context $Context -State $state -Agent $agents -TotalMB $health.TotalMB
     }
+    # Partial = winget exists but was not read (skipped or failed). A machine
+    # without winget is fully scanned: there are no winget-only agents to miss
+    # (v1 treated it as partial forever, so it never recorded a trend - N6).
     $wingetScanned = [bool]$Context.Data['wingetScanned']
     $partialReason = $null
-    if (-not $wingetScanned -and $Context.Platform -eq 'windows') {
-        $partialReason = 'winget not found'
+    if ($Context.Data['wingetAvailable'] -and -not $wingetScanned) {
+        $partialReason = 'winget query failed'
         if ($Context.Options.SkipWinget) { $partialReason = '-SkipWinget' }
     }
     $edition = 'Desktop'
@@ -3116,6 +3156,38 @@ function Get-LcaPeText {
         Version   = [string]$ver
     }
 }
+# ---- Private/Detection/Explain.ps1 ----
+# -Explain <name>: the full scoring breakdown for one command or package,
+# including why it was excluded. Workstream A owns the content.
+
+function Get-LcaExplanation {
+    <#
+    Returns { Name, Found, Lines } where Lines is the human-readable
+    breakdown the CLI prints verbatim. Found is $false when nothing by that
+    name was seen by any source.
+    #>
+    [CmdletBinding()]
+    [OutputType([pscustomobject])]
+    param(
+        [Parameter(Mandatory = $true)]$Context,
+        [Parameter(Mandatory = $true)]$Scan,
+        [Parameter(Mandatory = $true)][string]$Name
+    )
+    $hits = @($Scan.Agents | Where-Object { $_.Name -eq $Name -or $_.Command -eq $Name -or $_.Id -eq $Name -or $_.Package -eq $Name })
+    $lines = New-Object System.Collections.Generic.List[string]
+    $t = $Context.Catalog.scoring.thresholds
+    $lines.Add(("tiers: detected >= {0}, possible >= {1}" -f $t.detected, $t.possible))
+    if (-not $hits.Count) {
+        $lines.Add(("{0}: not found by any source (not on PATH, not a known package)" -f $Name))
+    }
+    foreach ($a in $hits) {
+        $lines.Add(("{0}: score {1} -> {2} ({3}, {4})" -f $a.Name, $a.Score, $a.Tier, $a.Kind, $a.Method))
+        foreach ($e in @($a.Evidence)) {
+            $lines.Add(("  {0,4}  {1} [{2}]" -f $e.Weight, $e.Label, $e.Source))
+        }
+    }
+    [pscustomobject]@{ Name = $Name; Found = [bool]$hits.Count; Lines = $lines.ToArray() }
+}
 # ---- Private/Detection/Find-LcaAgent.ps1 ----
 # Detection entry point: every source -> scored ListCodingAgents.Agent rows.
 # Returns ALL rows that reached a tier (detected / possible), regardless of
@@ -3126,9 +3198,13 @@ function Find-LcaAgent {
     <#
     Runs every detection source and returns Agent rows with Tier 'detected'
     or 'possible' (plus 'excluded' rows for the -Explain target only).
-    Side data for later phases goes to $Context.Data:
-      npm           command -> npm package metadata
-      wingetScanned $true when the winget list was read
+    Side data for later phases goes to $Context.Data (contract):
+      npm             command -> npm package metadata
+      npmRoot         npm global root
+      wingetAvailable winget is installed
+      wingetScanned   the winget list was read (a full scan)
+      wingetPackages  every parsed winget row { Name, Id, Version, Available, Source }
+                      (C reads Available from here: one winget call per scan)
     #>
     [CmdletBinding()]
     [OutputType([pscustomobject[]])]
@@ -3198,7 +3274,8 @@ function Find-LcaAgent {
     # wingetScanned drives the partial-scan handling: a run that never looked
     # at winget must not claim winget-only agents disappeared.
     $Context.Data['wingetScanned'] = $false
-    if (-not $Context.Options.SkipWinget) {
+    $Context.Data['wingetAvailable'] = [bool](Find-LcaExecutable -Name 'winget')
+    if (-not $Context.Options.SkipWinget -and $Context.Data['wingetAvailable']) {
         $wg = Measure-LcaPhase -Context $Context -Name 'winget' -ScriptBlock { Get-LcaWingetPackage }
         if ($wg.Scanned) {
             $Context.Data['wingetScanned'] = $true
@@ -4049,6 +4126,85 @@ function Get-LcaUserName {
     }
     $n
 }
+# ---- Private/Platform/Network.ps1 ----
+# Provider seam: the only network access (opt-in update checks: npm / PyPI /
+# crates.io registry fallbacks, GitHub latest-release checks) and the
+# Microsoft.WinGet.Client module. Nothing here runs unless a caller asks.
+
+function Invoke-LcaHttpJson {
+    <#
+    GETs a JSON document with a timeout. Never throws; returns
+    { Ok, Data, StatusCode, Error }.
+    #>
+    [CmdletBinding()]
+    [OutputType([pscustomobject])]
+    param(
+        [Parameter(Mandatory = $true)][string]$Uri,
+        [int]$TimeoutSec = 15,
+        [hashtable]$Headers = @{}
+    )
+    $res = [pscustomobject]@{ Ok = $false; Data = $null; StatusCode = $null; Error = $null }
+    if ($Uri -notmatch '^https://') {
+        $res.Error = 'only https URLs are allowed'
+        return $res
+    }
+    $h = @{ 'User-Agent' = ('list-coding-agents/' + $script:LcaToolVersion); 'Accept' = 'application/json' }
+    foreach ($k in $Headers.Keys) { $h[$k] = $Headers[$k] }
+    try {
+        if (Test-LcaDesktopEdition) {
+            # Windows PowerShell 5.1 does not offer TLS 1.2 by default on older systems.
+            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor [System.Net.SecurityProtocolType]::Tls12
+        }
+        $params = @{ Uri = $Uri; Headers = $h; TimeoutSec = $TimeoutSec; Method = 'Get'; ErrorAction = 'Stop' }
+        if (Test-LcaDesktopEdition) { $params['UseBasicParsing'] = $true }
+        $res.Data = Invoke-RestMethod @params
+        $res.Ok = $true
+        $res.StatusCode = 200
+    } catch {
+        $res.Error = $_.Exception.Message
+        $resp = $null
+        try { $resp = $_.Exception.Response } catch { Write-Debug 'no response on exception' }
+        if ($resp) {
+            try { $res.StatusCode = [int]$resp.StatusCode } catch { Write-Debug 'no status code' }
+        }
+    }
+    $res
+}
+
+function Get-LcaWinGetModulePackage {
+    <#
+    Installed packages from the Microsoft.WinGet.Client module
+    (Get-WinGetPackage) when that module is available - structured data, no
+    column parsing, no truncated ids. Returns $null when the module is not
+    installed (callers then fall back to parsing `winget list`), else
+    { Name, Id, Version, Available, Source } per package.
+    #>
+    [CmdletBinding()]
+    [OutputType([pscustomobject[]])]
+    param()
+    if (-not (Test-LcaWindows)) { return $null }
+    $cmd = Get-Command -Name 'Get-WinGetPackage' -ErrorAction Ignore
+    if (-not $cmd) { return $null }
+    try {
+        $pkgs = @(& $cmd -ErrorAction Stop)
+    } catch {
+        Write-Verbose "Get-WinGetPackage failed: $($_.Exception.Message)"
+        return $null
+    }
+    $out = foreach ($p in $pkgs) {
+        $props = @($p.PSObject.Properties | ForEach-Object { $_.Name })
+        $avail = $null
+        if ($props -contains 'IsUpdateAvailable' -and $p.IsUpdateAvailable -and $props -contains 'AvailableVersions' -and $p.AvailableVersions) {
+            $avail = [string](@($p.AvailableVersions)[0])
+        }
+        $src = $null
+        if ($props -contains 'Source') { $src = [string]$p.Source }
+        $ver = $null
+        if ($props -contains 'InstalledVersion') { $ver = [string]$p.InstalledVersion }
+        [pscustomobject]@{ Name = [string]$p.Name; Id = [string]$p.Id; Version = $ver; Available = $avail; Source = $src }
+    }
+    @($out)
+}
 # ---- Private/Platform/Parallel.ps1 ----
 # Bounded parallelism that works on Windows PowerShell 5.1 (a RunspacePool;
 # ForEach-Object -Parallel is 7.0+). Runspaces do not see module functions,
@@ -4321,7 +4477,12 @@ function Open-LcaProcess {
         }
         $p = [System.Diagnostics.Process]::Start($psi)
         $handle.Process = $p
-        try { $p.StandardInput.Close() } catch { Write-Debug "stdin close failed: $($_.Exception.Message)" }
+        # Close stdin so a CLI waiting for input sees EOF. On .NET Framework the
+        # stdin writer would emit a UTF-8 BOM on close (Console.InputEncoding),
+        # so close the raw stream there instead of the writer.
+        try {
+            if (Test-LcaDesktopEdition) { $p.StandardInput.BaseStream.Close() } else { $p.StandardInput.Close() }
+        } catch { Write-Debug "stdin close failed: $($_.Exception.Message)" }
         $handle.OutTask = $p.StandardOutput.ReadToEndAsync()
         $handle.ErrTask = $p.StandardError.ReadToEndAsync()
     } catch {
@@ -4921,6 +5082,57 @@ function Add-LcaUpdateInfo {
             }
         }
     }
+}
+# ---- Private/Updates/FailOn.ps1 ----
+# -FailOn outdated,stale,conflict,new for CI. Workstream C owns this.
+
+function Test-LcaFailOn {
+    <#
+    Returns the -FailOn conditions that are present in the scan (display
+    scope), e.g. @('outdated', 'new'). Empty when none matched.
+    #>
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param(
+        [Parameter(Mandatory = $true)]$Context,
+        [Parameter(Mandatory = $true)]$Scan,
+        [AllowEmptyCollection()][string[]]$FailOn = @()
+    )
+    $inScope = @(Select-LcaAgentInScope -Context $Context -Agent $Scan.Agents -Tier 'detected')
+    $hit = New-Object System.Collections.Generic.List[string]
+    foreach ($c in @($FailOn)) {
+        $match = switch ($c) {
+            'outdated' { @($inScope | Where-Object { $_.UpdateStatus -eq 'outdated' }).Count -gt 0 }
+            'stale' { @($inScope | Where-Object { $_.Usage -eq 'stale' }).Count -gt 0 }
+            'conflict' { @($inScope | Where-Object { @($_.Shadows).Count -gt 0 }).Count -gt 0 }
+            'new' { @($Scan.Changes.New).Count -gt 0 }
+            default { $false }
+        }
+        if ($match -and -not $hit.Contains($c)) { $hit.Add($c) }
+    }
+    $hit.ToArray()
+}
+# ---- Private/Updates/UpdateAll.ps1 ----
+# -UpdateAll from the CLI. Workstream C owns this.
+
+function Invoke-LcaUpdateAll {
+    <#
+    Updates every outdated DETECTED agent in display scope through
+    Update-CodingAgent (ShouldProcess: -DryRun maps to -WhatIf, -AskConfirm to -Confirm).
+    Returns the ListCodingAgents.UpdateResult objects.
+    #>
+    [CmdletBinding()]
+    [OutputType([pscustomobject[]])]
+    param(
+        [Parameter(Mandatory = $true)]$Context,
+        [Parameter(Mandatory = $true)]$Scan,
+        [switch]$Force,
+        [switch]$DryRun,
+        [switch]$AskConfirm
+    )
+    $outdated = @(Select-LcaAgentInScope -Context $Context -Agent $Scan.Agents -Tier 'detected' | Where-Object { $_.UpdateStatus -eq 'outdated' })
+    if (-not $outdated.Count) { return @() }
+    @($outdated | Update-CodingAgent -Force:$Force -WhatIf:$DryRun -Confirm:$AskConfirm -PassThru)
 }
 # ---- Public/Export-CodingAgentReport.ps1 ----
 function Export-CodingAgentReport {

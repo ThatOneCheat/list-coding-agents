@@ -90,18 +90,25 @@ function Invoke-LcaScan {
     $state = Measure-LcaPhase -Context $Context -Name 'state-read' -ScriptBlock { Read-LcaState -Context $Context }
     foreach ($k in $state.Probes.Keys) { $Context.ProbeCache[$k] = $state.Probes[$k] }
 
+    Write-LcaProgress -Context $Context -Status 'detecting agents' -PercentComplete 5
     $agents = Measure-LcaPhase -Context $Context -Name 'detect' -ScriptBlock { Find-LcaAgent -Context $Context }
     $agents = @($agents)
+    Write-LcaProgress -Context $Context -Status 'sizes, usage, versions' -PercentComplete 45
     Measure-LcaPhase -Context $Context -Name 'enrich' -ScriptBlock { Add-LcaEnrichment -Context $Context -Agent $agents }
+    Write-LcaProgress -Context $Context -Status 'update information' -PercentComplete 75
     Measure-LcaPhase -Context $Context -Name 'updates' -ScriptBlock { Add-LcaUpdateInfo -Context $Context -Agent $agents }
+    Write-LcaProgress -Context $Context -Completed
     $health = Get-LcaFleetHealth -Context $Context -Agent $agents
     $changes = Measure-LcaPhase -Context $Context -Name 'history' -ScriptBlock {
         Get-LcaHistoryChange -Context $Context -State $state -Agent $agents -TotalMB $health.TotalMB
     }
+    # Partial = winget exists but was not read (skipped or failed). A machine
+    # without winget is fully scanned: there are no winget-only agents to miss
+    # (v1 treated it as partial forever, so it never recorded a trend - N6).
     $wingetScanned = [bool]$Context.Data['wingetScanned']
     $partialReason = $null
-    if (-not $wingetScanned -and $Context.Platform -eq 'windows') {
-        $partialReason = 'winget not found'
+    if ($Context.Data['wingetAvailable'] -and -not $wingetScanned) {
+        $partialReason = 'winget query failed'
         if ($Context.Options.SkipWinget) { $partialReason = '-SkipWinget' }
     }
     $edition = 'Desktop'

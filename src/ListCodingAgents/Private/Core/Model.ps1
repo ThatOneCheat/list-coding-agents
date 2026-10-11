@@ -26,6 +26,8 @@ $script:LcaAgentDefaults = [ordered]@{
     Package       = $null      # package name / id in its channel
     PackageDir    = $null      # package directory when known (npm, pipx venv, extension dir ...)
     Sources       = @()        # scanners that saw it: path npm winget registry pipx uv cargo brew scoop choco vscode ...
+    ChannelData   = $null      # hashtable of channel-specific facts for later phases (registry UninstallString,
+                               # InstallLocation, pipx venv, brew formula, winget Available ...). Not exported.
     Shadows       = @()        # later PATH entries with the same command name
     # versions / updates
     Version       = $null
@@ -62,6 +64,7 @@ function New-LcaAgent {
     foreach ($k in $script:LcaAgentDefaults.Keys) {
         $v = $script:LcaAgentDefaults[$k]
         if ($v -is [array]) { $v = @() }
+        if ($k -eq 'ChannelData') { $v = @{} }
         $o[$k] = $v
     }
     foreach ($k in $Property.Keys) {

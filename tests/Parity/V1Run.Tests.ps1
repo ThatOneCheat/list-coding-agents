@@ -42,7 +42,9 @@ Describe 'v1 vs v2 on the same fixture machine' -Skip:(-not $script:OnWindows) {
         $r2 = Invoke-LcaFixtureScript -Fixture $fx -Path (Join-Path $v2Dir 'list-coding-agents.ps1') -ArgumentList @('-NoHtml', '-NoOpen', '-Json', '-OutDir', $v2Dir)
         $script:V2Ms = $sw.ElapsedMilliseconds
         $script:R1 = $r1; $script:R2 = $r2
-        $script:J1 = @(Get-Content -LiteralPath (Join-Path $v1Dir 'coding-agents.json') -Raw | ConvertFrom-Json)
+        # assign first: on 5.1 ConvertFrom-Json emits a top-level array as ONE object
+        $j1 = ConvertFrom-Json -InputObject (Get-Content -LiteralPath (Join-Path $v1Dir 'coding-agents.json') -Raw)
+        $script:J1 = @($j1)
         $script:J2 = (Get-Content -LiteralPath (Join-Path $v2Dir 'coding-agents.json') -Raw | ConvertFrom-Json).agents
         Write-Host ("v1 {0} ms, v2 {1} ms (fixture, default switches + -NoHtml -Json)" -f $script:V1Ms, $script:V2Ms)
     }

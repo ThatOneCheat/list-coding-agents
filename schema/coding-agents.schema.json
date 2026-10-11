@@ -5,7 +5,7 @@
   "description": "coding-agents.json (-Json), -Format json and the data embedded in coding-agents.html all follow this schema.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "tool", "generatedAt", "host", "platform", "powershell", "redacted", "scope", "summary", "changes", "history", "agents", "diagnostics"],
+  "required": ["schemaVersion", "tool", "generatedAt", "host", "user", "platform", "powershell", "redacted", "scope", "summary", "changes", "history", "agents", "diagnostics"],
   "properties": {
     "schemaVersion": { "const": 2 },
     "tool": {
@@ -19,6 +19,7 @@
     },
     "generatedAt": { "$ref": "#/$defs/isoDate" },
     "host": { "type": ["string", "null"], "description": "Machine name; null when -Redact is used." },
+    "user": { "type": ["string", "null"], "description": "User name, so the report's privacy toggle can mask it in paths; null when -Redact is used." },
     "platform": { "enum": ["windows", "macos", "linux"] },
     "powershell": { "type": "string" },
     "redacted": { "type": "boolean" },

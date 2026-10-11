@@ -7,7 +7,8 @@
 
 BeforeDiscovery {
     $root = (Resolve-Path -LiteralPath (Join-Path -Path $PSScriptRoot -ChildPath '../..')).ProviderPath
-    $codeFiles = @(Get-ChildItem -LiteralPath (Join-Path $root 'src') -Recurse -File -Include '*.ps1', '*.psm1', '*.psd1') +
+    # (-Include does not filter with -LiteralPath on Windows PowerShell 5.1)
+    $codeFiles = @(Get-ChildItem -LiteralPath (Join-Path $root 'src') -Recurse -File | Where-Object { $_.Extension -match '^\.(ps1|psm1|psd1)$' }) +
     @(Get-Item -LiteralPath (Join-Path $root 'build.ps1')) +
     @(Get-ChildItem -LiteralPath (Join-Path $root 'list-coding-agents.ps1') -ErrorAction SilentlyContinue)
     $script:CodeCases = @($codeFiles | ForEach-Object { @{ Path = $_.FullName; Rel = $_.FullName.Substring($root.Length + 1).Replace('\', '/') } })

@@ -62,16 +62,25 @@ function Invoke-LcaCli {
             Explain = $opt.Explain; ShowReasons = $opt.ShowReasons; Redact = $opt.Redact
         }
         $ctx = New-LcaContext -Options $ctxOptions -ScriptRoot $ScriptRoot
+        $ctx.Data['quiet'] = [bool]$opt.Quiet
         $scan = Invoke-LcaScan -Context $ctx
 
-        if (-not $opt.Quiet) { Write-LcaConsoleReport -Context $ctx -Scan $scan }
+        if ($opt.Explain) {
+            foreach ($l in (Get-LcaExplanation -Context $ctx -Scan $scan -Name $opt.Explain).Lines) { Write-LcaConsoleLine $l }
+        } elseif (-not $opt.Quiet -and -not $opt.Format) {
+            Write-LcaConsoleReport -Context $ctx -Scan $scan
+        }
 
         $exit = $script:LcaExitCode.Ok
         if ($opt.UpdateAll) {
-            $outdated = @(Select-LcaAgentInScope -Context $ctx -Agent $scan.Agents -Tier 'detected' | Where-Object { $_.UpdateStatus -eq 'outdated' })
-            if ($outdated.Count) {
-                $res = @($outdated | Update-CodingAgent -Force:$opt.Force -WhatIf:([bool]$opt.WhatIf) -Confirm:([bool]$opt.Confirm) -PassThru)
-                if (@($res | Where-Object { $_.Status -eq 'failed' }).Count) { $exit = $script:LcaExitCode.UpdateFailed }
+            $res = @(Invoke-LcaUpdateAll -Context $ctx -Scan $scan -Force:$opt.Force -DryRun:([bool]$opt.WhatIf) -AskConfirm:([bool]$opt.Confirm))
+            if (@($res | Where-Object { $_.Status -eq 'failed' }).Count) { $exit = $script:LcaExitCode.UpdateFailed }
+        }
+        if ($opt.FailOn) {
+            $failed = @(Test-LcaFailOn -Context $ctx -Scan $scan -FailOn $opt.FailOn)
+            if ($failed.Count -and $exit -eq $script:LcaExitCode.Ok) {
+                $exit = $script:LcaExitCode.FailOn
+                if (-not $opt.Quiet) { Write-LcaConsoleLine ('-FailOn matched: ' + ($failed -join ', ')) 'Red' }
             }
         }
 

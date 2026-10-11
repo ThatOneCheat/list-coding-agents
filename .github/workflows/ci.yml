@@ -43,7 +43,7 @@ jobs:
       run:
         shell: ${{ matrix.shell }}
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
 
       - name: Show versions
         run: |
@@ -75,7 +75,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4.6.0
+        uses: actions/upload-artifact@v6.0.0
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.shell }}
           path: |
@@ -88,9 +88,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
 
-      - uses: actions/setup-node@v4.1.0
+      - uses: actions/setup-node@v5.0.0
         with:
           node-version: 22
 

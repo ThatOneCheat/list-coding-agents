@@ -179,7 +179,12 @@ function Open-LcaProcess {
         }
         $p = [System.Diagnostics.Process]::Start($psi)
         $handle.Process = $p
-        try { $p.StandardInput.Close() } catch { Write-Debug "stdin close failed: $($_.Exception.Message)" }
+        # Close stdin so a CLI waiting for input sees EOF. On .NET Framework the
+        # stdin writer would emit a UTF-8 BOM on close (Console.InputEncoding),
+        # so close the raw stream there instead of the writer.
+        try {
+            if (Test-LcaDesktopEdition) { $p.StandardInput.BaseStream.Close() } else { $p.StandardInput.Close() }
+        } catch { Write-Debug "stdin close failed: $($_.Exception.Message)" }
         $handle.OutTask = $p.StandardOutput.ReadToEndAsync()
         $handle.ErrTask = $p.StandardError.ReadToEndAsync()
     } catch {
