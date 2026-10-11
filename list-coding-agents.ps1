@@ -648,7 +648,7 @@ foreach ($c in Get-PathCandidates) {
     $rows.Add([pscustomobject]@{
         Name=$name; Command=$name; Source=$path; Method=$method; Kind=$kind; Score=$s.Score; Why=$s.Why
         Version=$version; Package=$package; PkgDir=$pkgDir
-        SizeMB=$null; LastUsed=$null; Latest=''; UpdateCmd=''
+        SizeMB=$null; LastUsed=$null; Latest=''; UpdateCmd=''; UpdateArgs=@()
         Sessions30d=0; McpCount=0; Auth=$false; Stale=$false; UninstallCmd=''; Shadows=@($c.Shadows)
     })
 }
@@ -683,7 +683,7 @@ if (-not $SkipWinget -and (Get-Command winget -ErrorAction SilentlyContinue)) {
             $rows.Add([pscustomobject]@{
                 Name=$pkgName; Command='(winget)'; Source=$id; Method='winget'; Kind='cli'; Score=$s.Score; Why=$s.Why
                 Version=$ver; Package=''; PkgDir=''
-                SizeMB=$null; LastUsed=$null; Latest=''; UpdateCmd=''
+                SizeMB=$null; LastUsed=$null; Latest=''; UpdateCmd=''; UpdateArgs=@()
                 Sessions30d=0; McpCount=0; Auth=$false; Stale=$false; UninstallCmd=''; Shadows=@()
             })
         }
@@ -764,6 +764,7 @@ if ($CheckUpdates) {
                         if ($r.Package -eq $p.Name -and $p.Value.latest -and $p.Value.latest -ne $r.Version) {
                             $r.Latest = $p.Value.latest
                             $r.UpdateCmd = "npm i -g $($r.Package)@latest"
+                            $r.UpdateArgs = @('npm', 'i', '-g', "$($r.Package)@latest")
                         }
                     }
                 }
@@ -783,7 +784,8 @@ if ($CheckUpdates) {
         foreach ($r in ($detected | Where-Object { $_.Method -eq 'winget' -and -not $_.Latest })) {
             foreach ($k in $wg.Keys) {
                 if ($r.Source -match [regex]::Escape($k) -or $k -match [regex]::Escape($r.Name)) {
-                    $r.Latest = $wg[$k]; $r.UpdateCmd = "winget upgrade --id `"$k`""; break
+                    $r.Latest = $wg[$k]; $r.UpdateCmd = "winget upgrade --id `"$k`""
+                    $r.UpdateArgs = @('winget', 'upgrade', '--id', $k); break
                 }
             }
         }
@@ -933,7 +935,15 @@ if ($UpdateAll -and $updates.Count) {
         foreach ($r in $updates | Sort-Object Name) {
             Write-Host ""
             Write-Host (">> {0}" -f $r.UpdateCmd) -ForegroundColor Cyan
-            try { Invoke-Expression $r.UpdateCmd } catch { Write-Host ("   failed: {0}" -f $_.Exception.Message) -ForegroundColor Red }
+            # run the exe + args we built ourselves instead of Invoke-Expression on
+            # the display string, so an odd package name can't smuggle extra
+            # PowerShell into the command
+            $exe = $r.UpdateArgs[0]; $rest = @($r.UpdateArgs | Select-Object -Skip 1)
+            $LASTEXITCODE = 0
+            try {
+                & $exe @rest
+                if ($LASTEXITCODE) { Write-Host ("   failed: exit code {0}" -f $LASTEXITCODE) -ForegroundColor Red }
+            } catch { Write-Host ("   failed: {0}" -f $_.Exception.Message) -ForegroundColor Red }
         }
         Write-Host ""
         Write-Host "updates done - re-run the scan to verify versions" -ForegroundColor Green
