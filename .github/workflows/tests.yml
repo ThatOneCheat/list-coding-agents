@@ -1,0 +1,24 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  # windows powershell 5.1 and pwsh 7, the script has to work on both.
+  # (step "shell:" can't take a ${{ matrix }} value, so it's two jobs)
+  winps51:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: tests + smoke scan (windows powershell 5.1)
+        shell: powershell
+        run: .\tests\ci.ps1
+
+  pwsh7:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: tests + smoke scan (pwsh 7)
+        shell: pwsh
+        run: .\tests\ci.ps1

@@ -50,11 +50,14 @@
       agents-exclude.txt  force a name OUT (false positives; wins over -extra)
 
 .PARAMETER IncludeEditors
-    Also include GUI AI editors (Cursor/Windsurf/Kiro/Trae style launchers).
+    Also include GUI AI editors (Cursor/Windsurf/Kiro/Trae style launchers)
+    and desktop apps that winget knows about (Claude, ChatGPT/Codex, ...).
 .PARAMETER ShowReasons
     Print the signals that triggered each detection.
 .PARAMETER NoHtml
     Skip writing/opening the HTML report.
+.PARAMETER NoOpen
+    Write the HTML report but don't launch the browser (handy from scripts).
 .PARAMETER SkipWinget
     Skip the winget package scan (faster when you already know it adds nothing).
     This makes the run a partial scan: winget-only agents are carried over from
@@ -72,12 +75,14 @@ param(
     [switch]$IncludeEditors,
     [switch]$ShowReasons,
     [switch]$NoHtml,
+    [switch]$NoOpen,
     [switch]$SkipWinget,
     [switch]$CheckUpdates,
     [switch]$UpdateAll,
     [switch]$Json
 )
 if ($UpdateAll) { $CheckUpdates = $true }
+$scanClock = [System.Diagnostics.Stopwatch]::StartNew()
 
 # ---------------------------------------------------------------------------
 # Lexicons (linguistic signals, not a product catalogue). These rarely change:
@@ -184,7 +189,7 @@ function Get-AgentScore {
         if ($tLower -match $HardExclude -and $tLower -notmatch $AgentPhrase) {
             return [pscustomobject]@{ Score = -99; Why = 'excluded (non-agent phrase)' }
         }
-        if ($name -match '(?i)(launcher|host|helper|shim|wrapper|updater|unins)') {
+        if ($name -match '(?i)(launcher|host|helper|shim|wrapper|updater|unins|runner)') {
             return [pscustomobject]@{ Score = -99; Why = 'excluded (helper binary)' }
         }
     }
@@ -239,7 +244,9 @@ function Get-AgentScore {
     if ($tLower -match "(?i)($BrandWords)") {
         $score += 1
         $why.Add('model/brand name')
-        if ($tLower -match 'cli|code|coding|terminal|assistant') {
+        # whole words only: "codex" is not "code" plus an x, so the Codex app's
+        # helper exes don't collect this on their name alone
+        if ($tLower -match '\b(cli|code|coding|terminal|assistant)\b') {
             $score += 2
             $why.Add('brand + cli/code')
         }
@@ -260,6 +267,13 @@ function Get-AgentScore {
 }
 
 # --- enrichment helpers ------------------------------------------------------
+function Write-Utf8File([string]$Path, [string]$Text) {
+    # Out-File -Encoding utf8 puts a byte order mark in front on Windows
+    # PowerShell 5.1, which trips up jq / node / python readers of the json.
+    # Plain UTF-8, same bytes on both editions.
+    [System.IO.File]::WriteAllText($Path, $Text, (New-Object System.Text.UTF8Encoding($false)))
+}
+
 function Get-SizeMB([string]$Path) {
     # Directory: recursive sum. File: its own length.
     try {
@@ -338,12 +352,16 @@ function Get-McpCountFromRaw([string]$Raw) {
     $total
 }
 
-function Get-AgentIntel([string]$Name) {
+function Get-AgentIntel([string[]]$Names, [string[]]$ExtraDirs = @()) {
     # One walk over the agent's config dirs: newest write (last used), count of
     # session-ish files touched in the last 30 days, MCP servers configured,
     # and a credentials hint (probably logged in). All heuristic, all generic.
+    # Several names can be tried (a winget row has no command, only a display
+    # name and a package id), plus known-good dirs the caller worked out.
     $res = [pscustomobject]@{ LastUsed = $null; Sessions30d = 0; McpCount = 0; Auth = $false }
-    $dirs = @(Get-ConfigDirs $Name)
+    $dirs = @()
+    foreach ($n in $Names) { foreach ($d in (Get-ConfigDirs $n)) { if ($dirs -notcontains $d) { $dirs += $d } } }
+    foreach ($d in $ExtraDirs) { if ($d -and (Test-Path -LiteralPath $d) -and ($dirs -notcontains $d)) { $dirs += $d } }
     if (-not $dirs.Count) { return $res }
     $cut     = (Get-Date).AddDays(-30)
     $sessRx  = '(?i)\.jsonl$|[\\/](history|sessions?|logs?|chats?|threads?|projects|transcripts?)([\\/]|$)'
@@ -393,16 +411,45 @@ function Format-Age($Dt) {
     ('{0}y ago' -f [int][math]::Floor($days / 365))
 }
 
-function Get-ExeVersionProbe([string]$Path) {
-    # Bare exes carry no metadata, so ask them directly - inside a job with a
-    # timeout so an interactive/hung CLI can't stall the whole scan.
+function Get-ExeVersionProbe([string]$Path, [int]$TimeoutSec = 8, [string[]]$Arguments = @('--version')) {
+    # Bare exes carry no metadata, so ask them directly, with a timeout so an
+    # interactive/hung CLI can't stall the whole scan. This used to go through
+    # Start-Job, which costs ~2s just to spin up the job host and, on a
+    # timeout, left the hung CLI running in the background. A plain process
+    # is quicker to start and gets its whole tree killed when time is up.
+    $p = $null
     try {
-        $job = Start-Job -ScriptBlock { param($p) & $p --version 2>$null } -ArgumentList $Path
-        $out = ''
-        if (Wait-Job $job -Timeout 8) { $out = ((Receive-Job $job -ErrorAction SilentlyContinue) -join ' ') }
-        Remove-Job $job -Force -ErrorAction SilentlyContinue | Out-Null
-        if ($out -match '(\d+\.\d+(\.\d+)*)') { return $Matches[1] }
-    } catch {}
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = $Path
+        $psi.Arguments = (@($Arguments | ForEach-Object { if ($_ -match '\s') { '"' + $_ + '"' } else { $_ } }) -join ' ')
+        $psi.UseShellExecute = $false
+        $psi.CreateNoWindow = $true
+        $psi.RedirectStandardInput = $true     # closed right away: a CLI that wants to chat gets EOF, not a wait
+        $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true     # some CLIs print their version there
+        # most CLIs skip update checks, prompts and colours when they see these
+        $psi.EnvironmentVariables['CI'] = '1'
+        $psi.EnvironmentVariables['NO_COLOR'] = '1'
+        $psi.EnvironmentVariables['TERM'] = 'dumb'
+        $psi.EnvironmentVariables['NO_UPDATE_NOTIFIER'] = '1'
+        $p = [System.Diagnostics.Process]::Start($psi)
+        try { $p.StandardInput.Close() } catch {}
+        $outTask = $p.StandardOutput.ReadToEndAsync()
+        $errTask = $p.StandardError.ReadToEndAsync()
+        if (-not $p.WaitForExit($TimeoutSec * 1000)) {
+            # kill the whole tree: node/bun wrappers spawn the real CLI as a child
+            try { & taskkill /PID $p.Id /T /F 2>$null | Out-Null } catch {}
+            try { if (-not $p.HasExited) { $p.Kill() } } catch {}
+            return $null
+        }
+        # a leftover child could keep the pipes open, so don't wait forever for EOF
+        if ([System.Threading.Tasks.Task]::WaitAll(@($outTask, $errTask), 2000)) {
+            $out = $outTask.Result + ' ' + $errTask.Result
+            if ($out -match '(\d+\.\d+(\.\d+)*)') { return $Matches[1] }
+        }
+    } catch {} finally {
+        if ($p) { $p.Dispose() }
+    }
     $null
 }
 
@@ -417,6 +464,9 @@ function Get-NpmMeta {
 
     $pkgDirs = [System.Collections.Generic.List[string]]::new()
     foreach ($d in Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue) {
+        # npm leaves .pkgname-XXXXXX dirs behind after an interrupted install;
+        # their package.json would map the same bins to a half-installed copy
+        if ($d.Name.StartsWith('.')) { continue }
         if ($d.Name -like '@*') {
             foreach ($sub in Get-ChildItem -LiteralPath $d.FullName -Directory -ErrorAction SilentlyContinue) {
                 $pkgDirs.Add($sub.FullName)
@@ -471,6 +521,30 @@ function Get-NpmMeta {
         }
     }
     $map
+}
+
+function Select-NpmPrimaryRow([System.Collections.Generic.List[object]]$Rows) {
+    # One row per npm package: vercel ships both "vercel" and "vc", and that is
+    # one tool, not two. Keep the bin that is named like the package.
+    $byPkg = @{}
+    foreach ($r in $Rows) {
+        if ($r.Method -eq 'npm' -and $r.Package) {
+            if (-not $byPkg.ContainsKey($r.Package)) { $byPkg[$r.Package] = @() }
+            $byPkg[$r.Package] += $r
+        }
+    }
+    $drop = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($pkg in @($byPkg.Keys)) {
+        $group = @($byPkg[$pkg])
+        if ($group.Count -lt 2) { continue }
+        $base = ($pkg -split '/')[-1]
+        $keep = $group | Where-Object { $_.Command -eq $base } | Select-Object -First 1
+        if (-not $keep) { $keep = $group[0] }
+        foreach ($r in $group) { if ($r.Command -ne $keep.Command) { [void]$drop.Add($r.Command) } }
+    }
+    $out = [System.Collections.Generic.List[object]]::new()
+    foreach ($r in $Rows) { if (-not ($r.Method -eq 'npm' -and $drop.Contains($r.Command))) { $out.Add($r) } }
+    ,$out
 }
 
 # --- candidate commands: PATH (outside Windows) -----------------------------
@@ -538,6 +612,14 @@ function Get-Kind {
     return 'cli'
 }
 
+function Format-ExeVersion([string]$V) {
+    # Windows version-info is always four numbers, so a 2.1.296 build shows up
+    # as 2.1.296.0. Drop a trailing .0 when the first three parts are there;
+    # a real four-part version (155.0.4283.45) stays as it is.
+    if ($V -match '^(\d+\.\d+\.\d+)\.0$') { return $Matches[1] }
+    $V
+}
+
 function Get-PeText {
     param([string]$Path)
     if (-not $Path -or $Path -notmatch '\.exe$') {
@@ -561,6 +643,42 @@ function Get-PeText {
     } catch {
         [pscustomobject]@{ Text = ''; Publisher = ''; Version = '' }
     }
+}
+
+function ConvertFrom-WingetRow([string]$Line) {
+    # One line of `winget list` -> name / id / version / publisher / product /
+    # kind, or $null for the header, separators and progress-bar noise.
+    # Ids come in three shapes:
+    #   Anthropic.ClaudeCode                   proper id: Publisher.Product
+    #   MSIX\OpenAI.Codex_1.2.3.0_x64__hash    packaged store app (always a GUI)
+    #   ARP\Machine\X86\Microsoft Copilot      Add/Remove Programs fallback, no publisher
+    if (-not $Line -or $Line -notmatch '[A-Za-z]') { return $null }
+    # winget table: Name  Id  Version  Available  Source  (2+ spaces between)
+    $parts = @($Line -split '\s{2,}' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    if ($parts.Count -lt 2) { return $null }
+    $name = $parts[0]; $id = $parts[1]
+    if ($name -eq 'Name' -or $id -eq 'Id') { return $null }
+    if ($name -match '^(The following|No installed|-{2,})') { return $null }
+    $publisher = ''; $product = $id
+    if ($id -match '^MSIX\\([^_\\]+)_') {
+        $full = $Matches[1]      # OpenAI.Codex / Microsoft.NET.Native.Framework.2.1 / aimgr
+        if ($full -match '^([^.]+)\.(.+)$') { $publisher = $Matches[1]; $product = $Matches[2] } else { $product = $full }
+    } elseif ($id -match '^ARP\\') {
+        $product = ($id -split '\\')[-1]
+    } elseif ($id -match '^([^.\\]+)\.(.+)$') {
+        $publisher = $Matches[1]; $product = $Matches[2]
+    }
+    $ver = ''
+    if ($parts.Count -ge 3 -and $parts[2] -match '^(\d+(\.\d+)+)') { $ver = $Matches[1] }
+    elseif ($id -match '_(\d+(\.\d+)+)_') { $ver = $Matches[1] }
+    # GUI or CLI? Editors by name, packaged store apps are always GUIs, and a
+    # bare brand name with no cli/code/agent in it (Claude, Copilot, ChatGPT)
+    # is the desktop app, not the agent CLI.
+    $kind = 'cli'
+    if ((Get-Kind -Path $id -Name $product) -eq 'editor' -or (Get-Kind -Path $id -Name $name) -eq 'editor') { $kind = 'editor' }
+    elseif ($id -match '^MSIX\\') { $kind = 'app' }
+    elseif ($name -notmatch '(?i)\b(cli|code|terminal|agent)\b' -and $product -notmatch '(?i)(cli|code|terminal|agent)$') { $kind = 'app' }
+    [pscustomobject]@{ Name = $name; Id = $id; Version = $ver; Publisher = $publisher; Product = $product; Kind = $kind }
 }
 
 $npmMeta = Get-NpmMeta
@@ -606,7 +724,7 @@ foreach ($c in Get-PathCandidates) {
     $pe = Get-PeText -Path $path
     if ($pe.Text) { $text = (@($text, $pe.Text) -join ' ').Trim() }
     if ($pe.Publisher) { $publisher = $pe.Publisher }
-    if (-not $version -and $pe.Version -match '(\d+(\.\d+)+)') { $version = $Matches[1] }
+    if (-not $version -and $pe.Version -match '(\d+(\.\d+)+)') { $version = Format-ExeVersion $Matches[1] }
 
     $s = Get-AgentScore -Text $text -Deps $deps -Publisher $publisher -Name $name -Path $path
     if ($extra.Contains($name) -and $s.Score -lt 4) { $s = [pscustomobject]@{ Score = 5; Why = 'agents-extra.txt override' } }
@@ -618,11 +736,13 @@ foreach ($c in Get-PathCandidates) {
     [void]$haveNames.Add($name)
     $rows.Add([pscustomobject]@{
         Name=$name; Command=$name; Source=$path; Method=$method; Kind=$kind; Score=$s.Score; Why=$s.Why
-        Version=$version; Package=$package; PkgDir=$pkgDir
-        SizeMB=$null; LastUsed=$null; Latest=''; UpdateCmd=''
+        Version=$version; Package=$package; PkgDir=$pkgDir; Product=''
+        SizeMB=$null; LastUsed=$null; Latest=''; UpdateCmd=''; UpdateArgs=@()
         Sessions30d=0; McpCount=0; Auth=$false; Stale=$false; UninstallCmd=''; Shadows=@($c.Shadows)
     })
 }
+
+$rows = Select-NpmPrimaryRow $rows
 
 # --- evaluate winget packages (catches agents that aren't on PATH, e.g. Codex)
 # $wingetScanned drives the partial-scan handling further down: a run that never
@@ -630,31 +750,33 @@ foreach ($c in Get-PathCandidates) {
 $wingetScanned = $false
 if (-not $SkipWinget -and (Get-Command winget -ErrorAction SilentlyContinue)) {
     $wingetScanned = $true
-    foreach ($line in (winget list --disable-interactivity 2>$null)) {
-        if ($line -notmatch '[A-Za-z]') { continue }   # skip progress bars / blank lines
-        # winget table: Name  Id  Version  Available  Source  (2+ spaces)
-        $parts = $line -split '\s{2,}' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
-        if ($parts.Count -lt 2) { continue }
-        $pkgName = $parts[0]; $id = $parts[1]
-        if ($pkgName -eq 'Name' -or $id -eq 'Id') { continue }
-        if ($pkgName -match '^(The following|No installed|-{2,})') { continue }
-
-        $publisher = ($id -split '\.')[0]
-        $key = (($pkgName -split '\s+')[0]).ToLowerInvariant()
-        if ($haveNames.Contains($key)) { continue }    # already found on PATH
-        # match agents-exclude.txt on the display name or its first word, since
-        # winget rows are keyed on "Codex"-style names rather than a basename
-        if ($exclude.Contains($key) -or $exclude.Contains($pkgName.ToLowerInvariant())) { continue }
-        $s = Get-AgentScore -Text ("$pkgName $id") -Deps @() -Publisher $publisher -Name $pkgName -Path $id
+    # --accept-source-agreements: a first-ever winget run otherwise stops to ask
+    # about the msstore terms, and --disable-interactivity turns that into a fail
+    foreach ($line in (winget list --disable-interactivity --accept-source-agreements 2>$null)) {
+        $w = ConvertFrom-WingetRow $line
+        if (-not $w) { continue }
+        # already found on PATH? check the product half of the id and every word
+        # of the display name, so "Claude Code" / Anthropic.ClaudeCode folds into
+        # the claude that is already listed instead of showing up twice
+        $keys = @($w.Product.ToLowerInvariant()) + @($w.Name.ToLowerInvariant() -split '\s+')
+        $dup = $false
+        foreach ($k in $keys) { if ($haveNames.Contains($k)) { $dup = $true; break } }
+        if ($dup) { continue }
+        # agents-exclude.txt wins: match the product, any word, or the whole name
+        $skip = $false
+        foreach ($k in ($keys + @($w.Name.ToLowerInvariant()))) { if ($exclude.Contains($k)) { $skip = $true; break } }
+        if ($skip) { continue }
+        # score on the product half of the id ("Codex" out of OpenAI.Codex), not
+        # the display name: Microsoft's "Copilot" app is not the copilot CLI.
+        # ARP rows with a GUID for a product have nothing better than the name.
+        $scoreName = if ($w.Product -match '^\{') { $w.Name } else { $w.Product }
+        $s = Get-AgentScore -Text ("$($w.Name) $($w.Id)") -Deps @() -Publisher $w.Publisher -Name $scoreName -Path $w.Id
         if ($s.Score -ge 2) {
-            $ver = ''
-            if ($parts.Count -ge 3 -and $parts[2].Trim() -match '^(\d+(\.\d+)+)') { $ver = $Matches[1] }
-            elseif ($id -match '_(\d+(\.\d+)+)_') { $ver = $Matches[1] }
-            [void]$haveNames.Add($key)
+            [void]$haveNames.Add($w.Product.ToLowerInvariant())
             $rows.Add([pscustomobject]@{
-                Name=$pkgName; Command='(winget)'; Source=$id; Method='winget'; Kind='cli'; Score=$s.Score; Why=$s.Why
-                Version=$ver; Package=''; PkgDir=''
-                SizeMB=$null; LastUsed=$null; Latest=''; UpdateCmd=''
+                Name=$w.Name; Command='(winget)'; Source=$w.Id; Method='winget'; Kind=$w.Kind; Score=$s.Score; Why=$s.Why
+                Version=$w.Version; Package=''; PkgDir=''; Product=$w.Product
+                SizeMB=$null; LastUsed=$null; Latest=''; UpdateCmd=''; UpdateArgs=@()
                 Sessions30d=0; McpCount=0; Auth=$false; Stale=$false; UninstallCmd=''; Shadows=@()
             })
         }
@@ -662,12 +784,16 @@ if (-not $SkipWinget -and (Get-Command winget -ErrorAction SilentlyContinue)) {
 }
 
 # --- split into tiers -------------------------------------------------------
-$detected = @($rows | Where-Object { $_.Score -ge 4 -and ($IncludeEditors -or $_.Kind -ne 'editor') })
-$possible = @($rows | Where-Object { $_.Score -ge 2 -and $_.Score -lt 4 -and ($IncludeEditors -or $_.Kind -ne 'editor') })
+$detected = @($rows | Where-Object { $_.Score -ge 4 -and ($IncludeEditors -or $_.Kind -eq 'cli') })
+$possible = @($rows | Where-Object { $_.Score -ge 2 -and $_.Score -lt 4 -and ($IncludeEditors -or $_.Kind -eq 'cli') })
+# Everything that scored, whatever -IncludeEditors says. The new/gone diff and
+# the saved baseline use this, so toggling the switch between runs doesn't
+# make every editor look freshly installed (or freshly removed).
+$allDetected = @($rows | Where-Object { $_.Score -ge 4 })
 
 # --- previous scan: name diff, trend history, exe-probe cache ----------------
 $histFile  = Join-Path $PSScriptRoot 'last-scan.json'
-$prevNames = @(); $prevDate = ''; $histArr = @(); $probeCache = @{}
+$prevNames = @(); $prevDate = ''; $histArr = @(); $probeCache = @{}; $sizeCache = @{}
 $prevWinget = @(); $prevHasWinget = $false
 if (Test-Path -LiteralPath $histFile) {
     try {
@@ -676,6 +802,9 @@ if (Test-Path -LiteralPath $histFile) {
         if ($prev.date)    { $prevDate  = "$($prev.date)" }
         if ($prev.history) { $histArr   = @($prev.history) }
         if ($prev.probes)  { foreach ($pp in $prev.probes.PSObject.Properties) { $probeCache[$pp.Name] = $pp.Value } }
+        if ($prev.PSObject.Properties.Name -contains 'sizes' -and $prev.sizes) {
+            foreach ($sp in $prev.sizes.PSObject.Properties) { $sizeCache[$sp.Name] = [double]$sp.Value }
+        }
         # Agents only the winget scan can see. Tracked separately so a scan that
         # skipped winget knows which previous names it simply didn't look for.
         if ($prev.PSObject.Properties.Name -contains 'wingetOnly') {
@@ -684,7 +813,7 @@ if (Test-Path -LiteralPath $histFile) {
         }
     } catch {}
 }
-$curNames = @($detected | ForEach-Object { $_.Name })
+$curNames = @($allDetected | ForEach-Object { $_.Name })
 # Without a winget scan, previous winget-only agents are "not checked", not
 # "gone" - reporting them as removed is a lie about state we never observed.
 $unscanned = if ($wingetScanned) { @() } else { $prevWinget }
@@ -698,9 +827,29 @@ if ($prevNames.Count) {
 Write-Host ""
 Write-Host "enriching: sizes + usage intel + mcp configs + versions..." -ForegroundColor DarkGray
 foreach ($r in ($detected + $possible)) {
-    if ($r.Method -eq 'npm' -and $r.PkgDir) { $r.SizeMB = Get-SizeMB $r.PkgDir }
+    if ($r.Method -eq 'npm' -and $r.PkgDir) {
+        # a big npm package (opencode is 500+ MB of files) takes a second or
+        # two to walk cold, and its size can't change without its version
+        # changing, so remember it per dir + version in last-scan.json
+        $sizeKey = "$($r.PkgDir)|$($r.Version)"
+        if ($r.Version -and $sizeCache.ContainsKey($sizeKey)) { $r.SizeMB = $sizeCache[$sizeKey] }
+        else {
+            $r.SizeMB = Get-SizeMB $r.PkgDir
+            if ($r.Version -and $null -ne $r.SizeMB) { $sizeCache[$sizeKey] = $r.SizeMB }
+        }
+    }
     elseif ($r.Source -match '(?i)\.exe$')  { $r.SizeMB = Get-SizeMB $r.Source }
-    $intel = Get-AgentIntel $r.Command
+    # winget rows have no command to go on: try the product half of the id and
+    # each word of the display name ("Codex", "ChatGPT" -> ~/.codex), and for a
+    # store app its package data folder, which is where a GUI keeps its state
+    $intelNames = @($r.Command); $intelDirs = @()
+    if ($r.Command -eq '(winget)') {
+        $intelNames = @($r.Product) + @($r.Name -split '\s+')
+        if ($env:LOCALAPPDATA -and $r.Source -match '^MSIX\\([^_\\]+)_.*__([^_\\]+)$') {
+            $intelDirs += (Join-Path $env:LOCALAPPDATA ("Packages\" + $Matches[1] + '_' + $Matches[2]))
+        }
+    }
+    $intel = Get-AgentIntel -Names $intelNames -ExtraDirs $intelDirs
     $r.LastUsed  = $intel.LastUsed
     $r.Sessions30d = $intel.Sessions30d
     $r.McpCount  = $intel.McpCount
@@ -735,6 +884,7 @@ if ($CheckUpdates) {
                         if ($r.Package -eq $p.Name -and $p.Value.latest -and $p.Value.latest -ne $r.Version) {
                             $r.Latest = $p.Value.latest
                             $r.UpdateCmd = "npm i -g $($r.Package)@latest"
+                            $r.UpdateArgs = @('npm', 'i', '-g', "$($r.Package)@latest")
                         }
                     }
                 }
@@ -744,7 +894,7 @@ if ($CheckUpdates) {
     if (Get-Command winget -ErrorAction SilentlyContinue) {
         Write-Host "checking winget for updates..." -ForegroundColor DarkGray
         $wg = @{}
-        foreach ($line in (winget upgrade --disable-interactivity 2>$null)) {
+        foreach ($line in (winget upgrade --disable-interactivity --accept-source-agreements 2>$null)) {
             if ($line -notmatch '[A-Za-z]') { continue }
             $parts = $line -split '\s{2,}'
             if ($parts.Count -ge 4 -and $parts[1].Trim() -match '\.' -and $parts[1].Trim() -ne 'Id') {
@@ -754,7 +904,8 @@ if ($CheckUpdates) {
         foreach ($r in ($detected | Where-Object { $_.Method -eq 'winget' -and -not $_.Latest })) {
             foreach ($k in $wg.Keys) {
                 if ($r.Source -match [regex]::Escape($k) -or $k -match [regex]::Escape($r.Name)) {
-                    $r.Latest = $wg[$k]; $r.UpdateCmd = "winget upgrade --id `"$k`""; break
+                    $r.Latest = $wg[$k]; $r.UpdateCmd = "winget upgrade --id `"$k`""
+                    $r.UpdateArgs = @('winget', 'upgrade', '--id', $k); break
                 }
             }
         }
@@ -765,8 +916,12 @@ $updates = @($detected | Where-Object { $_.Latest })
 # --- fleet health: dead weight, conflicts, totals, rank ----------------------
 $staleDays = 60
 foreach ($r in ($detected + $possible)) {
-    $r.Stale = $true
-    if ($r.LastUsed -and ((Get-Date) - $r.LastUsed).TotalDays -le $staleDays) { $r.Stale = $false }
+    # untouched for 60+ days = dead weight. No usage info at all means a PATH
+    # cli that never made a config folder (so probably never ran), but for a
+    # winget row it just means we found nowhere to look, so don't accuse it.
+    $r.Stale = $false
+    if ($r.LastUsed) { $r.Stale = (((Get-Date) - $r.LastUsed).TotalDays -gt $staleDays) }
+    elseif ($r.Command -ne '(winget)') { $r.Stale = $true }
     if     ($r.Method -eq 'npm' -and $r.Package)                   { $r.UninstallCmd = "npm rm -g $($r.Package)" }
     elseif ($r.Method -eq 'winget' -and $r.Command -eq '(winget)') { $r.UninstallCmd = "winget uninstall --id `"$($r.Source)`"" }
     elseif ($r.Method -eq 'winget')                                { $r.UninstallCmd = "winget uninstall `"$($r.Name)`"" }
@@ -792,7 +947,7 @@ $rankName = if ($dcount -le 2) { 'MINIMALIST' }
 # understated and show up as a phantom dip in the sparkline.
 # Rows found by the winget scan carry Command='(winget)' - that is narrower than
 # Method='winget', which also covers WindowsApps shims the PATH scan finds fine.
-$wingetOnly   = @($detected | Where-Object { $_.Command -eq '(winget)' } | ForEach-Object { $_.Name })
+$wingetOnly   = @($allDetected | Where-Object { $_.Command -eq '(winget)' } | ForEach-Object { $_.Name })
 $persistNames = $curNames
 $writeHist    = $true
 
@@ -807,7 +962,11 @@ if (-not $wingetScanned) {
         $persistNames = @(@($curNames) + @($prevWinget) | Select-Object -Unique)
     }
 } else {
-    $histEntry = [pscustomobject]@{ d = (Get-Date -Format 'yyyy-MM-dd'); c = $detected.Count; mb = [math]::Round($totMB, 1) }
+    # the trend counts CLIs only, whatever -IncludeEditors says, so the
+    # sparkline doesn't dip or jump when the switch is toggled between scans
+    $trendRows = @($allDetected | Where-Object { $_.Kind -eq 'cli' })
+    $trendMB = 0.0; foreach ($r in $trendRows) { if ($r.SizeMB) { $trendMB += $r.SizeMB } }
+    $histEntry = [pscustomobject]@{ d = (Get-Date -Format 'yyyy-MM-dd'); c = $trendRows.Count; mb = [math]::Round($trendMB, 1) }
     if ($histArr.Count -and "$($histArr[$histArr.Count-1].d)" -eq $histEntry.d) { $histArr[$histArr.Count-1] = $histEntry }
     else { $histArr = @($histArr) + @($histEntry) }
     if ($histArr.Count -gt 60) { $histArr = @($histArr[($histArr.Count-60)..($histArr.Count-1)]) }
@@ -815,13 +974,15 @@ if (-not $wingetScanned) {
 
 if ($writeHist) {
     try {
-        [pscustomobject]@{
+        $stateJson = [pscustomobject]@{
             date       = (Get-Date -Format 'yyyy-MM-dd HH:mm')
             agents     = $persistNames
             wingetOnly = $wingetOnly
             history    = $histArr
             probes     = $probeCache
-        } | ConvertTo-Json -Depth 5 | Out-File -LiteralPath $histFile -Encoding utf8
+            sizes      = $sizeCache
+        } | ConvertTo-Json -Depth 5
+        Write-Utf8File $histFile $stateJson
     } catch {}
 }
 
@@ -832,7 +993,11 @@ Write-Host ""
 Write-Host "Auto-detected coding agents ($($detected.Count) detected, $($possible.Count) possible, $(Format-Size $totMB) on disk)" -ForegroundColor Cyan
 $reclaimLabel = Format-Size $reclaimMB; if (-not $reclaimLabel) { $reclaimLabel = 'none' }
 Write-Host ("fleet rank: {0} (lv {1}) | {2}/{1} used this month | dead weight: {3}" -f $rankName, $detected.Count, $active30, $reclaimLabel) -ForegroundColor Magenta
-if (-not $IncludeEditors) { Write-Host "(GUI editors hidden - use -IncludeEditors)" -ForegroundColor DarkGray }
+$hiddenGui = @($rows | Where-Object { $_.Score -ge 2 -and $_.Kind -ne 'cli' }).Count
+if (-not $IncludeEditors -and $hiddenGui) {
+    $guiWord = if ($hiddenGui -eq 1) { 'GUI editor/app' } else { 'GUI editors/apps' }
+    Write-Host "($hiddenGui $guiWord hidden - use -IncludeEditors)" -ForegroundColor DarkGray
+}
 if (-not $wingetScanned) {
     $why = if ($SkipWinget) { '-SkipWinget' } else { 'winget not found' }
     $carried = if ($writeHist) { "$($prevWinget.Count) carried over from last full scan" } else { 'baseline left untouched' }
@@ -854,6 +1019,7 @@ foreach ($grp in $detected | Group-Object Method | Sort-Object { $rank[$_.Name] 
         @{n='Auth';e={if ($_.Auth) { 'yes' }}},
         @{n='Source';e={$_.Source}}
     )
+    if ($IncludeEditors) { $cols += @{n='Kind';e={$_.Kind}} }
     if ($ShowReasons) { $cols += @{n='Why';e={$_.Why}} }
     $grp.Group | Sort-Object Name | Format-Table $cols -AutoSize
 }
@@ -896,6 +1062,8 @@ if ($CheckUpdates) {
 } else {
     Write-Host "(tip: -CheckUpdates shows which agents are outdated + the update command, -UpdateAll runs them)" -ForegroundColor DarkGray
 }
+$scanSecs = [math]::Round($scanClock.Elapsed.TotalSeconds, 1)
+Write-Host "scan took ${scanSecs}s" -ForegroundColor DarkGray
 
 if ($UpdateAll -and $updates.Count) {
     Write-Host ""
@@ -904,7 +1072,15 @@ if ($UpdateAll -and $updates.Count) {
         foreach ($r in $updates | Sort-Object Name) {
             Write-Host ""
             Write-Host (">> {0}" -f $r.UpdateCmd) -ForegroundColor Cyan
-            try { Invoke-Expression $r.UpdateCmd } catch { Write-Host ("   failed: {0}" -f $_.Exception.Message) -ForegroundColor Red }
+            # run the exe + args we built ourselves instead of Invoke-Expression on
+            # the display string, so an odd package name can't smuggle extra
+            # PowerShell into the command
+            $exe = $r.UpdateArgs[0]; $rest = @($r.UpdateArgs | Select-Object -Skip 1)
+            $LASTEXITCODE = 0
+            try {
+                & $exe @rest
+                if ($LASTEXITCODE) { Write-Host ("   failed: exit code {0}" -f $LASTEXITCODE) -ForegroundColor Red }
+            } catch { Write-Host ("   failed: {0}" -f $_.Exception.Message) -ForegroundColor Red }
         }
         Write-Host ""
         Write-Host "updates done - re-run the scan to verify versions" -ForegroundColor Green
@@ -929,7 +1105,9 @@ if ($Json) {
         }
     }
     $jsonPath = Join-Path $PSScriptRoot 'coding-agents.json'
-    @($export) | ConvertTo-Json -Depth 4 | Out-File -LiteralPath $jsonPath -Encoding utf8
+    # -InputObject keeps a single agent as a one-element array; piping it in
+    # would unwrap it and hand scripts a bare object instead of a list
+    Write-Utf8File $jsonPath (ConvertTo-Json -InputObject @($export) -Depth 4)
     Write-Host "JSON export: $jsonPath" -ForegroundColor Green
 }
 
@@ -941,6 +1119,7 @@ if (-not $NoHtml) {
     function New-UnitChips($r, [bool]$IsNew) {
         $chips = ''
         if ($IsNew)       { $chips += '<span class="chip new">NEW</span>' }
+        if ($r.Kind -ne 'cli') { $chips += "<span class=""chip"" title=""gui, not a cli"">$(Enc $r.Kind)</span>" }
         if ($r.SizeMB)    { $chips += "<span class=""chip"">$(Enc (Format-Size $r.SizeMB))</span>" }
         if ($r.LastUsed)  { $chips += "<span class=""chip"">$(Enc (Format-Age $r.LastUsed))</span>" }
         if ($r.Sessions30d) { $chips += "<span class=""chip sess"" title=""session files touched in the last 30 days"">$($r.Sessions30d)&times;/30d</span>" }
@@ -1024,6 +1203,10 @@ if (-not $NoHtml) {
     $metaExtra = ''
     if ($newNames.Count) { $metaExtra = " &middot; <span class=""ac"">+$($newNames.Count) new since last scan</span>" }
     if ($reclaimMB -gt 0) { $metaExtra += " &middot; <span class=""wr"">$(Enc (Format-Size $reclaimMB)) reclaimable</span>" }
+    if (-not $IncludeEditors -and $hiddenGui) {
+        $guiTxt = if ($hiddenGui -eq 1) { '1 gui editor/app hidden' } else { "$hiddenGui gui editors/apps hidden" }
+        $metaExtra += " &middot; <span title=""run with -IncludeEditors to list them"">$guiTxt</span>"
+    }
 
     if ($CheckUpdates) {
         $tile4 = "<div class=""stat$(if ($updates.Count) { ' warn' })"" style=""--i:3""><span class=""num"" data-count=""$($updates.Count)"">$($updates.Count)</span><span class=""lbl"">updates available</span></div>"
@@ -1083,6 +1266,7 @@ h1 em{font-style:normal;color:transparent;-webkit-text-stroke:1.4px var(--mut)}
 .sharebtn{background:transparent;border:1px solid var(--accent);color:var(--accent);font:inherit;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;padding:14px 22px;cursor:pointer;white-space:nowrap;transition:background .18s,color .18s}
 .sharebtn:hover{background:var(--accent);color:#08080a}
 .trend{margin-top:16px;border:1px solid var(--line);background:var(--panel);padding:14px 20px 10px;display:flex;flex-direction:column;gap:7px}
+.trend[hidden]{display:none}
 .trend svg{width:100%;height:64px;display:block}
 .trend .tl{color:var(--mut);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase}
 .channels{margin-top:18px;display:grid;gap:18px}
@@ -1114,7 +1298,7 @@ h1 em{font-style:normal;color:transparent;-webkit-text-stroke:1.4px var(--mut)}
 .chip.rm:hover{background:#ff6b5e;color:#08080a}
 .chips{flex-wrap:wrap;row-gap:4px;max-width:36rem}
 .meta .wr{color:#ff6b5e}
-.stat .num.tiny{font-size:19px;line-height:1.25;padding-top:16px;letter-spacing:.02em}
+.stat .num.tiny{font-size:15px;line-height:1.25;padding-top:18px;letter-spacing:.02em;overflow-wrap:anywhere}
 .channel.dead{border-style:dashed}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 11px var(--c);justify-self:end}
 .dot.hollow{background:transparent;border:1px solid var(--c);box-shadow:none}
@@ -1145,7 +1329,7 @@ $tile5
 <div class="trend" id="trend" hidden><svg id="spark" viewBox="0 0 600 64" preserveAspectRatio="none"></svg><span class="tl" id="trendlbl">fleet over time</span></div>
 <div class="channels">
 $($sb.ToString())</div>
-<footer><span>generated by <span class="ac">list-coding-agents.ps1</span></span><span>heuristic detection &middot; usage intel &middot; tiered confidence</span></footer>
+<footer><span>generated by <span class="ac">list-coding-agents.ps1</span></span><span>heuristic detection &middot; usage intel &middot; tiered confidence &middot; scanned in ${scanSecs}s</span></footer>
 </div>
 <script type="application/json" id="histData">$histJson</script>
 <script type="application/json" id="cardData">$cardJson</script>
@@ -1376,7 +1560,7 @@ $($sb.ToString())</div>
 </body></html>
 "@
     $htmlPath = Join-Path $PSScriptRoot 'coding-agents.html'
-    $html | Out-File -LiteralPath $htmlPath -Encoding utf8
+    Write-Utf8File $htmlPath $html
     Write-Host "HTML report: $htmlPath" -ForegroundColor Green
-    try { Invoke-Item -LiteralPath $htmlPath } catch {}
+    if (-not $NoOpen) { try { Invoke-Item -LiteralPath $htmlPath } catch {} }
 }
