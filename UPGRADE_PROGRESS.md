@@ -43,6 +43,11 @@ Known gaps handed to Phase 2 (beyond the brief's workstream scope):
 - A: scoring every binary in `/usr/bin` takes ~2.8 s on this box; `/bin` -> `/usr/bin` symlink produces a false PATH conflict (`sg`); on Linux `sg` (shadow-utils) shows as POSSIBLE.
 - D: `Update-FormatData` for `-PassThru` objects in bundle mode; `-Format table|csv|markdown`; `-FailOn`; terminal renderer.
 
+## Phase 2 status (workstreams)
+
+- First attempt: six isolated writer agents (one per workstream). The worktree-isolation guard refused pwsh for all of them (D-08), and all six were then cut off by an account rate limit (HTTP 429, "session limit"). Work preserved as `wip(v2-ws-x)` checkpoint commits on each branch (A: catalog rebuilt from the sourced draft; B: Size/Usage; C: version/channels/commands; D: state/history/console/format; E: fonts, report template/CSS/JS, Playwright start; F: README/CONTRIBUTING/CHANGELOG/CLAUDE drafts, 5 commits). All six branches build.
+- Second attempt (workflow `v2-phase2-workstreams`): per workstream, non-isolated implementer agents continue in the same worktree with pwsh (A in two parts), then an independent read-only verifier, then up to two verify -> fix rounds.
+
 ## Environment (this run)
 
 | Item | Value |
