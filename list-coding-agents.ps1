@@ -1298,7 +1298,7 @@ h1 em{font-style:normal;color:transparent;-webkit-text-stroke:1.4px var(--mut)}
 .chip.rm:hover{background:#ff6b5e;color:#08080a}
 .chips{flex-wrap:wrap;row-gap:4px;max-width:36rem}
 .meta .wr{color:#ff6b5e}
-.stat .num.tiny{font-size:19px;line-height:1.25;padding-top:16px;letter-spacing:.02em}
+.stat .num.tiny{font-size:15px;line-height:1.25;padding-top:18px;letter-spacing:.02em;overflow-wrap:anywhere}
 .channel.dead{border-style:dashed}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 11px var(--c);justify-self:end}
 .dot.hollow{background:transparent;border:1px solid var(--c);box-shadow:none}
