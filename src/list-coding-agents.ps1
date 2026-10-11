@@ -154,11 +154,11 @@ param(
     [switch]$NoOpen,
     [string]$OutDir,
     [switch]$PassThru,
-    [ValidateSet('table', 'json', 'csv', 'markdown')][string]$Format,
+    [string]$Format,
     [switch]$Quiet,
     [switch]$NoColor,
     [switch]$Redact,
-    [ValidateSet('outdated', 'stale', 'conflict', 'new')][string[]]$FailOn,
+    [string[]]$FailOn,
     [switch]$Version,
     [switch]$Force
 )
@@ -170,11 +170,17 @@ param(
 $lcaModule = Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'ListCodingAgents/ListCodingAgents.psd1') -Force -PassThru
 #endregion LCA-MODULE
 
+# No ValidateSet attributes above: under "irm ... | iex" PowerShell assigns
+# each parameter its default and then applies the attributes, so a
+# ValidateSet would reject the empty default and abort the whole run.
+# -Format / -FailOn are validated inside (bad values exit with code 2).
 $lcaBound = @{}
 foreach ($lcaKey in $PSBoundParameters.Keys) { $lcaBound[$lcaKey] = $PSBoundParameters[$lcaKey] }
 if ($WhatIfPreference -and -not $lcaBound.ContainsKey('WhatIf')) { $lcaBound['WhatIf'] = [switch]$true }
 & $lcaModule { param($b, $r) Invoke-LcaCli -BoundParameters $b -ScriptRoot $r } $lcaBound $PSScriptRoot
 $lcaExit = & $lcaModule { $script:LcaLastExitCode }
+Remove-Variable -Name lcaModule, lcaBound, lcaKey -ErrorAction Ignore
 # Under "irm ... | iex" there is no script file: never call exit there, it
 # would close the user's shell.
 if ($PSCommandPath -and $lcaExit -ne 0) { exit $lcaExit }
+Remove-Variable -Name lcaExit -ErrorAction Ignore

@@ -42,6 +42,8 @@ function ConvertTo-LcaAgentExport {
         packageDir       = $a.PackageDir
         sources          = @($a.Sources)
         shadowedBy       = @($a.Shadows)
+        installs         = @($a.Installs | ForEach-Object { [ordered]@{ path = $_.Path; channel = $_.Channel; version = $_.Version; active = [bool]$_.Active } })
+        editorHost       = $a.EditorHost
         version          = $a.Version
         versionSource    = $a.VersionSource
         previousVersion  = $a.PreviousVersion
@@ -126,7 +128,7 @@ function ConvertTo-LcaExport {
         diagnostics   = @($Scan.Diagnostics | ForEach-Object { [ordered]@{ source = $_.Source; level = $_.Level; message = $_.Message } })
     }
     if ($Redact) {
-        $export = ConvertTo-LcaRedacted -InputObject $export -HomeDir $Scan.HomeDir -UserName $Scan.UserName
+        $export = ConvertTo-LcaRedacted -InputObject $export -HomeDir $Scan.HomeDir -UserName $Scan.UserName -HostName $Scan.HostName
         $export['host'] = $null
         $export['user'] = $null
         $export['redacted'] = $true
@@ -136,37 +138,44 @@ function ConvertTo-LcaExport {
 
 function ConvertTo-LcaRedacted {
     <#
-    Deep copy with every string scrubbed: the home directory becomes '~' and
-    any remaining occurrence of the user name becomes '<user>'.
+    Deep copy with every string scrubbed for sharing: the home directory
+    becomes '~', and the user name / host name are replaced only where they
+    are a whole PATH SEGMENT (C:\Users\alice\..., /home/alice/..., \\HOST\share)
+    - never inside ids, package names or enum values (a user called "vscode"
+    must not turn channel "vscode" into "<user>").
     #>
     [CmdletBinding()]
     [OutputType([object])]
-    param([AllowNull()]$InputObject, [AllowNull()][string]$HomeDir, [AllowNull()][string]$UserName)
+    param([AllowNull()]$InputObject, [AllowNull()][string]$HomeDir, [AllowNull()][string]$UserName, [AllowNull()][string]$HostName)
     if ($null -eq $InputObject) { return $null }
     if ($InputObject -is [string]) {
         $s = $InputObject
-        if ($HomeDir -and $HomeDir.Length -gt 1) {
-            $s = [regex]::Replace($s, ('(?i)' + [regex]::Escape($HomeDir.TrimEnd('\', '/'))), '~')
-            $alt = $HomeDir.TrimEnd('\', '/').Replace('\', '/')
-            $s = [regex]::Replace($s, ('(?i)' + [regex]::Escape($alt)), '~')
+        if ($HomeDir -and $HomeDir.Length -gt 3) {
+            $h = $HomeDir.TrimEnd('\', '/')
+            foreach ($form in @($h, $h.Replace('\', '/'))) {
+                $s = [regex]::Replace($s, ('(?i)' + [regex]::Escape($form) + '(?=$|[\\/])'), '~')
+            }
         }
-        if ($UserName -and $UserName.Length -ge 2) {
-            $s = [regex]::Replace($s, ('(?i)(?<![A-Za-z0-9])' + [regex]::Escape($UserName) + '(?![A-Za-z0-9])'), '<user>')
+        foreach ($pair in @(@($UserName, '<user>'), @($HostName, '<host>'))) {
+            $v = $pair[0]
+            if ($v -and $v.Length -ge 2) {
+                $s = [regex]::Replace($s, ('(?i)(?<=[\\/])' + [regex]::Escape($v) + '(?=$|[\\/])'), $pair[1])
+            }
         }
         return $s
     }
     if ($InputObject -is [System.Collections.IDictionary]) {
         $o = [ordered]@{}
-        foreach ($k in @($InputObject.Keys)) { $o[$k] = ConvertTo-LcaRedacted -InputObject $InputObject[$k] -HomeDir $HomeDir -UserName $UserName }
+        foreach ($k in @($InputObject.Keys)) { $o[$k] = ConvertTo-LcaRedacted -InputObject $InputObject[$k] -HomeDir $HomeDir -UserName $UserName -HostName $HostName }
         return $o
     }
     if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
-        $list = @(foreach ($i in $InputObject) { , (ConvertTo-LcaRedacted -InputObject $i -HomeDir $HomeDir -UserName $UserName) })
+        $list = @(foreach ($i in $InputObject) { , (ConvertTo-LcaRedacted -InputObject $i -HomeDir $HomeDir -UserName $UserName -HostName $HostName) })
         return , $list
     }
     if ($InputObject -is [pscustomobject]) {
         $o = [ordered]@{}
-        foreach ($p in $InputObject.PSObject.Properties) { $o[$p.Name] = ConvertTo-LcaRedacted -InputObject $p.Value -HomeDir $HomeDir -UserName $UserName }
+        foreach ($p in $InputObject.PSObject.Properties) { $o[$p.Name] = ConvertTo-LcaRedacted -InputObject $p.Value -HomeDir $HomeDir -UserName $UserName -HostName $HostName }
         return $o
     }
     $InputObject

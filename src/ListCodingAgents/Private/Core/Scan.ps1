@@ -7,7 +7,8 @@
 function Select-LcaAgentInScope {
     <#
     Display scope: CLIs always; editors with IncludeEditors; extensions with
-    IncludeExtensions. Optional -Tier filter. Never used for history.
+    IncludeExtensions. Optional -Tier filter. History must not depend on it
+    (defect 1): persist the unfiltered set.
     #>
     [CmdletBinding()]
     [OutputType([object[]])]
@@ -86,7 +87,9 @@ function Invoke-LcaScan {
     [CmdletBinding()]
     [OutputType([pscustomobject])]
     param([Parameter(Mandatory = $true)]$Context)
-    Clear-LcaDiagnostic
+    # Diagnostics are cleared by the entry points (Invoke-LcaCli,
+    # Get-CodingAgent) BEFORE the context is built, so config / override-list
+    # problems recorded while building it reach the export.
     $state = Measure-LcaPhase -Context $Context -Name 'state-read' -ScriptBlock { Read-LcaState -Context $Context }
     foreach ($k in $state.Probes.Keys) { $Context.ProbeCache[$k] = $state.Probes[$k] }
 

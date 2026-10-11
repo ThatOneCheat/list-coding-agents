@@ -122,7 +122,7 @@
     "agent": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "name", "displayName", "vendor", "homepage", "catalogId", "verified", "tier", "kind", "score", "why", "evidence", "command", "source", "path", "method", "channel", "package", "packageDir", "sources", "shadowedBy", "version", "versionSource", "previousVersion", "latest", "updateStatus", "updateReason", "updateCmd", "updateCommand", "uninstallCmd", "uninstallCommand", "uninstallNote", "sizeMB", "installRoot", "installSizeMB", "dataDirs", "dataSizeMB", "lastUsed", "usage", "stale", "sessions30d", "mcpServers", "mcp", "loggedIn", "isNew"],
+      "required": ["id", "name", "displayName", "vendor", "homepage", "catalogId", "verified", "tier", "kind", "score", "why", "evidence", "command", "source", "path", "method", "channel", "package", "packageDir", "sources", "shadowedBy", "installs", "editorHost", "version", "versionSource", "previousVersion", "latest", "updateStatus", "updateReason", "updateCmd", "updateCommand", "uninstallCmd", "uninstallCommand", "uninstallNote", "sizeMB", "installRoot", "installSizeMB", "dataDirs", "dataSizeMB", "lastUsed", "usage", "stale", "sessions30d", "mcpServers", "mcp", "loggedIn", "isNew"],
       "properties": {
         "id": { "type": "string", "minLength": 1 },
         "name": { "type": "string", "minLength": 1 },
@@ -159,6 +159,22 @@
         "packageDir": { "$ref": "#/$defs/nullableString" },
         "sources": { "$ref": "#/$defs/stringList" },
         "shadowedBy": { "$ref": "#/$defs/stringList" },
+        "installs": {
+          "type": "array",
+          "description": "Every install of this agent that was seen (e.g. a native install that wins on PATH and an npm copy it shadows).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "channel", "version", "active"],
+            "properties": {
+              "path": { "type": ["string", "null"] },
+              "channel": { "type": "string" },
+              "version": { "type": ["string", "null"] },
+              "active": { "type": "boolean" }
+            }
+          }
+        },
+        "editorHost": { "$ref": "#/$defs/nullableString", "description": "For extensions: the editor they are installed in." },
         "version": { "$ref": "#/$defs/nullableString" },
         "versionSource": { "$ref": "#/$defs/nullableString" },
         "previousVersion": { "$ref": "#/$defs/nullableString" },

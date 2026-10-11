@@ -83,6 +83,29 @@ function Get-OrderedFile {
     $list.ToArray()
 }
 
+function Assert-InlinableFile {
+    <#
+    Module files are pasted into one New-Module script block: a top-level
+    return / exit would stop loading the rest of the bundle, and param /
+    using / #requires are only legal at the start of a file.
+    #>
+    param([string]$Path, [string]$Label)
+    $tokens = $null; $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile($Path, [ref]$tokens, [ref]$errors)
+    if ($errors -and $errors.Count) { throw "${Label}: does not parse: $($errors[0].Message)" }
+    if ($ast.ParamBlock) { throw "${Label}: top-level param() is not allowed in module files" }
+    if ($ast.UsingStatements -and $ast.UsingStatements.Count) { throw "${Label}: top-level using statements are not allowed in module files" }
+    if ($ast.ScriptRequirements) { throw "${Label}: #requires is not allowed in module files" }
+    $blocks = @($ast.BeginBlock, $ast.ProcessBlock, $ast.EndBlock) | Where-Object { $_ }
+    foreach ($b in $blocks) {
+        foreach ($st in $b.Statements) {
+            if ($st -is [System.Management.Automation.Language.ReturnStatementAst] -or $st -is [System.Management.Automation.Language.ExitStatementAst]) {
+                throw ("{0}:{1}: top-level return/exit would stop the bundle from loading" -f $Label, $st.Extent.StartLineNumber)
+            }
+        }
+    }
+}
+
 function ConvertTo-HereString {
     param([string]$Text, [string]$Label)
     foreach ($l in ($Text -split "`n")) {
@@ -127,8 +150,10 @@ function Invoke-Build {
     # binary assets (fonts), base64 wrapped at 120 columns
     $fontDir = Join-Path -Path $moduleDir -ChildPath 'report/fonts'
     if (Test-Path -LiteralPath $fontDir) {
-        $fonts = @(Get-ChildItem -LiteralPath $fontDir -Filter '*.woff2' -File | Sort-Object -Property Name)
-        foreach ($f in $fonts) {
+        $fontList = New-Object System.Collections.Generic.List[object]
+        foreach ($ff in @(Get-ChildItem -LiteralPath $fontDir -Filter '*.woff2' -File)) { $fontList.Add($ff) }
+        $fontList.Sort([System.Comparison[object]] { param($a, $b) [string]::CompareOrdinal($a.Name, $b.Name) })
+        foreach ($f in $fontList) {
             $rel = 'report/fonts/' + $f.Name
             $b64 = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($f.FullName))
             $lines = New-Object System.Collections.Generic.List[string]
@@ -139,6 +164,7 @@ function Invoke-Build {
 
     foreach ($f in Get-OrderedFile -ModuleDir $moduleDir) {
         $code = Read-SourceText -Path $f.Path -Label ('src/ListCodingAgents/' + $f.Rel)
+        Assert-InlinableFile -Path $f.Path -Label ('src/ListCodingAgents/' + $f.Rel)
         [void]$sb.Append("# ---- " + $f.Rel + " ----`n")
         [void]$sb.Append($code)
     }
@@ -183,8 +209,10 @@ function Invoke-Lint {
 
 function Invoke-Test {
     param([bool]$WithCoverage)
-    # test files manage their own strictness; do not leak build.ps1's into them
+    # test files manage their own strictness and error handling; do not leak
+    # build.ps1's into them
     Set-StrictMode -Off
+    $ErrorActionPreference = 'Continue'
     $cfg = New-PesterConfiguration
     $cfg.Run.Path = (Join-Path -Path $repo -ChildPath 'tests')
     $cfg.Run.Exit = $false

@@ -38,6 +38,28 @@ Describe 'New-LcaCommand' {
     }
 }
 
+Describe 'Command display parses back to the same command' {
+    It 'renders <Exe> as valid PowerShell' -TestCases @(
+        @{ Exe = 'npm'; Tokens = @('i', '-g', '@anthropic-ai/claude-code@latest') }
+        @{ Exe = 'C:\Program Files\App\uninstall.exe'; Tokens = @('/SILENT') }
+        @{ Exe = 'C:\Tools\x.exe'; Tokens = @('--quiet', 'a,b', "it's", '$(boom)', '[x]') }
+        @{ Exe = 'winget'; Tokens = @('upgrade', '--id', 'Anthropic.ClaudeCode', '--exact') }
+    ) {
+        param($Exe, $Tokens)
+        $c = InModuleScope ListCodingAgents -Parameters @{ E = $Exe; A = $Tokens } { param($E, $A) New-LcaCommand -Exe $E -Arguments $A }
+        $parseTokens = $null; $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($c.Display, [ref]$parseTokens, [ref]$errors)
+        @($errors).Count | Should -Be 0 -Because $c.Display
+        $cmd = $ast.Find({ param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true)
+        $values = @($cmd.CommandElements | ForEach-Object {
+                if ($_ -is [System.Management.Automation.Language.StringConstantExpressionAst]) { $_.Value }
+                elseif ($_ -is [System.Management.Automation.Language.CommandParameterAst]) { $_.Extent.Text }
+                else { 'UNEXPECTED:' + $_.GetType().Name }
+            })
+        $values | Should -Be (@($Exe) + @($Tokens))
+    }
+}
+
 Describe 'Format-LcaSize' {
     It 'formats <In> as "<Out>"' -TestCases @(
         @{ In = $null; Out = '' }
@@ -139,15 +161,28 @@ Describe 'Diagnostics' {
 }
 
 Describe 'Redaction' {
+    It 'replaces the user name only as a path segment (a user called vscode keeps channel vscode)' {
+        InModuleScope ListCodingAgents {
+            $o = [ordered]@{ channel = 'vscode'; package = '@anthropic-ai/claude-code'; path = 'C:\Users\vscode\x'; other = 'D:\vscode\bin\vscode.exe'; unc = '\\BUILD01\share\x' }
+            $r = ConvertTo-LcaRedacted -InputObject $o -HomeDir 'C:\Users\vscode' -UserName 'vscode' -HostName 'BUILD01'
+            $r.channel | Should -Be 'vscode'
+            $r.package | Should -Be '@anthropic-ai/claude-code'
+            $r.path | Should -Be '~\x'
+            $r.other | Should -Be 'D:\<user>\bin\vscode.exe'
+            $r.unc | Should -Be '\\<host>\share\x'
+        }
+    }
+
     It 'replaces the home directory and user name in every string' {
         InModuleScope ListCodingAgents {
-            $o = [ordered]@{ path = '/home/alice/.claude'; list = @('C:\Users\alice\x', 'alicex'); n = 3; nested = [ordered]@{ s = 'by alice' } }
+            $o = [ordered]@{ path = '/home/alice/.claude'; list = @('C:\Users\alice\x', 'alicex'); n = 3; nested = [ordered]@{ s = 'by alice'; p = '/srv/alice' } }
             $r = ConvertTo-LcaRedacted -InputObject $o -HomeDir '/home/alice' -UserName 'alice'
             $r.path | Should -Be '~/.claude'
             $r.list[0] | Should -Be 'C:\Users\<user>\x'
             $r.list[1] | Should -Be 'alicex'
             $r.n | Should -Be 3
-            $r.nested.s | Should -Be 'by <user>'
+            $r.nested.s | Should -Be 'by alice'
+            $r.nested.p | Should -Be '/srv/<user>'
         }
     }
 }

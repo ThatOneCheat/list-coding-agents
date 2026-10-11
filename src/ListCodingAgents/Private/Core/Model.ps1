@@ -28,7 +28,9 @@ $script:LcaAgentDefaults = [ordered]@{
     Sources       = @()        # scanners that saw it: path npm winget registry pipx uv cargo brew scoop choco vscode ...
     ChannelData   = $null      # hashtable of channel-specific facts for later phases (registry UninstallString,
                                # InstallLocation, pipx venv, brew formula, winget Available ...). Not exported.
-    Shadows       = @()        # later PATH entries with the same command name
+    Shadows       = @()        # later PATH entries with the same command name (paths)
+    Installs      = @()        # every install of this agent seen: { Path, Channel, Version, Active } (Active = wins on PATH)
+    EditorHost    = $null      # for kind 'extension': the editor it is installed in (vscode, cursor, windsurf ...)
     # versions / updates
     Version       = $null
     VersionSource = $null      # package | pe | probe | probe-cache | winget | registry | manifest
@@ -104,12 +106,17 @@ function New-LcaEvidence {
 }
 
 function ConvertTo-LcaDisplayArgument {
-    <# Quotes one token for copy/paste into PowerShell or a POSIX shell. #>
+    <#
+    Quotes one token for copy/paste into PowerShell (the shell this tool runs
+    in): plain tokens stay bare (paths like C:\Tools\x.exe included); anything
+    else becomes a single-quoted literal. Commas would turn into arrays and a
+    bare @name would splat, so both are quoted.
+    #>
     [CmdletBinding()]
     [OutputType([string])]
     param([AllowEmptyString()][string]$Token)
     if ($Token -eq '') { return "''" }
-    if ($Token -match '^[A-Za-z0-9@%+=:,./_\-]+$') { return $Token }
+    if ($Token -match '^[A-Za-z0-9@%+=:./\\_\-]+$' -and $Token -notmatch '^@[A-Za-z_][A-Za-z0-9_]*$') { return $Token }
     "'" + $Token.Replace("'", "''") + "'"
 }
 
@@ -117,7 +124,8 @@ function New-LcaCommand {
     <#
     A command the user (or Update-CodingAgent) can run: an executable plus an
     argument ARRAY - never a string that gets re-parsed. Display is a
-    copy/paste-safe rendering.
+    PowerShell rendering that parses back to exactly Exe + Arguments (a
+    quoted executable gets the call operator: & 'C:\Program Files\x.exe' /S).
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '',
         Justification = 'Constructor: builds an in-memory object and changes no system state.')]
@@ -127,7 +135,9 @@ function New-LcaCommand {
         [Parameter(Mandatory = $true)][string]$Exe,
         [AllowEmptyCollection()][string[]]$Arguments = @()
     )
-    $disp = @((ConvertTo-LcaDisplayArgument -Token $Exe)) + @($Arguments | ForEach-Object { ConvertTo-LcaDisplayArgument -Token $_ })
+    $exeText = ConvertTo-LcaDisplayArgument -Token $Exe
+    if ($exeText.StartsWith("'")) { $exeText = '& ' + $exeText }
+    $disp = @($exeText) + @($Arguments | ForEach-Object { ConvertTo-LcaDisplayArgument -Token $_ })
     [pscustomobject]@{
         PSTypeName = 'ListCodingAgents.Command'
         Exe        = $Exe

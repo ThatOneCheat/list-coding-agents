@@ -28,7 +28,8 @@ function Read-LcaState {
         $prev = ConvertFrom-LcaJson -Text (Read-LcaTextFile -Path $st.Path)
         $st.Exists = $true
         $v = Get-LcaProperty -InputObject $prev -Name 'agents'; if ($v) { $st.Agents = @($v) }
-        $v = Get-LcaProperty -InputObject $prev -Name 'date'; if ($v) { $st.Date = "$v" }
+        $v = Get-LcaProperty -InputObject $prev -Name 'date'
+        if ($v -is [datetime]) { $st.Date = ConvertTo-LcaIsoString -Value $v } elseif ($v) { $st.Date = [string]$v }
         $v = Get-LcaProperty -InputObject $prev -Name 'history'; if ($v) { $st.History = @($v) }
         $v = Get-LcaProperty -InputObject $prev -Name 'probes'
         if ($v) { foreach ($pp in $v.PSObject.Properties) { $st.Probes[$pp.Name] = $pp.Value } }
@@ -62,11 +63,14 @@ function Get-LcaHistoryChange {
     )
     $inScope = @(Select-LcaAgentInScope -Context $Context -Agent $Agent -Tier 'detected')
     $curNames = @($inScope | ForEach-Object { $_.Name })
+    # Partial = winget exists but was not read (N6: no winget at all is a
+    # complete scan - Linux, macOS, Windows Server - and records trend points).
     $wingetScanned = [bool]$Context.Data['wingetScanned']
+    $partial = [bool]$Context.Data['wingetAvailable'] -and -not $wingetScanned
     # Without a winget scan, previous winget-only agents are "not checked", not
     # "gone" - reporting them as removed is a lie about state we never observed.
     $unscanned = @()
-    if (-not $wingetScanned) { $unscanned = @($State.WingetOnly) }
+    if ($partial) { $unscanned = @($State.WingetOnly) }
     $new = @(); $gone = @()
     if ($State.Agents.Count) {
         $new = @($curNames | Where-Object { $State.Agents -notcontains $_ })
@@ -82,7 +86,7 @@ function Get-LcaHistoryChange {
     $persist = $curNames
     $write = $true
     $hist = @($State.History)
-    if (-not $wingetScanned) {
+    if ($partial) {
         if ($State.Agents.Count -and -not $State.HasWingetKey) {
             # Pre-upgrade state file: no way to tell which previous names were
             # winget-only, so leave the baseline alone rather than corrupt it.

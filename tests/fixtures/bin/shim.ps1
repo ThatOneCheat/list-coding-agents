@@ -35,10 +35,27 @@ if (-not $resp) {
     exit 97
 }
 $get = { param($n, $d) $q = $resp.PSObject.Properties[$n]; if ($q -and $null -ne $q.Value) { $q.Value } else { $d } }
+# pidFile: record this shim's PID (and a spawned grandchild's) so tests can
+# prove a timeout kills the whole process tree.
+$pidFile = [string](& $get 'pidFile' '')
+if ($pidFile) {
+    $pids = @($PID)
+    if ([bool](& $get 'spawnChild' $false)) {
+        $hostExe = (Get-Process -Id $PID).Path
+        $sp = @{ FilePath = $hostExe; ArgumentList = @('-NoProfile', '-NonInteractive', '-Command', 'Start-Sleep -Seconds 120'); PassThru = $true }
+        if ([System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT) { $sp['WindowStyle'] = 'Hidden' }
+        $child = Start-Process @sp
+        $pids += $child.Id
+    }
+    [System.IO.File]::WriteAllText($pidFile, ($pids -join ','))
+}
 $sleep = [double](& $get 'sleepSec' 0)
 if ($sleep -gt 0) { Start-Sleep -Milliseconds ([int]($sleep * 1000)) }
 $out = [string](& $get 'stdout' '')
 $err = [string](& $get 'stderr' '')
-if ($out) { [Console]::Out.Write($out) }
-if ($err) { [Console]::Error.Write($err) }
+# Raw UTF-8 bytes: Console writers would use the OEM code page on Windows
+# and turn canned non-ASCII output (winget's ellipsis) into '?'.
+$utf8 = New-Object System.Text.UTF8Encoding($false)
+if ($out) { $b = $utf8.GetBytes($out); $so = [Console]::OpenStandardOutput(); $so.Write($b, 0, $b.Length); $so.Flush() }
+if ($err) { $b = $utf8.GetBytes($err); $se = [Console]::OpenStandardError(); $se.Write($b, 0, $b.Length); $se.Flush() }
 exit ([int](& $get 'exitCode' 0))

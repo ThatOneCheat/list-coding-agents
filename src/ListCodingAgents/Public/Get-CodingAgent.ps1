@@ -69,6 +69,7 @@ function Get-CodingAgent {
         [switch]$AsScan,
         [switch]$UpdateState
     )
+    Clear-LcaDiagnostic
     $ctx = New-LcaContext -Options @{
         IncludeEditors = $IncludeEditors; IncludeExtensions = $IncludeExtensions; All = $All
         SkipWinget = $SkipWinget; CheckUpdates = $CheckUpdates; NoProbe = $NoProbe

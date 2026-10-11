@@ -8,7 +8,9 @@ $script:LcaSchemaVersion = 2
 function New-LcaContext {
     <#
     Options (all optional): IncludeEditors, IncludeExtensions, All, SkipWinget,
-    CheckUpdates, NoProbe, Explain, ShowReasons, Redact.
+    CheckUpdates, NoProbe, Explain, ShowReasons, Redact, Quiet, NoColor, Format.
+    -Config reuses an already loaded config (Get-LcaConfig) instead of reading
+    config.json again.
     ScriptRoot is the folder of the entry script (v1 read agents-extra.txt /
     agents-exclude.txt / last-scan.json from there); empty under irm | iex.
     #>
@@ -18,7 +20,8 @@ function New-LcaContext {
     [OutputType([pscustomobject])]
     param(
         [hashtable]$Options = @{},
-        [AllowEmptyString()][AllowNull()][string]$ScriptRoot
+        [AllowEmptyString()][AllowNull()][string]$ScriptRoot,
+        $Config
     )
     $opt = [ordered]@{
         IncludeEditors    = $false
@@ -30,6 +33,9 @@ function New-LcaContext {
         Explain           = $null
         ShowReasons       = $false
         Redact            = $false
+        Quiet             = $false
+        NoColor           = $false
+        Format            = $null
     }
     foreach ($k in $Options.Keys) {
         if (-not $opt.Contains($k)) { throw "New-LcaContext: unknown option '$k'" }
@@ -58,7 +64,7 @@ function New-LcaContext {
     }
     $ctx.StateDir = Get-LcaStateDirectory
     $ctx.ConfigDir = Get-LcaConfigDirectory
-    $ctx.Config = Get-LcaConfig -Context $ctx
+    if ($Config) { $ctx.Config = $Config } else { $ctx.Config = Get-LcaConfig -Context $ctx }
     $ctx.Catalog = Get-LcaCatalog
     $ctx.Extra = Get-LcaNameList -Context $ctx -FileName 'agents-extra.txt'
     $ctx.Exclude = Get-LcaNameList -Context $ctx -FileName 'agents-exclude.txt'

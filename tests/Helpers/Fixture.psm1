@@ -77,6 +77,55 @@ function Add-LcaFixturePathDir {
     $Path
 }
 
+function Get-LcaFixtureConfigDir {
+    <# The list-coding-agents config folder of the fixture machine. #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)]$Fixture)
+    if ($Fixture.Windows) { return (Join-Path -Path $Fixture.AppData -ChildPath 'list-coding-agents') }
+    $isMac = Get-Variable -Name 'IsMacOS' -ValueOnly -ErrorAction Ignore
+    if ($isMac) { return (Join-FixturePath -Base $Fixture.Home -Relative 'Library/Application Support/list-coding-agents') }
+    Join-Path -Path $Fixture.XdgConfig -ChildPath 'list-coding-agents'
+}
+
+function Get-LcaFixtureStateDir {
+    <# The list-coding-agents state folder of the fixture machine. #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)]$Fixture)
+    if ($Fixture.Windows) { return (Join-Path -Path $Fixture.LocalAppData -ChildPath 'list-coding-agents') }
+    $isMac = Get-Variable -Name 'IsMacOS' -ValueOnly -ErrorAction Ignore
+    if ($isMac) { return (Join-FixturePath -Base $Fixture.Home -Relative 'Library/Application Support/list-coding-agents') }
+    Join-Path -Path $Fixture.XdgState -ChildPath 'list-coding-agents'
+}
+
+function Set-LcaFixtureConfig {
+    <# Writes config.json (e.g. @{ defaults = @{ NoOpen = $true } }) into the fixture config dir. #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)]$Fixture, [Parameter(Mandatory = $true)][hashtable]$Config)
+    $dir = Get-LcaFixtureConfigDir -Fixture $Fixture
+    [void](New-Item -ItemType Directory -Path $dir -Force)
+    $p = Join-Path -Path $dir -ChildPath 'config.json'
+    [System.IO.File]::WriteAllText($p, (ConvertTo-Json -InputObject $Config -Depth 5), (New-Object System.Text.UTF8Encoding($false)))
+    $p
+}
+
+function New-LcaFixtureFile {
+    <# Writes a file (creating folders) and returns its path. -RelativeTo defaults to the fixture HOME. #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]$Fixture,
+        [Parameter(Mandatory = $true)][string]$Path,
+        [AllowEmptyString()][string]$Content = '',
+        [string]$RelativeTo
+    )
+    $base = $RelativeTo
+    if (-not $base) { $base = $Fixture.Home }
+    $full = $Path
+    if (-not [System.IO.Path]::IsPathRooted($Path)) { $full = Join-FixturePath -Base $base -Relative $Path }
+    [void](New-Item -ItemType Directory -Path (Split-Path -Path $full -Parent) -Force)
+    [System.IO.File]::WriteAllText($full, $Content, (New-Object System.Text.UTF8Encoding($false)))
+    $full
+}
+
 function Set-LcaShimResponse {
     <#
     Canned response for `<Tool> <Arguments>`. Use -Arguments '*' for the
@@ -90,7 +139,9 @@ function Set-LcaShimResponse {
         [AllowEmptyString()][string]$StdOut = '',
         [AllowEmptyString()][string]$StdErr = '',
         [int]$ExitCode = 0,
-        [double]$SleepSec = 0
+        [double]$SleepSec = 0,
+        [string]$PidFile,
+        [switch]$SpawnChild
     )
     $file = Join-Path -Path $Fixture.ShimData -ChildPath ($Tool + '.json')
     $map = [ordered]@{}
@@ -98,7 +149,7 @@ function Set-LcaShimResponse {
         $old = ConvertFrom-Json -InputObject ([System.IO.File]::ReadAllText($file))
         foreach ($p in $old.PSObject.Properties) { $map[$p.Name] = $p.Value }
     }
-    $map[$Arguments] = [ordered]@{ stdout = $StdOut; stderr = $StdErr; exitCode = $ExitCode; sleepSec = $SleepSec }
+    $map[$Arguments] = [ordered]@{ stdout = $StdOut; stderr = $StdErr; exitCode = $ExitCode; sleepSec = $SleepSec; pidFile = $PidFile; spawnChild = [bool]$SpawnChild }
     [System.IO.File]::WriteAllText($file, (ConvertTo-Json -InputObject $map -Depth 5), (New-Object System.Text.UTF8Encoding($false)))
 }
 
@@ -252,6 +303,7 @@ function Invoke-LcaFixtureScript {
         [Parameter(Mandatory = $true)][string]$Path,
         [string[]]$ArgumentList = @(),
         [switch]$AsScriptBlock,
+        [switch]$AsInvokeExpression,
         [string]$WorkingDirectory,
         [double]$TimeoutSec = 300
     )
@@ -263,7 +315,11 @@ function Invoke-LcaFixtureScript {
         if ($a -notmatch '[\s"]' -and $a.Length) { return $a }
         '"' + ($a -replace '(\\*)"', '$1$1\"' -replace '(\\+)$', '$1$1') + '"'
     }
-    if ($AsScriptBlock) {
+    if ($AsInvokeExpression) {
+        # exactly what "irm <url> | iex" does: no arguments can be passed
+        $cmd = '[System.IO.File]::ReadAllText(''' + ($Path -replace "'", "''") + ''') | Invoke-Expression'
+        $psi.Arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ' + (& $quote $cmd)
+    } elseif ($AsScriptBlock) {
         # parameter names stay bare; values are single-quoted literals
         $argText = ($ArgumentList | ForEach-Object {
                 if ($_ -match '^-[A-Za-z]+$') { $_ } else { "'" + ($_ -replace "'", "''") + "'" }
@@ -304,4 +360,5 @@ function Get-LcaRepoRoot { $script:RepoRoot }
 
 Export-ModuleMember -Function New-LcaFixture, Add-LcaFixturePathDir, Set-LcaShimResponse, New-LcaShim, New-LcaFixtureCommand,
     Add-LcaFixtureNpmPackage, Enable-LcaFixtureNpm, Get-LcaFixtureEnvironment, Use-LcaFixture, Invoke-LcaFixtureScript,
-    Get-LcaShimLog, Get-LcaRepoRoot, Join-FixturePath
+    Get-LcaShimLog, Get-LcaRepoRoot, Join-FixturePath, Get-LcaFixtureConfigDir, Get-LcaFixtureStateDir, Set-LcaFixtureConfig,
+    New-LcaFixtureFile

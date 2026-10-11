@@ -101,8 +101,11 @@ function Find-LcaExecutable {
         if ([System.IO.Path]::GetExtension($Name)) { $exts = @('') + $exts }
     }
     foreach ($dir in Get-LcaPathEntry) {
+        # Stale PATH entries (missing folders, unmapped drives) are common;
+        # Join-Path would throw DriveNotFound for them.
+        if (-not [System.IO.Directory]::Exists($dir)) { continue }
         foreach ($e in $exts) {
-            $cand = Join-Path -Path $dir -ChildPath ($Name + $e)
+            $cand = [System.IO.Path]::Combine($dir, $Name + $e)
             if (-not [System.IO.File]::Exists($cand)) { continue }
             if ($win -or (Test-LcaUnixExecutable -Path $cand)) { return $cand }
         }
@@ -123,7 +126,8 @@ function Open-LcaProcess {
         [Parameter(Mandatory = $true)][string]$FilePath,
         [AllowEmptyCollection()][string[]]$ArgumentList = @(),
         [string]$WorkingDirectory,
-        [hashtable]$Environment
+        [hashtable]$Environment,
+        [System.Text.Encoding]$Encoding
     )
     $handle = [pscustomobject]@{
         PSTypeName   = 'ListCodingAgents.ProcessHandle'
@@ -146,13 +150,16 @@ function Open-LcaProcess {
         $argString = ConvertTo-LcaArgumentString -ArgumentList $ArgumentList
         $ext = [System.IO.Path]::GetExtension($exe).ToLowerInvariant()
         if ((Test-LcaWindows) -and ($ext -eq '.cmd' -or $ext -eq '.bat')) {
-            if (-not (Test-LcaSafeBatchArgument -ArgumentList $ArgumentList)) {
+            # The quoted batch path may contain spaces and parentheses
+            # ("Program Files (x86)") but nothing cmd.exe expands inside quotes.
+            if ($exe -match '[\r\n"&|<>^%!]' -or -not (Test-LcaSafeBatchArgument -ArgumentList $ArgumentList)) {
                 throw "refusing to pass shell metacharacters to batch file $exe"
             }
             $comspec = Get-LcaEnvironmentVariable -Name 'ComSpec'
             if (-not $comspec) { $comspec = 'cmd.exe' }
             $psi.FileName = $comspec
-            $psi.Arguments = '/d /s /c "' + (ConvertTo-LcaArgumentString -ArgumentList @($exe)) + ' ' + $argString + '"'
+            # /s strips the outer quotes; the batch path itself is always quoted.
+            $psi.Arguments = '/d /s /c ""' + $exe + '" ' + $argString + '"'
         } elseif ($ext -eq '.ps1') {
             $psi.FileName = Get-LcaPowerShellPath
             $psi.Arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ' +
@@ -166,14 +173,18 @@ function Open-LcaProcess {
         $psi.RedirectStandardInput = $true
         $psi.RedirectStandardOutput = $true
         $psi.RedirectStandardError = $true
-        $utf8 = New-Object System.Text.UTF8Encoding($false)
-        $psi.StandardOutputEncoding = $utf8
-        $psi.StandardErrorEncoding = $utf8
+        $enc = $Encoding
+        if (-not $enc) { $enc = New-Object System.Text.UTF8Encoding($false) }
+        $psi.StandardOutputEncoding = $enc
+        $psi.StandardErrorEncoding = $enc
         if ($WorkingDirectory) { $psi.WorkingDirectory = $WorkingDirectory }
         $psi.EnvironmentVariables['CI'] = '1'
         $psi.EnvironmentVariables['NO_COLOR'] = '1'
         $psi.EnvironmentVariables['TERM'] = 'dumb'
         $psi.EnvironmentVariables['NO_UPDATE_NOTIFIER'] = '1'
+        # Python tools (pip, pipx, uv shims) print in the locale code page otherwise.
+        $psi.EnvironmentVariables['PYTHONUTF8'] = '1'
+        $psi.EnvironmentVariables['PYTHONIOENCODING'] = 'utf-8'
         if ($Environment) {
             foreach ($k in $Environment.Keys) { $psi.EnvironmentVariables[[string]$k] = [string]$Environment[$k] }
         }
@@ -210,6 +221,8 @@ function Stop-LcaProcessTree {
         try {
             $tk = New-Object System.Diagnostics.ProcessStartInfo
             $tk.FileName = 'taskkill.exe'
+            $winDir = Get-LcaKnownFolder -Name 'WinDir'
+            if ($winDir) { $tk.FileName = [System.IO.Path]::Combine($winDir, 'System32', 'taskkill.exe') }
             $tk.Arguments = '/PID ' + $Process.Id + ' /T /F'
             $tk.UseShellExecute = $false
             $tk.CreateNoWindow = $true
@@ -217,7 +230,8 @@ function Stop-LcaProcessTree {
             $tk.RedirectStandardError = $true
             $k = [System.Diagnostics.Process]::Start($tk)
             [void]$k.WaitForExit(5000)
-            return
+            if ($k.HasExited -and $k.ExitCode -eq 0) { return }
+            Write-Debug ("taskkill exit code {0}" -f $k.ExitCode)
         } catch { Write-Debug "taskkill failed: $($_.Exception.Message)" }
     }
     try { $Process.Kill() } catch { Write-Debug "Kill() failed: $($_.Exception.Message)" }
@@ -255,16 +269,18 @@ function Wait-LcaProcess {
     $p = $Handle.Process
     try {
         $remaining = [int][Math]::Max(1, ($TimeoutSec * 1000) - $Handle.Started.ElapsedMilliseconds)
+        $pipeWait = 5000
         if (-not $p.WaitForExit($remaining)) {
             $res.TimedOut = $true
             $res.Failed = $true
             $res.Error = ('timed out after {0}s' -f $TimeoutSec)
             Stop-LcaProcessTree -Process $p
-            [void]$p.WaitForExit(5000)
+            [void]$p.WaitForExit(3000)
+            $pipeWait = 1000
         }
         # Grandchildren can keep the pipes open after a kill; never wait forever.
-        if ($Handle.OutTask -and $Handle.OutTask.Wait(5000)) { $res.StdOut = [string]$Handle.OutTask.Result }
-        if ($Handle.ErrTask -and $Handle.ErrTask.Wait(2000)) { $res.StdErr = [string]$Handle.ErrTask.Result }
+        if ($Handle.OutTask -and $Handle.OutTask.Wait($pipeWait)) { $res.StdOut = [string]$Handle.OutTask.Result }
+        if ($Handle.ErrTask -and $Handle.ErrTask.Wait([Math]::Min($pipeWait, 2000))) { $res.StdErr = [string]$Handle.ErrTask.Result }
         if ($p.HasExited) { $res.ExitCode = $p.ExitCode }
         if (-not $res.TimedOut -and $null -ne $res.ExitCode -and $res.ExitCode -ne 0) {
             $res.Failed = $true
@@ -290,8 +306,106 @@ function Invoke-LcaProcess {
         [AllowEmptyCollection()][string[]]$ArgumentList = @(),
         [double]$TimeoutSec = 30,
         [string]$WorkingDirectory,
-        [hashtable]$Environment
+        [hashtable]$Environment,
+        [System.Text.Encoding]$Encoding
     )
-    $h = Open-LcaProcess -FilePath $FilePath -ArgumentList $ArgumentList -WorkingDirectory $WorkingDirectory -Environment $Environment
+    $h = Open-LcaProcess -FilePath $FilePath -ArgumentList $ArgumentList -WorkingDirectory $WorkingDirectory -Environment $Environment -Encoding $Encoding
     Wait-LcaProcess -Handle $h -TimeoutSec $TimeoutSec
+}
+
+function Split-LcaCommandLine {
+    <#
+    Splits a Windows command line (e.g. a registry UninstallString) into
+    tokens with the CommandLineToArgvW rules: the first token is the program
+    (quoted or not), later tokens follow the MSVCRT backslash/quote rules.
+    Returns $null for an empty string.
+    #>
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param([AllowNull()][AllowEmptyString()][string]$CommandLine)
+    if (-not $CommandLine -or -not $CommandLine.Trim()) { return $null }
+    $s = $CommandLine.Trim()
+    $tokens = New-Object System.Collections.Generic.List[string]
+    $i = 0
+    # program name: quoted -> up to the next quote; else up to whitespace
+    if ($s[0] -eq [char]'"') {
+        $end = $s.IndexOf([char]'"', 1)
+        if ($end -lt 0) { $end = $s.Length }
+        $tokens.Add($s.Substring(1, $end - 1))
+        $i = $end + 1
+    } else {
+        while ($i -lt $s.Length -and -not [char]::IsWhiteSpace($s[$i])) { $i++ }
+        $tokens.Add($s.Substring(0, $i))
+    }
+    $cur = New-Object System.Text.StringBuilder
+    $inQuote = $false
+    $have = $false
+    while ($i -lt $s.Length) {
+        $ch = $s[$i]
+        if ([char]::IsWhiteSpace($ch) -and -not $inQuote) {
+            if ($have) { $tokens.Add($cur.ToString()); [void]$cur.Clear(); $have = $false }
+            $i++
+            continue
+        }
+        if ($ch -eq [char]'\') {
+            $n = 0
+            while ($i -lt $s.Length -and $s[$i] -eq [char]'\') { $n++; $i++ }
+            if ($i -lt $s.Length -and $s[$i] -eq [char]'"') {
+                [void]$cur.Append([char]'\', [int][Math]::Floor($n / 2))
+                if ($n % 2 -eq 1) { [void]$cur.Append([char]'"'); $i++ }
+            } else {
+                [void]$cur.Append([char]'\', $n)
+            }
+            $have = $true
+            continue
+        }
+        if ($ch -eq [char]'"') {
+            if ($inQuote -and ($i + 1) -lt $s.Length -and $s[$i + 1] -eq [char]'"') {
+                [void]$cur.Append([char]'"'); $i += 2; $have = $true; continue
+            }
+            $inQuote = -not $inQuote
+            $have = $true
+            $i++
+            continue
+        }
+        [void]$cur.Append($ch)
+        $have = $true
+        $i++
+    }
+    if ($have) { $tokens.Add($cur.ToString()) }
+    $tokens.ToArray()
+}
+
+function Open-LcaFile {
+    <#
+    Opens a file with the platform's default handler (the HTML report in the
+    browser). Never fatal, never inherits our pipes, never waits.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][string]$Path)
+    try {
+        switch (Get-LcaPlatform) {
+            'windows' { Invoke-Item -LiteralPath $Path }
+            default {
+                $opener = 'xdg-open'
+                if ((Get-LcaPlatform) -eq 'macos') { $opener = 'open' }
+                $exe = Find-LcaExecutable -Name $opener
+                if (-not $exe) {
+                    Add-LcaDiagnostic -Source 'report' -Level 'info' -Message "no $opener to open $Path"
+                    return
+                }
+                $psi = New-Object System.Diagnostics.ProcessStartInfo
+                $psi.FileName = $exe
+                $psi.Arguments = ConvertTo-LcaArgumentString -ArgumentList @($Path)
+                $psi.UseShellExecute = $false
+                $psi.RedirectStandardInput = $false
+                $psi.RedirectStandardOutput = $false
+                $psi.RedirectStandardError = $false
+                $p = [System.Diagnostics.Process]::Start($psi)
+                if ($p) { $p.Dispose() }
+            }
+        }
+    } catch {
+        Add-LcaDiagnostic -Source 'report' -Level 'info' -Message "could not open $Path" -ErrorRecord $_
+    }
 }

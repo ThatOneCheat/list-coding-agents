@@ -88,6 +88,7 @@ function Find-LcaAgent {
         $wg = Measure-LcaPhase -Context $Context -Name 'winget' -ScriptBlock { Get-LcaWingetPackage }
         if ($wg.Scanned) {
             $Context.Data['wingetScanned'] = $true
+            $Context.Data['wingetPackages'] = @($wg.Packages)
             foreach ($p in @($wg.Packages)) {
                 $pkgName = $p.Name; $id = $p.Id
                 $publisher = ($id -split '\.')[0]

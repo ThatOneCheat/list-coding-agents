@@ -4,8 +4,11 @@
 function Get-LcaUninstallEntry {
     <#
     Reads the Windows Uninstall keys (HKCU, HKLM, HKLM WOW6432Node) and returns
-    { DisplayName, DisplayVersion, Publisher, InstallLocation, EstimatedSizeKB,
-      UninstallString, QuietUninstallString, KeyName, Hive }.
+    { DisplayName, DisplayVersion, Publisher, InstallLocation, DisplayIcon,
+      EstimatedSizeKB, UninstallString, QuietUninstallString, SystemComponent,
+      WindowsInstaller, ParentKeyName, KeyName, Hive }. One malformed entry
+    never drops the others. (From 32-bit PowerShell on 64-bit Windows the HKLM
+    view is the 32-bit one; WOW6432Node is then read twice - harmless.)
     Returns an empty array on other platforms.
     #>
     [CmdletBinding()]
@@ -37,15 +40,30 @@ function Get-LcaUninstallEntry {
                 if ($names -contains $n) { return $p.$n }
                 $null
             }
-            $size = & $get 'EstimatedSize'
+            $sizeKb = $null
+            $rawSize = & $get 'EstimatedSize'
+            if ($null -ne $rawSize) {
+                $parsed = 0L
+                if ([long]::TryParse([string]$rawSize, [ref]$parsed)) { $sizeKb = $parsed }
+            }
+            $flag = {
+                param($n)
+                $x = & $get $n
+                $i = 0
+                ($null -ne $x) -and [int]::TryParse([string]$x, [ref]$i) -and $i -ne 0
+            }
             $out.Add([pscustomobject]@{
                     DisplayName          = [string]$p.DisplayName
                     DisplayVersion       = [string](& $get 'DisplayVersion')
                     Publisher            = [string](& $get 'Publisher')
                     InstallLocation      = [string](& $get 'InstallLocation')
-                    EstimatedSizeKB      = $(if ($null -ne $size) { [long]$size } else { $null })
+                    DisplayIcon          = [string](& $get 'DisplayIcon')
+                    EstimatedSizeKB      = $sizeKb
                     UninstallString      = [string](& $get 'UninstallString')
                     QuietUninstallString = [string](& $get 'QuietUninstallString')
+                    SystemComponent      = [bool](& $flag 'SystemComponent')
+                    WindowsInstaller     = [bool](& $flag 'WindowsInstaller')
+                    ParentKeyName        = [string](& $get 'ParentKeyName')
                     KeyName              = [string]$k.PSChildName
                     Hive                 = $r[0]
                 })

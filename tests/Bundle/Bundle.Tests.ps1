@@ -1,6 +1,10 @@
 # The single-file bundle: deterministic build, no drift from the committed
 # copy, and smoke runs as a file and as a script block (irm | iex).
 
+BeforeDiscovery {
+    $IsDesktop = $PSVersionTable.PSEdition -ne 'Core'
+}
+
 BeforeAll {
     . (Join-Path $PSScriptRoot '../Helpers/Bootstrap.ps1')
     $bundle = Join-Path $RepoRoot 'list-coding-agents.ps1'
@@ -83,6 +87,44 @@ Describe 'Bundle smoke' {
         @($j.agents | Where-Object { $_.name -eq 'claude' }).Count | Should -Be 1
     }
 
+    It 'runs under a real "irm | iex" (Invoke-Expression, no arguments)' {
+        $iexDir = Join-Path $TestDrive 'iex-real'
+        [void](New-Item -ItemType Directory -Path $iexDir -Force)
+        [void](Set-LcaFixtureConfig -Fixture $fx -Config @{ defaults = @{ NoOpen = $true; Json = $true; NoHtml = $true } })
+        try {
+            $r = Invoke-LcaFixtureScript -Fixture $fx -Path $script:RunBundle -AsInvokeExpression -WorkingDirectory $iexDir
+        } finally {
+            Remove-Item -LiteralPath (Join-Path (Get-LcaFixtureConfigDir -Fixture $fx) 'config.json') -Force
+        }
+        $r.StdErr | Should -BeNullOrEmpty
+        $j = Get-Content -LiteralPath (Join-Path $iexDir 'coding-agents.json') -Raw | ConvertFrom-Json
+        @($j.agents | Where-Object { $_.name -eq 'claude' }).Count | Should -Be 1
+    }
+
+    It 'accepts -FailOn a,b through pwsh -File and exits 2 on bad values' {
+        $r = Invoke-LcaFixtureScript -Fixture $fx -Path $script:RunBundle -ArgumentList @('-NoHtml', '-Quiet', '-FailOn', 'stale,conflict')
+        $r.ExitCode | Should -BeIn @(0, 3) -Because $r.StdErr
+        $r = Invoke-LcaFixtureScript -Fixture $fx -Path $script:RunBundle -ArgumentList @('-NoHtml', '-Quiet', '-Format', 'yaml')
+        $r.ExitCode | Should -Be 2
+    }
+
+    It 'writes schema-valid JSON, also with -Redact' -Skip:$IsDesktop {
+        $schema = Join-Path $RepoRoot 'schema/coding-agents.schema.json'
+        $o1 = Join-Path $TestDrive 'schema-plain'
+        $o2 = Join-Path $TestDrive 'schema-redacted'
+        foreach ($pair in @(@($o1, @()), @($o2, @('-Redact')))) {
+            $r = Invoke-LcaFixtureScript -Fixture $fx -Path $script:RunBundle -ArgumentList (@('-NoOpen', '-NoHtml', '-Json', '-Quiet', '-OutDir', $pair[0]) + $pair[1])
+            $r.ExitCode | Should -Be 0 -Because $r.StdErr
+            $text = Get-Content -LiteralPath (Join-Path $pair[0] 'coding-agents.json') -Raw
+            $ok = Test-Json -Json $text -SchemaFile $schema -ErrorVariable sv -ErrorAction SilentlyContinue
+            $ok | Should -BeTrue -Because (($sv | ForEach-Object { $_.ToString() }) -join '; ')
+        }
+        $red = Get-Content -LiteralPath (Join-Path $o2 'coding-agents.json') -Raw | ConvertFrom-Json
+        $red.host | Should -BeNullOrEmpty
+        $red.user | Should -BeNullOrEmpty
+        $red.redacted | Should -BeTrue
+    }
+
     It 'prints its version' {
         $r = Invoke-LcaFixtureScript -Fixture $fx -Path $script:RunBundle -ArgumentList @('-Version')
         $r.ExitCode | Should -Be 0
@@ -93,8 +135,11 @@ Describe 'Bundle smoke' {
         Set-LcaShimResponse -Fixture $fx -Tool 'npm' -Arguments 'outdated -g --json' -ExitCode 1 -StdOut '{"@anthropic-ai/claude-code":{"current":"1.0.9","wanted":"1.0.9","latest":"1.1.0"}}'
         Set-LcaShimResponse -Fixture $fx -Tool 'npm' -Arguments '*' -StdOut 'SHOULD NOT RUN' -ExitCode 0
         if (Test-Path -LiteralPath $fx.ShimLog) { Remove-Item -LiteralPath $fx.ShimLog }
-        $r = Invoke-LcaFixtureScript -Fixture $fx -Path $script:RunBundle -ArgumentList @('-UpdateAll', '-WhatIf', '-NoHtml')
+        $wiDir = Join-Path $TestDrive 'whatif-cwd'
+        [void](New-Item -ItemType Directory -Path $wiDir -Force)
+        $r = Invoke-LcaFixtureScript -Fixture $fx -Path $script:RunBundle -ArgumentList @('-UpdateAll', '-WhatIf', '-Json') -WorkingDirectory $wiDir
         $r.ExitCode | Should -Be 0 -Because $r.StdErr
+        @(Get-ChildItem -LiteralPath $wiDir).Count | Should -Be 0 -Because '-WhatIf must not write JSON or HTML'
         $calls = @(Get-LcaShimLog -Fixture $fx | Where-Object { $_.tool -eq 'npm' } | ForEach-Object { ($_.args -join ' ') })
         $calls | Should -Contain 'outdated -g --json'
         @($calls | Where-Object { $_ -match '^(i|install|update|rm|uninstall)\b' }).Count | Should -Be 0

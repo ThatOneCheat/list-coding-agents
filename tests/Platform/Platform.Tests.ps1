@@ -178,15 +178,41 @@ Describe 'Invoke-LcaProcess' {
         }
     }
 
-    It 'enforces a hard timeout and kills the process' {
-        Use-LcaFixture -Fixture $fx {
-            InModuleScope ListCodingAgents {
-                $sw = [System.Diagnostics.Stopwatch]::StartNew()
-                $r = Invoke-LcaProcess -FilePath 'sleeper' -TimeoutSec 3
-                $sw.Stop()
-                $r.TimedOut | Should -BeTrue
-                $r.Failed | Should -BeTrue
-                $sw.Elapsed.TotalSeconds | Should -BeLessThan 20
+    It 'enforces a hard timeout and kills the whole process tree (defect 9)' {
+        $pidFile = Join-Path $TestDrive 'tree.pids'
+        [void](New-LcaShim -Fixture $fx -Name 'treesleeper')
+        Set-LcaShimResponse -Fixture $fx -Tool 'treesleeper' -Arguments '*' -StdOut 'late' -SleepSec 60 -PidFile $pidFile -SpawnChild
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
+        $r = Use-LcaFixture -Fixture $fx {
+            InModuleScope ListCodingAgents { Invoke-LcaProcess -FilePath 'treesleeper' -TimeoutSec 4 }
+        }
+        $sw.Stop()
+        $r.TimedOut | Should -BeTrue
+        $r.Failed | Should -BeTrue
+        $sw.Elapsed.TotalSeconds | Should -BeLessThan 12
+        Test-Path -LiteralPath $pidFile | Should -BeTrue -Because 'the shim must have started before the timeout'
+        $pids = @(([System.IO.File]::ReadAllText($pidFile)).Split(',') | ForEach-Object { [int]$_ })
+        $pids.Count | Should -Be 2
+        $alive = @()
+        for ($i = 0; $i -lt 20; $i++) {
+            $alive = @($pids | Where-Object { Get-Process -Id $_ -ErrorAction SilentlyContinue })
+            if (-not $alive.Count) { break }
+            Start-Sleep -Milliseconds 250
+        }
+        $alive.Count | Should -Be 0 -Because "process(es) $($alive -join ',') survived the timeout"
+    }
+
+    It 'skips stale PATH entries without errors' {
+        $fx3 = New-LcaFixture -Root (Join-Path $TestDrive 'stale')
+        $p = New-LcaShim -Fixture $fx3 -Name 'npm'
+        $missing = Join-Path $TestDrive 'does/not/exist'
+        if ($IsWin) { $missing = 'Q:\nope\bin' }
+        $fx3.PathDirs.Insert(0, $missing)
+        Use-LcaFixture -Fixture $fx3 {
+            InModuleScope ListCodingAgents -Parameters @{ P = $p } {
+                param($P)
+                $ErrorActionPreference = 'Stop'
+                Find-LcaExecutable -Name 'npm' | Should -Be $P
             }
         }
     }
@@ -269,5 +295,60 @@ Describe 'Get-LcaUninstallEntry / Get-LcaFileVersionInfo' {
     }
     It 'ignores non-exe paths' {
         InModuleScope ListCodingAgents { Get-LcaFileVersionInfo -Path '/tmp/x.sh' | Should -BeNullOrEmpty }
+    }
+}
+
+Describe 'Split-LcaCommandLine' {
+    It 'splits <Case>' -TestCases @(
+        @{ Case = 'quoted exe'; In = '"C:\Program Files\App\uninst.exe" /S'; Out = @('C:\Program Files\App\uninst.exe', '/S') }
+        @{ Case = 'msiexec'; In = 'MsiExec.exe /X{12345678-1234-1234-1234-123456789012}'; Out = @('MsiExec.exe', '/X{12345678-1234-1234-1234-123456789012}') }
+        @{ Case = 'quoted args'; In = 'C:\x\u.exe --dir "C:\a b" --q'; Out = @('C:\x\u.exe', '--dir', 'C:\a b', '--q') }
+        @{ Case = 'escaped quote'; In = 'u.exe "a \"b\" c"'; Out = @('u.exe', 'a "b" c') }
+    ) {
+        param($Case, $In, $Out)
+        InModuleScope ListCodingAgents -Parameters @{ In = $In; Out = $Out } {
+            param($In, $Out)
+            @(Split-LcaCommandLine -CommandLine $In) | Should -Be $Out
+        }
+    }
+    It 'returns nothing for an empty string' {
+        InModuleScope ListCodingAgents { Split-LcaCommandLine -CommandLine '  ' | Should -BeNullOrEmpty }
+    }
+}
+
+Describe 'Invoke-LcaParallel error, timeout and diagnostics handling' {
+    It 'captures non-terminating errors even when the item also produced output' {
+        InModuleScope ListCodingAgents {
+            $r = @(Invoke-LcaParallel -InputObject @(1, 2) -ThrottleLimit 2 -ScriptBlock { param($x) Write-Error "bad $x"; $x })
+            $r[0].Error | Should -Match 'bad 1'
+            @($r[0].Output) | Should -Be @(1)
+        }
+    }
+    It 'returns Output as an array in both modes' {
+        InModuleScope ListCodingAgents {
+            $inline = @(Invoke-LcaParallel -InputObject @(1) -ThrottleLimit 1 -ScriptBlock { param($x) })
+            $pool = @(Invoke-LcaParallel -InputObject @(1, 2) -ThrottleLimit 2 -ScriptBlock { param($x) })
+            , $inline[0].Output | Should -BeOfType [object[]]
+            , $pool[0].Output | Should -BeOfType [object[]]
+            @($inline[0].Output).Count | Should -Be 0
+            @($pool[0].Output).Count | Should -Be 0
+        }
+    }
+    It 'enforces TimeoutSec without waiting for the hung item' {
+        InModuleScope ListCodingAgents {
+            $sw = [System.Diagnostics.Stopwatch]::StartNew()
+            $r = @(Invoke-LcaParallel -InputObject @(1, 2) -ThrottleLimit 2 -TimeoutSec 1 -ScriptBlock { param($x) if ($x -eq 2) { Start-Sleep -Seconds 20 }; $x })
+            $sw.Stop()
+            $sw.Elapsed.TotalSeconds | Should -BeLessThan 6
+            $r[1].TimedOut | Should -BeTrue
+            @($r[0].Output) | Should -Be @(1)
+        }
+    }
+    It 'merges diagnostics recorded inside work items' {
+        InModuleScope ListCodingAgents {
+            Clear-LcaDiagnostic
+            [void](Invoke-LcaParallel -InputObject @('a', 'b') -ThrottleLimit 2 -ScriptBlock { param($x) Add-LcaDiagnostic -Source 'par' -Level 'info' -Message "item $x" })
+            @(Get-LcaDiagnostic | Where-Object { $_.Source -eq 'par' }).Count | Should -Be 2
+        }
     }
 }

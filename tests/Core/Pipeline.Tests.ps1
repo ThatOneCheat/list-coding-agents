@@ -74,6 +74,50 @@ Describe 'CLI pipeline (in-process)' {
         @($calls | Where-Object { $_ -match '^(i|install|update|rm|uninstall)\b' }).Count | Should -Be 0
     }
 
+    It '-WhatIf writes no state, JSON or HTML (gate 7)' {
+        $stateDir = Get-LcaFixtureStateDir -Fixture $fx
+        $snapshot = {
+            @(@(Get-ChildItem -LiteralPath $stateDir -File -Recurse -ErrorAction SilentlyContinue) + @(Get-ChildItem -LiteralPath $script:ScriptRoot -File -ErrorAction SilentlyContinue) |
+                ForEach-Object { '{0}|{1}|{2}' -f $_.FullName, $_.Length, $_.LastWriteTimeUtc.Ticks } | Sort-Object)
+        }
+        $before = & $snapshot
+        $out = Join-Path $TestDrive 'whatif-out'
+        Set-LcaShimResponse -Fixture $fx -Tool 'npm' -Arguments 'outdated -g --json' -ExitCode 1 -StdOut '{"@anthropic-ai/claude-code":{"current":"1.0.9","wanted":"1.0.9","latest":"1.1.0"}}'
+        $r = Invoke-TestCli -Bound @{ UpdateAll = [switch]$true; WhatIf = [switch]$true; Json = [switch]$true; OutDir = $out }
+        $r.Exit | Should -Be 0
+        Test-Path -LiteralPath $out | Should -BeFalse
+        (& $snapshot) | Should -Be $before
+    }
+
+    It 'resolves a relative -OutDir against the PowerShell location' {
+        $base = Join-Path $TestDrive 'reloc'
+        [void](New-Item -ItemType Directory -Path $base -Force)
+        Push-Location -LiteralPath $base
+        try { $r = Invoke-TestCli -Bound @{ NoHtml = [switch]$true; Json = [switch]$true; OutDir = 'rel-out'; Quiet = [switch]$true } }
+        finally { Pop-Location }
+        $r.Exit | Should -Be 0
+        Test-Path -LiteralPath (Join-Path $base 'rel-out/coding-agents.json') | Should -BeTrue
+    }
+
+    It 'exits 2 for a bad -Format and accepts -FailOn as a comma list' {
+        (Invoke-TestCli -Bound @{ NoHtml = [switch]$true; Format = 'yaml' } 2>$null).Exit | Should -Be 2
+        (Invoke-TestCli -Bound @{ NoHtml = [switch]$true; FailOn = @('nope') } 2>$null).Exit | Should -Be 2
+        Set-LcaShimResponse -Fixture $fx -Tool 'npm' -Arguments 'outdated -g --json' -ExitCode 1 -StdOut '{"@anthropic-ai/claude-code":{"current":"1.0.9","wanted":"1.0.9","latest":"1.1.0"}}'
+        $r = Invoke-TestCli -Bound @{ NoHtml = [switch]$true; Quiet = [switch]$true; CheckUpdates = [switch]$true; FailOn = @('stale,outdated') }
+        $r.Exit | Should -Be 3
+    }
+
+    It 'never writes secret values into the state file' {
+        [void](Invoke-TestCli -Bound @{ NoHtml = [switch]$true; Quiet = [switch]$true })
+        $files = @(Get-ChildItem -LiteralPath (Get-LcaFixtureStateDir -Fixture $fx) -File -ErrorAction SilentlyContinue) + @(Get-ChildItem -LiteralPath $script:ScriptRoot -File -ErrorAction SilentlyContinue)
+        $files.Count | Should -BeGreaterThan 0
+        foreach ($f in $files) {
+            $t = [System.IO.File]::ReadAllText($f.FullName)
+            $t | Should -Not -Match 'sk-ant-FAKE-0000'
+            $t | Should -Not -Match 'ghp_FAKE0000'
+        }
+    }
+
     It 'prints the version' {
         $r = Invoke-TestCli -Bound @{ Version = [switch]$true }
         $r.Output | Should -Contain 'list-coding-agents 2.0.0'

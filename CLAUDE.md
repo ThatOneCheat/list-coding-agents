@@ -59,11 +59,15 @@ Other traps: `ConvertTo-Json` turns `DateTime` into `"\/Date(..)\/"` on 5.1 (ser
 - `Set-StrictMode -Version Latest` is on inside the module: reading a missing property throws. Use `Get-LcaProperty` for parsed JSON.
 - Variable names are case-insensitive: `$name = ''` overwrites a `$Name` parameter.
 - Return collections by emitting items (no leading comma) and wrap call sites in `@(...)`. Only return `, $set` for objects that must not be enumerated (HashSet).
-- Pester 6: a `Mock` with only `-ParameterFilter` throws when no filter matches - add a default mock.
+- Pester 6: a `Mock` with only `-ParameterFilter` throws when no filter matches - add a default mock. `-Skip:` conditions run at discovery: set flags in `BeforeDiscovery`.
+- `ConvertFrom-Json` on pwsh 7.0-7.4 turns ISO date strings into `[DateTime]` (offset lost); `ConvertFrom-LcaJson` uses `-DateKind String` where available. Never stringify a parsed date with `"$v"` (culture-dependent): use `ConvertTo-LcaIsoString`.
+- Never call `Write-Error` in CLI paths without `-ErrorAction Continue`: a caller's `$ErrorActionPreference = 'Stop'` would turn it into an exception and lose the exit code.
+- Relative user paths: resolve with `$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath()` (.NET resolves against the process directory, not `$PWD`). `Write-LcaTextFile` does this.
+- No `ValidateSet` on the entry script's parameters: under `irm | iex` it rejects the empty defaults and aborts. Validate inside (exit code 2).
 
 ### Provider seam
 
-Only `Private/Platform/` may read `$env:`, call `Get-Date`/`[DateTime]::Now`, start processes, read the registry or call `npm`/`winget`/... Everything else uses `Get-LcaEnvironmentVariable`, `Get-LcaKnownFolder`, `Get-LcaPathEntry`, `Get-LcaNow`, `Invoke-LcaProcess`/`Open-LcaProcess`+`Wait-LcaProcess`, `Find-LcaExecutable`, `Get-LcaUninstallEntry`, `Get-LcaFileVersionInfo`, `Invoke-LcaParallel`. Enforced by the AST guard in `tests/Compat/Syntax51.Tests.ps1`.
+Only `Private/Platform/` may read `$env:`, call `Get-Date`/`[DateTime]::Now`, start processes, read the registry, touch the network or call `npm`/`winget`/... Everything else uses `Get-LcaEnvironmentVariable`, `Get-LcaKnownFolder`, `Get-LcaPathEntry`, `Get-LcaNow`, `Invoke-LcaProcess`/`Open-LcaProcess`+`Wait-LcaProcess` (`-Encoding` for tools that don't print UTF-8), `Find-LcaExecutable`, `Split-LcaCommandLine` (registry UninstallString -> exe + args), `Open-LcaFile`, `Get-LcaUninstallEntry`, `Get-LcaFileVersionInfo`, `Invoke-LcaHttpJson` (opt-in update checks only), `Get-LcaWinGetModulePackage` (Microsoft.WinGet.Client), `Invoke-LcaParallel` (RunspacePool; returns `{ Input, Output (array), Error, TimedOut }` per item, copies module functions + `Lca*` variables, merges diagnostics). Enforced by the AST guard in `tests/Compat/Syntax51.Tests.ps1`.
 Tests run the real code against fixture machines: `New-LcaFixture`, `Add-LcaFixtureNpmPackage`, `New-LcaFixtureCommand`, `Set-LcaShimResponse` (fake package managers that log their arguments), `Use-LcaFixture` (in-process) and `Invoke-LcaFixtureScript` (child process; `-AsScriptBlock` simulates `irm | iex`). `LCA_FAKE_NOW` pins the clock.
 
 ### Never touch the real toolchain
@@ -84,10 +88,12 @@ No empty `catch {}`: record with `Add-LcaDiagnostic` (exported in the JSON `diag
 
 ## Contracts (frozen in Phase 1 of the v2 upgrade)
 
-- **Agent object** (`New-LcaAgent`, `Private/Core/Model.ps1`): PSTypeName `ListCodingAgents.Agent`; the property list in `$script:LcaAgentDefaults` is the contract. Unknown properties throw.
+- **Agent object** (`New-LcaAgent`, `Private/Core/Model.ps1`): PSTypeName `ListCodingAgents.Agent`; the property list in `$script:LcaAgentDefaults` is the contract (incl. `ChannelData` - a per-row hashtable of channel facts for later phases, not exported; `Installs` - every install seen `{ Path, Channel, Version, Active }`; `EditorHost` for extensions). Unknown properties throw.
 - **Evidence** (`New-LcaEvidence`): `{ Signal, Label, Weight, Source, Detail }`; `Why` = labels joined with ", ".
 - **Command** (`New-LcaCommand`): `{ Exe, Arguments[], Display }` - always an argument array, never a string to re-parse.
-- **Context** (`New-LcaContext`): `Options`, `Platform`, `Now`, `ScriptRoot`, `StateDir`, `ConfigDir`, `Config {StaleDays, ProbeTimeoutSec, Parallelism, Defaults}`, `Catalog`, `Extra`, `Exclude`, `ProbeCache`, `Parallelism`, `Timings`, `Data` (scratch hashtable shared between phases).
+- **Context** (`New-LcaContext`): `Options` (IncludeEditors, IncludeExtensions, All, SkipWinget, CheckUpdates, NoProbe, Explain, ShowReasons, Redact, Quiet, NoColor, Format), `Platform`, `Now`, `ScriptRoot`, `StateDir`, `ConfigDir`, `Config {StaleDays, ProbeTimeoutSec, Parallelism, Defaults}`, `Catalog`, `Extra`, `Exclude`, `ProbeCache`, `Parallelism`, `Timings`, `Data` (scratch hashtable shared between phases).
 - **Workstream entry points**: `Find-LcaAgent -Context` returns rows (tiers detected/possible, all kinds; display scope is applied later by `Select-LcaAgentInScope`); `Add-LcaEnrichment -Context -Agent`; `Add-LcaUpdateInfo -Context -Agent`; `Read-LcaState`, `Get-LcaHistoryChange`, `Save-LcaState`; `ConvertTo-LcaReportHtml -Export`.
+- **Context.Data keys**: `npm`, `npmRoot`, `wingetAvailable`, `wingetScanned`, `wingetPackages` (`{ Name, Id, Version, Available }` rows - C reads Available; one winget call per scan), `quiet`.
+- **Diagnostics** are cleared by the entry points (`Invoke-LcaCli`, `Get-CodingAgent`) before the context is built, never inside the scan.
 - **JSON export**: `schema/coding-agents.schema.json` (schemaVersion 2), produced only by `ConvertTo-LcaExport`.
 - **Exit codes**: 0 ok, 1 error, 2 bad arguments, 3 `-FailOn` matched, 4 an update failed.

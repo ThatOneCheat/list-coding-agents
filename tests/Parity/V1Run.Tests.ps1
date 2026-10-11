@@ -54,6 +54,11 @@ Describe 'v1 vs v2 on the same fixture machine' -Skip:(-not $script:OnWindows) {
         $script:R2.ExitCode | Should -Be 0 -Because $script:R2.StdErr
     }
 
+    It 'v1 itself found the fixture agents (the comparison is meaningful)' {
+        $names = @($script:J1 | ForEach-Object { "$($_.name)=$($_.tier)" } | Sort-Object)
+        $names | Should -Be @('aider=detected', 'claude=detected', 'Codex=detected', 'gemini=detected', 'sg=possible')
+    }
+
     It 'v2 detects everything v1 detects, in the same tier' {
         foreach ($a in $script:J1) {
             $m = @($script:J2 | Where-Object { $_.name -eq $a.name })

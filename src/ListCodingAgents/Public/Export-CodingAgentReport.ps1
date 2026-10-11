@@ -44,7 +44,9 @@ function Export-CodingAgentReport {
         if (-not $Scan) { $Scan = Get-CodingAgent -AsScan }
         $ctx = Get-LcaProperty -InputObject $Scan -Name 'Context'
         if (-not $ctx) { throw 'Export-CodingAgentReport: pass a scan from Get-CodingAgent -AsScan' }
-        if (-not $OutDir) { $OutDir = (Get-Location).ProviderPath }
+        if (-not $OutDir) { $OutDir = '.' }
+        # relative to the PowerShell location, not the .NET process directory
+        $OutDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutDir)
         $export = ConvertTo-LcaExport -Scan $Scan -Context $ctx -Redact:$Redact
         foreach ($f in $Format) {
             if ($f -eq 'json') {
@@ -53,7 +55,7 @@ function Export-CodingAgentReport {
             } else {
                 $p = Join-Path -Path $OutDir -ChildPath 'coding-agents.html'
                 Write-LcaTextFile -Path $p -Content (ConvertTo-LcaReportHtml -Export $export)
-                if ($Open) { Open-LcaReport -Path $p }
+                if ($Open) { Open-LcaFile -Path $p }
             }
             if ($PassThru) { Get-Item -LiteralPath $p }
         }

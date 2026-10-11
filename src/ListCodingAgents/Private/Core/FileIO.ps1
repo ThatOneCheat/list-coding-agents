@@ -14,6 +14,9 @@ function Write-LcaTextFile {
         [Parameter(Mandatory = $true)][string]$Path,
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content
     )
+    # .NET resolves relative paths against the process directory, which is
+    # not the PowerShell location after a cd.
+    $Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
     $dir = Split-Path -Path $Path -Parent
     if ($dir -and -not (Test-Path -LiteralPath $dir -PathType Container)) {
         [void](New-Item -ItemType Directory -Path $dir -Force)
@@ -60,16 +63,23 @@ function ConvertTo-LcaJson {
 
 function ConvertFrom-LcaJson {
     <#
-    Parses JSON text. Strips a UTF-8 BOM and works around 5.1 emitting a
-    top-level array as a single object.
+    Parses JSON text. Strips a UTF-8 BOM. A top-level array is emitted item
+    by item on every edition (wrap the call in @() when the document is an
+    array). Date-like strings stay strings where the edition allows it
+    (pwsh 7.5+ -DateKind String); on 7.0-7.4 they arrive as [DateTime] - use
+    ConvertTo-LcaIsoString / ConvertTo-LcaDateTimeOffset, never "$value".
     #>
     [CmdletBinding()]
     [OutputType([object])]
     param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Text)
     $t = $Text.TrimStart([char]0xFEFF)
     if (-not $t.Trim()) { throw 'empty JSON document' }
-    ConvertFrom-Json -InputObject $t
+    $p = @{ InputObject = $t }
+    if ($script:LcaJsonHasDateKind) { $p['DateKind'] = 'String' }
+    ConvertFrom-Json @p
 }
+
+$script:LcaJsonHasDateKind = [bool](Get-Command -Name 'ConvertFrom-Json').Parameters.ContainsKey('DateKind')
 
 function Get-LcaProperty {
     <#

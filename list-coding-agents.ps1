@@ -154,11 +154,11 @@ param(
     [switch]$NoOpen,
     [string]$OutDir,
     [switch]$PassThru,
-    [ValidateSet('table', 'json', 'csv', 'markdown')][string]$Format,
+    [string]$Format,
     [switch]$Quiet,
     [switch]$NoColor,
     [switch]$Redact,
-    [ValidateSet('outdated', 'stale', 'conflict', 'new')][string[]]$FailOn,
+    [string[]]$FailOn,
     [switch]$Version,
     [switch]$Force
 )
@@ -1966,8 +1966,9 @@ $script:LcaEmbeddedAssets['ListCodingAgents.format.ps1xml'] = @'
 '@
 # ---- Private/Console/Invoke-LcaCli.ps1 ----
 # The list-coding-agents.ps1 entry point. The script's param block (see
-# src/list-coding-agents.ps1) forwards $PSBoundParameters here. Returns the
-# process exit code; the script decides whether to call exit.
+# src/list-coding-agents.ps1) forwards $PSBoundParameters here. Pipeline
+# output (-PassThru objects, -Format text, -Version) goes to the output
+# stream; the exit code is left in $script:LcaLastExitCode for the script.
 
 $script:LcaLastExitCode = 0
 $script:LcaExitCode = @{
@@ -1977,11 +1978,15 @@ $script:LcaExitCode = @{
     FailOn       = 3
     UpdateFailed = 4
 }
+$script:LcaFormatValues = @('table', 'json', 'csv', 'markdown')
+$script:LcaFailOnValues = @('outdated', 'stale', 'conflict', 'new')
 
 function Get-LcaCliOption {
     <#
     Merges bound parameters over config.json "defaults" (a switch given on
     the command line always wins) and returns a hashtable of every option.
+    Throws an ArgumentException for invalid -Format / -FailOn values.
+    -FailOn accepts "a,b" as one string (that is how pwsh -File passes it).
     #>
     [CmdletBinding()]
     [OutputType([hashtable])]
@@ -1999,8 +2004,38 @@ function Get-LcaCliOption {
         $opt[$n] = $null
         if ($BoundParameters.ContainsKey($n)) { $opt[$n] = $BoundParameters[$n] }
     }
+    foreach ($n in @('WhatIf', 'Confirm')) { $opt[$n] = [bool]$opt[$n] }
+    if ($opt['Explain'] -is [string] -and -not $opt['Explain'].Trim()) { $opt['Explain'] = $null }
+    if ($opt['OutDir'] -is [string] -and -not $opt['OutDir'].Trim()) { $opt['OutDir'] = $null }
+    if ($opt['Format']) {
+        $f = ([string]$opt['Format']).Trim().ToLowerInvariant()
+        if ($script:LcaFormatValues -notcontains $f) {
+            throw (New-Object System.ArgumentException ("-Format must be one of: {0} (got '{1}')" -f ($script:LcaFormatValues -join ', '), $opt['Format']))
+        }
+        $opt['Format'] = $f
+    } else { $opt['Format'] = $null }
+    $fo = @()
+    foreach ($item in @($opt['FailOn'])) {
+        foreach ($part in ([string]$item -split ',')) {
+            $c = $part.Trim().ToLowerInvariant()
+            if (-not $c) { continue }
+            if ($script:LcaFailOnValues -notcontains $c) {
+                throw (New-Object System.ArgumentException ("-FailOn accepts: {0} (got '{1}')" -f ($script:LcaFailOnValues -join ', '), $c))
+            }
+            if ($fo -notcontains $c) { $fo += $c }
+        }
+    }
+    $opt['FailOn'] = $fo
     if ($opt['UpdateAll']) { $opt['CheckUpdates'] = $true }
     $opt
+}
+
+function Resolve-LcaOutputPath {
+    <# Resolves a user path against the PowerShell location (not the .NET process directory). #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param([Parameter(Mandatory = $true)][string]$Path)
+    $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
 }
 
 function Invoke-LcaCli {
@@ -2014,81 +2049,84 @@ function Invoke-LcaCli {
         [hashtable]$BoundParameters = @{},
         [AllowEmptyString()][AllowNull()][string]$ScriptRoot
     )
+    $script:LcaLastExitCode = $script:LcaExitCode.Ok
+    Clear-LcaDiagnostic
     try {
-        $probeCtx = [pscustomobject]@{ ConfigDir = (Get-LcaConfigDirectory) }
-        $cfg = Get-LcaConfig -Context $probeCtx
-        $opt = Get-LcaCliOption -BoundParameters $BoundParameters -ConfigDefaults $cfg.Defaults
-        $script:LcaLastExitCode = $script:LcaExitCode.Ok
+        $cfg = Get-LcaConfig -Context ([pscustomobject]@{ ConfigDir = (Get-LcaConfigDirectory) })
+        try {
+            $opt = Get-LcaCliOption -BoundParameters $BoundParameters -ConfigDefaults $cfg.Defaults
+        } catch [System.ArgumentException] {
+            $script:LcaLastExitCode = $script:LcaExitCode.BadArguments
+            # -ErrorAction Continue: a caller's $ErrorActionPreference = 'Stop'
+            # must not turn this into an exception and lose exit code 2.
+            Write-Error -Message $_.Exception.Message -Category InvalidArgument -ErrorAction Continue
+            return
+        }
         if ($opt.Version) {
             Write-Output ('list-coding-agents {0}' -f $script:LcaToolVersion)
             return
         }
+        # Machine-readable stdout (-Format) must not be mixed with the coloured
+        # report or notices, and should not pop a browser.
+        $machine = [bool]$opt.Format
+        $talk = -not $opt.Quiet -and -not $machine
         $ctxOptions = @{
             IncludeEditors = $opt.IncludeEditors; IncludeExtensions = $opt.IncludeExtensions; All = $opt.All
             SkipWinget = $opt.SkipWinget; CheckUpdates = $opt.CheckUpdates; NoProbe = $opt.NoProbe
             Explain = $opt.Explain; ShowReasons = $opt.ShowReasons; Redact = $opt.Redact
+            Quiet = (-not $talk); NoColor = $opt.NoColor; Format = $opt.Format
         }
-        $ctx = New-LcaContext -Options $ctxOptions -ScriptRoot $ScriptRoot
-        $ctx.Data['quiet'] = [bool]$opt.Quiet
+        $ctx = New-LcaContext -Options $ctxOptions -ScriptRoot $ScriptRoot -Config $cfg
+        $ctx.Data['quiet'] = -not $talk
         $scan = Invoke-LcaScan -Context $ctx
 
         if ($opt.Explain) {
             foreach ($l in (Get-LcaExplanation -Context $ctx -Scan $scan -Name $opt.Explain).Lines) { Write-LcaConsoleLine $l }
-        } elseif (-not $opt.Quiet -and -not $opt.Format) {
+        } elseif ($talk) {
             Write-LcaConsoleReport -Context $ctx -Scan $scan
         }
 
         $exit = $script:LcaExitCode.Ok
         if ($opt.UpdateAll) {
-            $res = @(Invoke-LcaUpdateAll -Context $ctx -Scan $scan -Force:$opt.Force -DryRun:([bool]$opt.WhatIf) -AskConfirm:([bool]$opt.Confirm))
+            $res = @(Invoke-LcaUpdateAll -Context $ctx -Scan $scan -Force:$opt.Force -DryRun:$opt.WhatIf -AskConfirm:$opt.Confirm)
             if (@($res | Where-Object { $_.Status -eq 'failed' }).Count) { $exit = $script:LcaExitCode.UpdateFailed }
         }
-        if ($opt.FailOn) {
+        if (@($opt.FailOn).Count) {
             $failed = @(Test-LcaFailOn -Context $ctx -Scan $scan -FailOn $opt.FailOn)
             if ($failed.Count -and $exit -eq $script:LcaExitCode.Ok) {
                 $exit = $script:LcaExitCode.FailOn
-                if (-not $opt.Quiet) { Write-LcaConsoleLine ('-FailOn matched: ' + ($failed -join ', ')) 'Red' }
+                if ($talk) { Write-LcaConsoleLine ('-FailOn matched: ' + ($failed -join ', ')) 'Red' }
             }
         }
 
-        Save-LcaState -Context $ctx -Scan $scan
-
-        $outDir = $opt.OutDir
-        if (-not $outDir) { $outDir = (Get-Location).ProviderPath }
         $scan.Diagnostics = @(Get-LcaDiagnostic)
         $export = ConvertTo-LcaExport -Scan $scan -Context $ctx -Redact:$opt.Redact
-        if ($opt.Json) {
-            $jsonPath = Join-Path -Path $outDir -ChildPath 'coding-agents.json'
-            Write-LcaTextFile -Path $jsonPath -Content ((ConvertTo-LcaJson -InputObject $export) + "`n")
-            if (-not $opt.Quiet) { Write-LcaConsoleLine "JSON export: $jsonPath" 'Green' }
-        }
-        if (-not $opt.NoHtml) {
-            $htmlPath = Join-Path -Path $outDir -ChildPath 'coding-agents.html'
-            Write-LcaTextFile -Path $htmlPath -Content (ConvertTo-LcaReportHtml -Export $export)
-            if (-not $opt.Quiet) { Write-LcaConsoleLine "HTML report: $htmlPath" 'Green' }
-            if (-not $opt.NoOpen) { Open-LcaReport -Path $htmlPath }
+        # -WhatIf promises that nothing changes: no state, no files.
+        if ($opt.WhatIf) {
+            if ($talk) { Write-LcaConsoleLine 'What if: state, JSON and HTML were not written (-WhatIf).' 'DarkGray' }
+        } else {
+            Save-LcaState -Context $ctx -Scan $scan
+            $outDir = $opt.OutDir
+            if (-not $outDir) { $outDir = '.' }
+            $outDir = Resolve-LcaOutputPath -Path $outDir
+            if ($opt.Json) {
+                $jsonPath = Join-Path -Path $outDir -ChildPath 'coding-agents.json'
+                Write-LcaTextFile -Path $jsonPath -Content ((ConvertTo-LcaJson -InputObject $export) + "`n")
+                if ($talk) { Write-LcaConsoleLine "JSON export: $jsonPath" 'Green' }
+            }
+            if (-not $opt.NoHtml) {
+                $htmlPath = Join-Path -Path $outDir -ChildPath 'coding-agents.html'
+                Write-LcaTextFile -Path $htmlPath -Content (ConvertTo-LcaReportHtml -Export $export)
+                if ($talk) { Write-LcaConsoleLine "HTML report: $htmlPath" 'Green' }
+                if (-not $opt.NoOpen -and $talk) { Open-LcaFile -Path $htmlPath }
+            }
         }
         if ($opt.Format -eq 'json') { Write-Output (ConvertTo-LcaJson -InputObject $export) }
         if ($opt.PassThru) { Select-LcaAgentInScope -Context $ctx -Agent $scan.Agents | ForEach-Object { Write-Output $_ } }
         $script:LcaLastExitCode = $exit
     } catch {
         $script:LcaLastExitCode = $script:LcaExitCode.Error
-        Write-Error -ErrorRecord $_
-    }
-}
-
-function Open-LcaReport {
-    <# Opens the report with the platform's default handler; never fatal. #>
-    [CmdletBinding()]
-    param([Parameter(Mandatory = $true)][string]$Path)
-    try {
-        switch (Get-LcaPlatform) {
-            'windows' { Invoke-Item -LiteralPath $Path }
-            'macos' { [void](Open-LcaProcess -FilePath 'open' -ArgumentList @($Path)) }
-            default { [void](Open-LcaProcess -FilePath 'xdg-open' -ArgumentList @($Path)) }
-        }
-    } catch {
-        Add-LcaDiagnostic -Source 'report' -Level 'info' -Message "could not open $Path" -ErrorRecord $_
+        Write-Error -ErrorRecord $_ -ErrorAction Continue
     }
 }
 # ---- Private/Console/Progress.ps1 ----
@@ -2292,7 +2330,9 @@ $script:LcaSchemaVersion = 2
 function New-LcaContext {
     <#
     Options (all optional): IncludeEditors, IncludeExtensions, All, SkipWinget,
-    CheckUpdates, NoProbe, Explain, ShowReasons, Redact.
+    CheckUpdates, NoProbe, Explain, ShowReasons, Redact, Quiet, NoColor, Format.
+    -Config reuses an already loaded config (Get-LcaConfig) instead of reading
+    config.json again.
     ScriptRoot is the folder of the entry script (v1 read agents-extra.txt /
     agents-exclude.txt / last-scan.json from there); empty under irm | iex.
     #>
@@ -2302,7 +2342,8 @@ function New-LcaContext {
     [OutputType([pscustomobject])]
     param(
         [hashtable]$Options = @{},
-        [AllowEmptyString()][AllowNull()][string]$ScriptRoot
+        [AllowEmptyString()][AllowNull()][string]$ScriptRoot,
+        $Config
     )
     $opt = [ordered]@{
         IncludeEditors    = $false
@@ -2314,6 +2355,9 @@ function New-LcaContext {
         Explain           = $null
         ShowReasons       = $false
         Redact            = $false
+        Quiet             = $false
+        NoColor           = $false
+        Format            = $null
     }
     foreach ($k in $Options.Keys) {
         if (-not $opt.Contains($k)) { throw "New-LcaContext: unknown option '$k'" }
@@ -2342,7 +2386,7 @@ function New-LcaContext {
     }
     $ctx.StateDir = Get-LcaStateDirectory
     $ctx.ConfigDir = Get-LcaConfigDirectory
-    $ctx.Config = Get-LcaConfig -Context $ctx
+    if ($Config) { $ctx.Config = $Config } else { $ctx.Config = Get-LcaConfig -Context $ctx }
     $ctx.Catalog = Get-LcaCatalog
     $ctx.Extra = Get-LcaNameList -Context $ctx -FileName 'agents-extra.txt'
     $ctx.Exclude = Get-LcaNameList -Context $ctx -FileName 'agents-exclude.txt'
@@ -2494,6 +2538,8 @@ function ConvertTo-LcaAgentExport {
         packageDir       = $a.PackageDir
         sources          = @($a.Sources)
         shadowedBy       = @($a.Shadows)
+        installs         = @($a.Installs | ForEach-Object { [ordered]@{ path = $_.Path; channel = $_.Channel; version = $_.Version; active = [bool]$_.Active } })
+        editorHost       = $a.EditorHost
         version          = $a.Version
         versionSource    = $a.VersionSource
         previousVersion  = $a.PreviousVersion
@@ -2578,7 +2624,7 @@ function ConvertTo-LcaExport {
         diagnostics   = @($Scan.Diagnostics | ForEach-Object { [ordered]@{ source = $_.Source; level = $_.Level; message = $_.Message } })
     }
     if ($Redact) {
-        $export = ConvertTo-LcaRedacted -InputObject $export -HomeDir $Scan.HomeDir -UserName $Scan.UserName
+        $export = ConvertTo-LcaRedacted -InputObject $export -HomeDir $Scan.HomeDir -UserName $Scan.UserName -HostName $Scan.HostName
         $export['host'] = $null
         $export['user'] = $null
         $export['redacted'] = $true
@@ -2588,37 +2634,44 @@ function ConvertTo-LcaExport {
 
 function ConvertTo-LcaRedacted {
     <#
-    Deep copy with every string scrubbed: the home directory becomes '~' and
-    any remaining occurrence of the user name becomes '<user>'.
+    Deep copy with every string scrubbed for sharing: the home directory
+    becomes '~', and the user name / host name are replaced only where they
+    are a whole PATH SEGMENT (C:\Users\alice\..., /home/alice/..., \\HOST\share)
+    - never inside ids, package names or enum values (a user called "vscode"
+    must not turn channel "vscode" into "<user>").
     #>
     [CmdletBinding()]
     [OutputType([object])]
-    param([AllowNull()]$InputObject, [AllowNull()][string]$HomeDir, [AllowNull()][string]$UserName)
+    param([AllowNull()]$InputObject, [AllowNull()][string]$HomeDir, [AllowNull()][string]$UserName, [AllowNull()][string]$HostName)
     if ($null -eq $InputObject) { return $null }
     if ($InputObject -is [string]) {
         $s = $InputObject
-        if ($HomeDir -and $HomeDir.Length -gt 1) {
-            $s = [regex]::Replace($s, ('(?i)' + [regex]::Escape($HomeDir.TrimEnd('\', '/'))), '~')
-            $alt = $HomeDir.TrimEnd('\', '/').Replace('\', '/')
-            $s = [regex]::Replace($s, ('(?i)' + [regex]::Escape($alt)), '~')
+        if ($HomeDir -and $HomeDir.Length -gt 3) {
+            $h = $HomeDir.TrimEnd('\', '/')
+            foreach ($form in @($h, $h.Replace('\', '/'))) {
+                $s = [regex]::Replace($s, ('(?i)' + [regex]::Escape($form) + '(?=$|[\\/])'), '~')
+            }
         }
-        if ($UserName -and $UserName.Length -ge 2) {
-            $s = [regex]::Replace($s, ('(?i)(?<![A-Za-z0-9])' + [regex]::Escape($UserName) + '(?![A-Za-z0-9])'), '<user>')
+        foreach ($pair in @(@($UserName, '<user>'), @($HostName, '<host>'))) {
+            $v = $pair[0]
+            if ($v -and $v.Length -ge 2) {
+                $s = [regex]::Replace($s, ('(?i)(?<=[\\/])' + [regex]::Escape($v) + '(?=$|[\\/])'), $pair[1])
+            }
         }
         return $s
     }
     if ($InputObject -is [System.Collections.IDictionary]) {
         $o = [ordered]@{}
-        foreach ($k in @($InputObject.Keys)) { $o[$k] = ConvertTo-LcaRedacted -InputObject $InputObject[$k] -HomeDir $HomeDir -UserName $UserName }
+        foreach ($k in @($InputObject.Keys)) { $o[$k] = ConvertTo-LcaRedacted -InputObject $InputObject[$k] -HomeDir $HomeDir -UserName $UserName -HostName $HostName }
         return $o
     }
     if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
-        $list = @(foreach ($i in $InputObject) { , (ConvertTo-LcaRedacted -InputObject $i -HomeDir $HomeDir -UserName $UserName) })
+        $list = @(foreach ($i in $InputObject) { , (ConvertTo-LcaRedacted -InputObject $i -HomeDir $HomeDir -UserName $UserName -HostName $HostName) })
         return , $list
     }
     if ($InputObject -is [pscustomobject]) {
         $o = [ordered]@{}
-        foreach ($p in $InputObject.PSObject.Properties) { $o[$p.Name] = ConvertTo-LcaRedacted -InputObject $p.Value -HomeDir $HomeDir -UserName $UserName }
+        foreach ($p in $InputObject.PSObject.Properties) { $o[$p.Name] = ConvertTo-LcaRedacted -InputObject $p.Value -HomeDir $HomeDir -UserName $UserName -HostName $HostName }
         return $o
     }
     $InputObject
@@ -2640,6 +2693,9 @@ function Write-LcaTextFile {
         [Parameter(Mandatory = $true)][string]$Path,
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content
     )
+    # .NET resolves relative paths against the process directory, which is
+    # not the PowerShell location after a cd.
+    $Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
     $dir = Split-Path -Path $Path -Parent
     if ($dir -and -not (Test-Path -LiteralPath $dir -PathType Container)) {
         [void](New-Item -ItemType Directory -Path $dir -Force)
@@ -2686,16 +2742,23 @@ function ConvertTo-LcaJson {
 
 function ConvertFrom-LcaJson {
     <#
-    Parses JSON text. Strips a UTF-8 BOM and works around 5.1 emitting a
-    top-level array as a single object.
+    Parses JSON text. Strips a UTF-8 BOM. A top-level array is emitted item
+    by item on every edition (wrap the call in @() when the document is an
+    array). Date-like strings stay strings where the edition allows it
+    (pwsh 7.5+ -DateKind String); on 7.0-7.4 they arrive as [DateTime] - use
+    ConvertTo-LcaIsoString / ConvertTo-LcaDateTimeOffset, never "$value".
     #>
     [CmdletBinding()]
     [OutputType([object])]
     param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Text)
     $t = $Text.TrimStart([char]0xFEFF)
     if (-not $t.Trim()) { throw 'empty JSON document' }
-    ConvertFrom-Json -InputObject $t
+    $p = @{ InputObject = $t }
+    if ($script:LcaJsonHasDateKind) { $p['DateKind'] = 'String' }
+    ConvertFrom-Json @p
 }
+
+$script:LcaJsonHasDateKind = [bool](Get-Command -Name 'ConvertFrom-Json').Parameters.ContainsKey('DateKind')
 
 function Get-LcaProperty {
     <#
@@ -2820,7 +2883,9 @@ $script:LcaAgentDefaults = [ordered]@{
     Sources       = @()        # scanners that saw it: path npm winget registry pipx uv cargo brew scoop choco vscode ...
     ChannelData   = $null      # hashtable of channel-specific facts for later phases (registry UninstallString,
                                # InstallLocation, pipx venv, brew formula, winget Available ...). Not exported.
-    Shadows       = @()        # later PATH entries with the same command name
+    Shadows       = @()        # later PATH entries with the same command name (paths)
+    Installs      = @()        # every install of this agent seen: { Path, Channel, Version, Active } (Active = wins on PATH)
+    EditorHost    = $null      # for kind 'extension': the editor it is installed in (vscode, cursor, windsurf ...)
     # versions / updates
     Version       = $null
     VersionSource = $null      # package | pe | probe | probe-cache | winget | registry | manifest
@@ -2896,12 +2961,17 @@ function New-LcaEvidence {
 }
 
 function ConvertTo-LcaDisplayArgument {
-    <# Quotes one token for copy/paste into PowerShell or a POSIX shell. #>
+    <#
+    Quotes one token for copy/paste into PowerShell (the shell this tool runs
+    in): plain tokens stay bare (paths like C:\Tools\x.exe included); anything
+    else becomes a single-quoted literal. Commas would turn into arrays and a
+    bare @name would splat, so both are quoted.
+    #>
     [CmdletBinding()]
     [OutputType([string])]
     param([AllowEmptyString()][string]$Token)
     if ($Token -eq '') { return "''" }
-    if ($Token -match '^[A-Za-z0-9@%+=:,./_\-]+$') { return $Token }
+    if ($Token -match '^[A-Za-z0-9@%+=:./\\_\-]+$' -and $Token -notmatch '^@[A-Za-z_][A-Za-z0-9_]*$') { return $Token }
     "'" + $Token.Replace("'", "''") + "'"
 }
 
@@ -2909,7 +2979,8 @@ function New-LcaCommand {
     <#
     A command the user (or Update-CodingAgent) can run: an executable plus an
     argument ARRAY - never a string that gets re-parsed. Display is a
-    copy/paste-safe rendering.
+    PowerShell rendering that parses back to exactly Exe + Arguments (a
+    quoted executable gets the call operator: & 'C:\Program Files\x.exe' /S).
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '',
         Justification = 'Constructor: builds an in-memory object and changes no system state.')]
@@ -2919,7 +2990,9 @@ function New-LcaCommand {
         [Parameter(Mandatory = $true)][string]$Exe,
         [AllowEmptyCollection()][string[]]$Arguments = @()
     )
-    $disp = @((ConvertTo-LcaDisplayArgument -Token $Exe)) + @($Arguments | ForEach-Object { ConvertTo-LcaDisplayArgument -Token $_ })
+    $exeText = ConvertTo-LcaDisplayArgument -Token $Exe
+    if ($exeText.StartsWith("'")) { $exeText = '& ' + $exeText }
+    $disp = @($exeText) + @($Arguments | ForEach-Object { ConvertTo-LcaDisplayArgument -Token $_ })
     [pscustomobject]@{
         PSTypeName = 'ListCodingAgents.Command'
         Exe        = $Exe
@@ -2964,7 +3037,8 @@ function Get-LcaChannelOrder {
 function Select-LcaAgentInScope {
     <#
     Display scope: CLIs always; editors with IncludeEditors; extensions with
-    IncludeExtensions. Optional -Tier filter. Never used for history.
+    IncludeExtensions. Optional -Tier filter. History must not depend on it
+    (defect 1): persist the unfiltered set.
     #>
     [CmdletBinding()]
     [OutputType([object[]])]
@@ -3043,7 +3117,9 @@ function Invoke-LcaScan {
     [CmdletBinding()]
     [OutputType([pscustomobject])]
     param([Parameter(Mandatory = $true)]$Context)
-    Clear-LcaDiagnostic
+    # Diagnostics are cleared by the entry points (Invoke-LcaCli,
+    # Get-CodingAgent) BEFORE the context is built, so config / override-list
+    # problems recorded while building it reach the export.
     $state = Measure-LcaPhase -Context $Context -Name 'state-read' -ScriptBlock { Read-LcaState -Context $Context }
     foreach ($k in $state.Probes.Keys) { $Context.ProbeCache[$k] = $state.Probes[$k] }
 
@@ -3279,6 +3355,7 @@ function Find-LcaAgent {
         $wg = Measure-LcaPhase -Context $Context -Name 'winget' -ScriptBlock { Get-LcaWingetPackage }
         if ($wg.Scanned) {
             $Context.Data['wingetScanned'] = $true
+            $Context.Data['wingetPackages'] = @($wg.Packages)
             foreach ($p in @($wg.Packages)) {
                 $pkgName = $p.Name; $id = $p.Id
                 $publisher = ($id -split '\.')[0]
@@ -4207,18 +4284,22 @@ function Get-LcaWinGetModulePackage {
 }
 # ---- Private/Platform/Parallel.ps1 ----
 # Bounded parallelism that works on Windows PowerShell 5.1 (a RunspacePool;
-# ForEach-Object -Parallel is 7.0+). Runspaces do not see module functions,
-# so the caller names the functions the work item needs and their
-# definitions are copied into the pool's InitialSessionState.
+# ForEach-Object -Parallel is 7.0+). Runspaces do not see module functions or
+# module variables, so they are copied into the pool's InitialSessionState.
 
 function Invoke-LcaParallel {
     <#
     Runs $ScriptBlock once per input item with at most $ThrottleLimit running
     at a time and returns one result per item, in input order:
-      { Input, Output, Error }
-    The script block receives the item as its first argument. With a throttle
-    of 1 (or a single item) the work runs inline in the current runspace,
-    which keeps Pester mocks effective.
+      { Input, Output (always an array), Error (first error text or $null),
+        TimedOut }
+    The script block receives the item as its first argument. Non-terminating
+    errors and exceptions are captured per item; diagnostics recorded inside
+    a work item (Add-LcaDiagnostic) are merged into this session's list.
+    With a throttle of 1 (or a single item) the work runs inline in the
+    current runspace, which keeps Pester mocks effective.
+    -FunctionName defaults to every module function (names containing 'Lca'
+    or 'CodingAgent'); module variables named Lca* are copied too.
     #>
     [CmdletBinding()]
     [OutputType([pscustomobject[]])]
@@ -4226,38 +4307,66 @@ function Invoke-LcaParallel {
         [Parameter(Mandatory = $true)][scriptblock]$ScriptBlock,
         [AllowEmptyCollection()][object[]]$InputObject = @(),
         [int]$ThrottleLimit = 4,
-        [string[]]$FunctionName = @(),
+        [string[]]$FunctionName,
         [hashtable]$Variable = @{},
         [double]$TimeoutSec = 300
     )
     $items = @($InputObject)
     if ($items.Count -eq 0) { return @() }
 
+    $split = {
+        param($raw)
+        $o = New-Object System.Collections.Generic.List[object]
+        $e = $null
+        foreach ($x in @($raw)) {
+            if ($x -is [System.Management.Automation.ErrorRecord]) { if (-not $e) { $e = $x.ToString() } }
+            else { $o.Add($x) }
+        }
+        [pscustomobject]@{ Output = $o.ToArray(); Error = $e }
+    }
+
     if ($ThrottleLimit -le 1 -or $items.Count -eq 1) {
         $results = foreach ($item in $items) {
-            $r = [pscustomobject]@{ Input = $item; Output = $null; Error = $null }
-            try { $r.Output = & $ScriptBlock $item } catch { $r.Error = $_.Exception.Message }
+            $r = [pscustomobject]@{ Input = $item; Output = @(); Error = $null; TimedOut = $false }
+            try {
+                $s = & $split @(& $ScriptBlock $item 2>&1)
+                $r.Output = $s.Output
+                $r.Error = $s.Error
+            } catch { $r.Error = $_.Exception.Message }
             $r
         }
         return @($results)
     }
 
     $iss = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
-    foreach ($fn in $FunctionName) {
-        $cmd = Get-Command -Name $fn -CommandType Function -ErrorAction Stop
-        $entry = New-Object System.Management.Automation.Runspaces.SessionStateFunctionEntry ($fn, $cmd.Definition)
-        $iss.Commands.Add($entry)
+    $fnNames = $FunctionName
+    if (-not $fnNames) {
+        $fnNames = @(Get-ChildItem -Path 'function:' | Where-Object { $_.Name -match 'Lca|CodingAgent' } | ForEach-Object { $_.Name })
     }
-    foreach ($k in $Variable.Keys) {
-        $ve = New-Object System.Management.Automation.Runspaces.SessionStateVariableEntry ([string]$k, $Variable[$k], '')
-        $iss.Variables.Add($ve)
+    foreach ($fn in $fnNames) {
+        $cmd = Get-Command -Name $fn -CommandType Function -ErrorAction Stop
+        $iss.Commands.Add((New-Object System.Management.Automation.Runspaces.SessionStateFunctionEntry ($fn, $cmd.Definition)))
+    }
+    $vars = @{}
+    foreach ($v in @(Get-Variable -Scope Script -Name 'Lca*' -ErrorAction Ignore)) {
+        if ($v.Name -ne 'LcaDiagnostics') { $vars[$v.Name] = $v.Value }
+    }
+    foreach ($k in $Variable.Keys) { $vars[[string]$k] = $Variable[$k] }
+    foreach ($k in $vars.Keys) {
+        $iss.Variables.Add((New-Object System.Management.Automation.Runspaces.SessionStateVariableEntry ([string]$k, $vars[$k], '')))
     }
     $limit = [Math]::Max(1, [Math]::Min($ThrottleLimit, $items.Count))
     $pool = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspacePool(1, $limit, $iss, $Host)
     $jobs = New-Object System.Collections.Generic.List[object]
     # StrictMode must come after the work item's own param block, so the
-    # caller's script block runs nested inside a small wrapper.
-    $body = "param(`$lcaItem)`nSet-StrictMode -Version Latest`n& {`n" + $ScriptBlock.ToString() + "`n} `$lcaItem"
+    # caller's script block runs nested inside a small wrapper that also
+    # collects its errors and diagnostics.
+    $body = "param(`$lcaItem)`nSet-StrictMode -Version Latest`n" +
+    "`$script:LcaDiagnostics = New-Object System.Collections.Generic.List[object]`n" +
+    "`$lcaOut = @(); `$lcaErr = `$null`n" +
+    "try { `$lcaOut = @(& {`n" + $ScriptBlock.ToString() + "`n} `$lcaItem 2>&1) } catch { `$lcaErr = `$_.Exception.Message }`n" +
+    "[pscustomobject]@{ LcaEnvelope = `$true; Raw = `$lcaOut; Exception = `$lcaErr; Diagnostics = `$script:LcaDiagnostics.ToArray() }"
+    $pending = New-Object System.Collections.Generic.List[object]
     try {
         $pool.Open()
         foreach ($item in $items) {
@@ -4268,19 +4377,28 @@ function Invoke-LcaParallel {
         }
         $deadline = [System.Diagnostics.Stopwatch]::StartNew()
         $results = foreach ($j in $jobs) {
-            $r = [pscustomobject]@{ Input = $j.Input; Output = $null; Error = $null }
+            $r = [pscustomobject]@{ Input = $j.Input; Output = @(); Error = $null; TimedOut = $false }
+            $left = [int][Math]::Max(0, ($TimeoutSec * 1000) - $deadline.ElapsedMilliseconds)
+            if (-not $j.Async.AsyncWaitHandle.WaitOne($left)) {
+                $r.TimedOut = $true
+                $r.Error = 'parallel work item timed out'
+                try { [void]$j.PS.BeginStop($null, $null) } catch { Write-Debug "BeginStop failed: $($_.Exception.Message)" }
+                $pending.Add($j)
+                $r
+                continue
+            }
             try {
-                $left = [int][Math]::Max(1, ($TimeoutSec * 1000) - $deadline.ElapsedMilliseconds)
-                if ($j.Async.AsyncWaitHandle.WaitOne($left)) {
-                    $out = @($j.PS.EndInvoke($j.Async))
-                    $r.Output = $out
-                    if ($out.Count -eq 1) { $r.Output = $out[0] }
-                    if ($j.PS.Streams.Error.Count -gt 0 -and $null -eq $r.Output) {
-                        $r.Error = $j.PS.Streams.Error[0].ToString()
+                $envelope = @($j.PS.EndInvoke($j.Async)) | Where-Object { $_ -and $_.PSObject.Properties['LcaEnvelope'] } | Select-Object -First 1
+                if ($envelope) {
+                    $s = & $split $envelope.Raw
+                    $r.Output = $s.Output
+                    $r.Error = $s.Error
+                    if ($envelope.Exception) { $r.Error = [string]$envelope.Exception }
+                    foreach ($d in @($envelope.Diagnostics)) {
+                        if ($d) { Add-LcaDiagnostic -Source ([string]$d.Source) -Level ([string]$d.Level) -Message ([string]$d.Message) }
                     }
-                } else {
-                    $r.Error = 'parallel work item timed out'
-                    [void]$j.PS.BeginStop($null, $null)
+                } elseif ($j.PS.Streams.Error.Count -gt 0) {
+                    $r.Error = $j.PS.Streams.Error[0].ToString()
                 }
             } catch {
                 $r.Error = $_.Exception.Message
@@ -4290,9 +4408,13 @@ function Invoke-LcaParallel {
         return @($results)
     } finally {
         foreach ($j in $jobs) {
+            if ($pending.Contains($j)) { continue }   # still stopping; disposing would block
             try { $j.PS.Dispose() } catch { Write-Debug "runspace dispose failed: $($_.Exception.Message)" }
         }
-        try { $pool.Close(); $pool.Dispose() } catch { Write-Debug "pool dispose failed: $($_.Exception.Message)" }
+        # Closing waits for busy runspaces; never block the scan on a hung item.
+        try {
+            if ($pending.Count) { [void]$pool.BeginClose($null, $null) } else { $pool.Close(); $pool.Dispose() }
+        } catch { Write-Debug "pool close failed: $($_.Exception.Message)" }
     }
 }
 # ---- Private/Platform/Process.ps1 ----
@@ -4399,8 +4521,11 @@ function Find-LcaExecutable {
         if ([System.IO.Path]::GetExtension($Name)) { $exts = @('') + $exts }
     }
     foreach ($dir in Get-LcaPathEntry) {
+        # Stale PATH entries (missing folders, unmapped drives) are common;
+        # Join-Path would throw DriveNotFound for them.
+        if (-not [System.IO.Directory]::Exists($dir)) { continue }
         foreach ($e in $exts) {
-            $cand = Join-Path -Path $dir -ChildPath ($Name + $e)
+            $cand = [System.IO.Path]::Combine($dir, $Name + $e)
             if (-not [System.IO.File]::Exists($cand)) { continue }
             if ($win -or (Test-LcaUnixExecutable -Path $cand)) { return $cand }
         }
@@ -4421,7 +4546,8 @@ function Open-LcaProcess {
         [Parameter(Mandatory = $true)][string]$FilePath,
         [AllowEmptyCollection()][string[]]$ArgumentList = @(),
         [string]$WorkingDirectory,
-        [hashtable]$Environment
+        [hashtable]$Environment,
+        [System.Text.Encoding]$Encoding
     )
     $handle = [pscustomobject]@{
         PSTypeName   = 'ListCodingAgents.ProcessHandle'
@@ -4444,13 +4570,16 @@ function Open-LcaProcess {
         $argString = ConvertTo-LcaArgumentString -ArgumentList $ArgumentList
         $ext = [System.IO.Path]::GetExtension($exe).ToLowerInvariant()
         if ((Test-LcaWindows) -and ($ext -eq '.cmd' -or $ext -eq '.bat')) {
-            if (-not (Test-LcaSafeBatchArgument -ArgumentList $ArgumentList)) {
+            # The quoted batch path may contain spaces and parentheses
+            # ("Program Files (x86)") but nothing cmd.exe expands inside quotes.
+            if ($exe -match '[\r\n"&|<>^%!]' -or -not (Test-LcaSafeBatchArgument -ArgumentList $ArgumentList)) {
                 throw "refusing to pass shell metacharacters to batch file $exe"
             }
             $comspec = Get-LcaEnvironmentVariable -Name 'ComSpec'
             if (-not $comspec) { $comspec = 'cmd.exe' }
             $psi.FileName = $comspec
-            $psi.Arguments = '/d /s /c "' + (ConvertTo-LcaArgumentString -ArgumentList @($exe)) + ' ' + $argString + '"'
+            # /s strips the outer quotes; the batch path itself is always quoted.
+            $psi.Arguments = '/d /s /c ""' + $exe + '" ' + $argString + '"'
         } elseif ($ext -eq '.ps1') {
             $psi.FileName = Get-LcaPowerShellPath
             $psi.Arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ' +
@@ -4464,14 +4593,18 @@ function Open-LcaProcess {
         $psi.RedirectStandardInput = $true
         $psi.RedirectStandardOutput = $true
         $psi.RedirectStandardError = $true
-        $utf8 = New-Object System.Text.UTF8Encoding($false)
-        $psi.StandardOutputEncoding = $utf8
-        $psi.StandardErrorEncoding = $utf8
+        $enc = $Encoding
+        if (-not $enc) { $enc = New-Object System.Text.UTF8Encoding($false) }
+        $psi.StandardOutputEncoding = $enc
+        $psi.StandardErrorEncoding = $enc
         if ($WorkingDirectory) { $psi.WorkingDirectory = $WorkingDirectory }
         $psi.EnvironmentVariables['CI'] = '1'
         $psi.EnvironmentVariables['NO_COLOR'] = '1'
         $psi.EnvironmentVariables['TERM'] = 'dumb'
         $psi.EnvironmentVariables['NO_UPDATE_NOTIFIER'] = '1'
+        # Python tools (pip, pipx, uv shims) print in the locale code page otherwise.
+        $psi.EnvironmentVariables['PYTHONUTF8'] = '1'
+        $psi.EnvironmentVariables['PYTHONIOENCODING'] = 'utf-8'
         if ($Environment) {
             foreach ($k in $Environment.Keys) { $psi.EnvironmentVariables[[string]$k] = [string]$Environment[$k] }
         }
@@ -4508,6 +4641,8 @@ function Stop-LcaProcessTree {
         try {
             $tk = New-Object System.Diagnostics.ProcessStartInfo
             $tk.FileName = 'taskkill.exe'
+            $winDir = Get-LcaKnownFolder -Name 'WinDir'
+            if ($winDir) { $tk.FileName = [System.IO.Path]::Combine($winDir, 'System32', 'taskkill.exe') }
             $tk.Arguments = '/PID ' + $Process.Id + ' /T /F'
             $tk.UseShellExecute = $false
             $tk.CreateNoWindow = $true
@@ -4515,7 +4650,8 @@ function Stop-LcaProcessTree {
             $tk.RedirectStandardError = $true
             $k = [System.Diagnostics.Process]::Start($tk)
             [void]$k.WaitForExit(5000)
-            return
+            if ($k.HasExited -and $k.ExitCode -eq 0) { return }
+            Write-Debug ("taskkill exit code {0}" -f $k.ExitCode)
         } catch { Write-Debug "taskkill failed: $($_.Exception.Message)" }
     }
     try { $Process.Kill() } catch { Write-Debug "Kill() failed: $($_.Exception.Message)" }
@@ -4553,16 +4689,18 @@ function Wait-LcaProcess {
     $p = $Handle.Process
     try {
         $remaining = [int][Math]::Max(1, ($TimeoutSec * 1000) - $Handle.Started.ElapsedMilliseconds)
+        $pipeWait = 5000
         if (-not $p.WaitForExit($remaining)) {
             $res.TimedOut = $true
             $res.Failed = $true
             $res.Error = ('timed out after {0}s' -f $TimeoutSec)
             Stop-LcaProcessTree -Process $p
-            [void]$p.WaitForExit(5000)
+            [void]$p.WaitForExit(3000)
+            $pipeWait = 1000
         }
         # Grandchildren can keep the pipes open after a kill; never wait forever.
-        if ($Handle.OutTask -and $Handle.OutTask.Wait(5000)) { $res.StdOut = [string]$Handle.OutTask.Result }
-        if ($Handle.ErrTask -and $Handle.ErrTask.Wait(2000)) { $res.StdErr = [string]$Handle.ErrTask.Result }
+        if ($Handle.OutTask -and $Handle.OutTask.Wait($pipeWait)) { $res.StdOut = [string]$Handle.OutTask.Result }
+        if ($Handle.ErrTask -and $Handle.ErrTask.Wait([Math]::Min($pipeWait, 2000))) { $res.StdErr = [string]$Handle.ErrTask.Result }
         if ($p.HasExited) { $res.ExitCode = $p.ExitCode }
         if (-not $res.TimedOut -and $null -ne $res.ExitCode -and $res.ExitCode -ne 0) {
             $res.Failed = $true
@@ -4588,10 +4726,108 @@ function Invoke-LcaProcess {
         [AllowEmptyCollection()][string[]]$ArgumentList = @(),
         [double]$TimeoutSec = 30,
         [string]$WorkingDirectory,
-        [hashtable]$Environment
+        [hashtable]$Environment,
+        [System.Text.Encoding]$Encoding
     )
-    $h = Open-LcaProcess -FilePath $FilePath -ArgumentList $ArgumentList -WorkingDirectory $WorkingDirectory -Environment $Environment
+    $h = Open-LcaProcess -FilePath $FilePath -ArgumentList $ArgumentList -WorkingDirectory $WorkingDirectory -Environment $Environment -Encoding $Encoding
     Wait-LcaProcess -Handle $h -TimeoutSec $TimeoutSec
+}
+
+function Split-LcaCommandLine {
+    <#
+    Splits a Windows command line (e.g. a registry UninstallString) into
+    tokens with the CommandLineToArgvW rules: the first token is the program
+    (quoted or not), later tokens follow the MSVCRT backslash/quote rules.
+    Returns $null for an empty string.
+    #>
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param([AllowNull()][AllowEmptyString()][string]$CommandLine)
+    if (-not $CommandLine -or -not $CommandLine.Trim()) { return $null }
+    $s = $CommandLine.Trim()
+    $tokens = New-Object System.Collections.Generic.List[string]
+    $i = 0
+    # program name: quoted -> up to the next quote; else up to whitespace
+    if ($s[0] -eq [char]'"') {
+        $end = $s.IndexOf([char]'"', 1)
+        if ($end -lt 0) { $end = $s.Length }
+        $tokens.Add($s.Substring(1, $end - 1))
+        $i = $end + 1
+    } else {
+        while ($i -lt $s.Length -and -not [char]::IsWhiteSpace($s[$i])) { $i++ }
+        $tokens.Add($s.Substring(0, $i))
+    }
+    $cur = New-Object System.Text.StringBuilder
+    $inQuote = $false
+    $have = $false
+    while ($i -lt $s.Length) {
+        $ch = $s[$i]
+        if ([char]::IsWhiteSpace($ch) -and -not $inQuote) {
+            if ($have) { $tokens.Add($cur.ToString()); [void]$cur.Clear(); $have = $false }
+            $i++
+            continue
+        }
+        if ($ch -eq [char]'\') {
+            $n = 0
+            while ($i -lt $s.Length -and $s[$i] -eq [char]'\') { $n++; $i++ }
+            if ($i -lt $s.Length -and $s[$i] -eq [char]'"') {
+                [void]$cur.Append([char]'\', [int][Math]::Floor($n / 2))
+                if ($n % 2 -eq 1) { [void]$cur.Append([char]'"'); $i++ }
+            } else {
+                [void]$cur.Append([char]'\', $n)
+            }
+            $have = $true
+            continue
+        }
+        if ($ch -eq [char]'"') {
+            if ($inQuote -and ($i + 1) -lt $s.Length -and $s[$i + 1] -eq [char]'"') {
+                [void]$cur.Append([char]'"'); $i += 2; $have = $true; continue
+            }
+            $inQuote = -not $inQuote
+            $have = $true
+            $i++
+            continue
+        }
+        [void]$cur.Append($ch)
+        $have = $true
+        $i++
+    }
+    if ($have) { $tokens.Add($cur.ToString()) }
+    $tokens.ToArray()
+}
+
+function Open-LcaFile {
+    <#
+    Opens a file with the platform's default handler (the HTML report in the
+    browser). Never fatal, never inherits our pipes, never waits.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][string]$Path)
+    try {
+        switch (Get-LcaPlatform) {
+            'windows' { Invoke-Item -LiteralPath $Path }
+            default {
+                $opener = 'xdg-open'
+                if ((Get-LcaPlatform) -eq 'macos') { $opener = 'open' }
+                $exe = Find-LcaExecutable -Name $opener
+                if (-not $exe) {
+                    Add-LcaDiagnostic -Source 'report' -Level 'info' -Message "no $opener to open $Path"
+                    return
+                }
+                $psi = New-Object System.Diagnostics.ProcessStartInfo
+                $psi.FileName = $exe
+                $psi.Arguments = ConvertTo-LcaArgumentString -ArgumentList @($Path)
+                $psi.UseShellExecute = $false
+                $psi.RedirectStandardInput = $false
+                $psi.RedirectStandardOutput = $false
+                $psi.RedirectStandardError = $false
+                $p = [System.Diagnostics.Process]::Start($psi)
+                if ($p) { $p.Dispose() }
+            }
+        }
+    } catch {
+        Add-LcaDiagnostic -Source 'report' -Level 'info' -Message "could not open $Path" -ErrorRecord $_
+    }
 }
 # ---- Private/Platform/Registry.ps1 ----
 # Provider seam: Windows registry and PE version info. Both switch off
@@ -4600,8 +4836,11 @@ function Invoke-LcaProcess {
 function Get-LcaUninstallEntry {
     <#
     Reads the Windows Uninstall keys (HKCU, HKLM, HKLM WOW6432Node) and returns
-    { DisplayName, DisplayVersion, Publisher, InstallLocation, EstimatedSizeKB,
-      UninstallString, QuietUninstallString, KeyName, Hive }.
+    { DisplayName, DisplayVersion, Publisher, InstallLocation, DisplayIcon,
+      EstimatedSizeKB, UninstallString, QuietUninstallString, SystemComponent,
+      WindowsInstaller, ParentKeyName, KeyName, Hive }. One malformed entry
+    never drops the others. (From 32-bit PowerShell on 64-bit Windows the HKLM
+    view is the 32-bit one; WOW6432Node is then read twice - harmless.)
     Returns an empty array on other platforms.
     #>
     [CmdletBinding()]
@@ -4633,15 +4872,30 @@ function Get-LcaUninstallEntry {
                 if ($names -contains $n) { return $p.$n }
                 $null
             }
-            $size = & $get 'EstimatedSize'
+            $sizeKb = $null
+            $rawSize = & $get 'EstimatedSize'
+            if ($null -ne $rawSize) {
+                $parsed = 0L
+                if ([long]::TryParse([string]$rawSize, [ref]$parsed)) { $sizeKb = $parsed }
+            }
+            $flag = {
+                param($n)
+                $x = & $get $n
+                $i = 0
+                ($null -ne $x) -and [int]::TryParse([string]$x, [ref]$i) -and $i -ne 0
+            }
             $out.Add([pscustomobject]@{
                     DisplayName          = [string]$p.DisplayName
                     DisplayVersion       = [string](& $get 'DisplayVersion')
                     Publisher            = [string](& $get 'Publisher')
                     InstallLocation      = [string](& $get 'InstallLocation')
-                    EstimatedSizeKB      = $(if ($null -ne $size) { [long]$size } else { $null })
+                    DisplayIcon          = [string](& $get 'DisplayIcon')
+                    EstimatedSizeKB      = $sizeKb
                     UninstallString      = [string](& $get 'UninstallString')
                     QuietUninstallString = [string](& $get 'QuietUninstallString')
+                    SystemComponent      = [bool](& $flag 'SystemComponent')
+                    WindowsInstaller     = [bool](& $flag 'WindowsInstaller')
+                    ParentKeyName        = [string](& $get 'ParentKeyName')
                     KeyName              = [string]$k.PSChildName
                     Hive                 = $r[0]
                 })
@@ -4894,7 +5148,8 @@ function Read-LcaState {
         $prev = ConvertFrom-LcaJson -Text (Read-LcaTextFile -Path $st.Path)
         $st.Exists = $true
         $v = Get-LcaProperty -InputObject $prev -Name 'agents'; if ($v) { $st.Agents = @($v) }
-        $v = Get-LcaProperty -InputObject $prev -Name 'date'; if ($v) { $st.Date = "$v" }
+        $v = Get-LcaProperty -InputObject $prev -Name 'date'
+        if ($v -is [datetime]) { $st.Date = ConvertTo-LcaIsoString -Value $v } elseif ($v) { $st.Date = [string]$v }
         $v = Get-LcaProperty -InputObject $prev -Name 'history'; if ($v) { $st.History = @($v) }
         $v = Get-LcaProperty -InputObject $prev -Name 'probes'
         if ($v) { foreach ($pp in $v.PSObject.Properties) { $st.Probes[$pp.Name] = $pp.Value } }
@@ -4928,11 +5183,14 @@ function Get-LcaHistoryChange {
     )
     $inScope = @(Select-LcaAgentInScope -Context $Context -Agent $Agent -Tier 'detected')
     $curNames = @($inScope | ForEach-Object { $_.Name })
+    # Partial = winget exists but was not read (N6: no winget at all is a
+    # complete scan - Linux, macOS, Windows Server - and records trend points).
     $wingetScanned = [bool]$Context.Data['wingetScanned']
+    $partial = [bool]$Context.Data['wingetAvailable'] -and -not $wingetScanned
     # Without a winget scan, previous winget-only agents are "not checked", not
     # "gone" - reporting them as removed is a lie about state we never observed.
     $unscanned = @()
-    if (-not $wingetScanned) { $unscanned = @($State.WingetOnly) }
+    if ($partial) { $unscanned = @($State.WingetOnly) }
     $new = @(); $gone = @()
     if ($State.Agents.Count) {
         $new = @($curNames | Where-Object { $State.Agents -notcontains $_ })
@@ -4948,7 +5206,7 @@ function Get-LcaHistoryChange {
     $persist = $curNames
     $write = $true
     $hist = @($State.History)
-    if (-not $wingetScanned) {
+    if ($partial) {
         if ($State.Agents.Count -and -not $State.HasWingetKey) {
             # Pre-upgrade state file: no way to tell which previous names were
             # winget-only, so leave the baseline alone rather than corrupt it.
@@ -5181,7 +5439,9 @@ function Export-CodingAgentReport {
         if (-not $Scan) { $Scan = Get-CodingAgent -AsScan }
         $ctx = Get-LcaProperty -InputObject $Scan -Name 'Context'
         if (-not $ctx) { throw 'Export-CodingAgentReport: pass a scan from Get-CodingAgent -AsScan' }
-        if (-not $OutDir) { $OutDir = (Get-Location).ProviderPath }
+        if (-not $OutDir) { $OutDir = '.' }
+        # relative to the PowerShell location, not the .NET process directory
+        $OutDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutDir)
         $export = ConvertTo-LcaExport -Scan $Scan -Context $ctx -Redact:$Redact
         foreach ($f in $Format) {
             if ($f -eq 'json') {
@@ -5190,7 +5450,7 @@ function Export-CodingAgentReport {
             } else {
                 $p = Join-Path -Path $OutDir -ChildPath 'coding-agents.html'
                 Write-LcaTextFile -Path $p -Content (ConvertTo-LcaReportHtml -Export $export)
-                if ($Open) { Open-LcaReport -Path $p }
+                if ($Open) { Open-LcaFile -Path $p }
             }
             if ($PassThru) { Get-Item -LiteralPath $p }
         }
@@ -5268,6 +5528,7 @@ function Get-CodingAgent {
         [switch]$AsScan,
         [switch]$UpdateState
     )
+    Clear-LcaDiagnostic
     $ctx = New-LcaContext -Options @{
         IncludeEditors = $IncludeEditors; IncludeExtensions = $IncludeExtensions; All = $All
         SkipWinget = $SkipWinget; CheckUpdates = $CheckUpdates; NoProbe = $NoProbe
@@ -5371,11 +5632,17 @@ Export-ModuleMember -Function @()
 }
 #endregion LCA-MODULE
 
+# No ValidateSet attributes above: under "irm ... | iex" PowerShell assigns
+# each parameter its default and then applies the attributes, so a
+# ValidateSet would reject the empty default and abort the whole run.
+# -Format / -FailOn are validated inside (bad values exit with code 2).
 $lcaBound = @{}
 foreach ($lcaKey in $PSBoundParameters.Keys) { $lcaBound[$lcaKey] = $PSBoundParameters[$lcaKey] }
 if ($WhatIfPreference -and -not $lcaBound.ContainsKey('WhatIf')) { $lcaBound['WhatIf'] = [switch]$true }
 & $lcaModule { param($b, $r) Invoke-LcaCli -BoundParameters $b -ScriptRoot $r } $lcaBound $PSScriptRoot
 $lcaExit = & $lcaModule { $script:LcaLastExitCode }
+Remove-Variable -Name lcaModule, lcaBound, lcaKey -ErrorAction Ignore
 # Under "irm ... | iex" there is no script file: never call exit there, it
 # would close the user's shell.
 if ($PSCommandPath -and $lcaExit -ne 0) { exit $lcaExit }
+Remove-Variable -Name lcaExit -ErrorAction Ignore
