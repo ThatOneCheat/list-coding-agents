@@ -214,3 +214,15 @@ Describe 'Select-NpmPrimaryRow' {
         @((Select-NpmPrimaryRow $rows) | ForEach-Object { $_.Command }) | Should -Be @('cc')
     }
 }
+
+Describe 'Write-Utf8File' {
+    It 'writes utf-8 without a byte order mark' {
+        $f = Join-Path ([System.IO.Path]::GetTempPath()) ('lca-test-' + [guid]::NewGuid().ToString('N') + '.json')
+        try {
+            Write-Utf8File $f '{"ok":true}'
+            $bytes = [System.IO.File]::ReadAllBytes($f)
+            ($bytes[0..2] -join ',') | Should -Not -Be '239,187,191'
+            [System.IO.File]::ReadAllText($f) | Should -Be '{"ok":true}'
+        } finally { Remove-Item -LiteralPath $f -ErrorAction SilentlyContinue }
+    }
+}

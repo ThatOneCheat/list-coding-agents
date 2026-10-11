@@ -263,6 +263,13 @@ function Get-AgentScore {
 }
 
 # --- enrichment helpers ------------------------------------------------------
+function Write-Utf8File([string]$Path, [string]$Text) {
+    # Out-File -Encoding utf8 puts a byte order mark in front on Windows
+    # PowerShell 5.1, which trips up jq / node / python readers of the json.
+    # Plain UTF-8, same bytes on both editions.
+    [System.IO.File]::WriteAllText($Path, $Text, (New-Object System.Text.UTF8Encoding($false)))
+}
+
 function Get-SizeMB([string]$Path) {
     # Directory: recursive sum. File: its own length.
     try {
@@ -939,13 +946,14 @@ if (-not $wingetScanned) {
 
 if ($writeHist) {
     try {
-        [pscustomobject]@{
+        $stateJson = [pscustomobject]@{
             date       = (Get-Date -Format 'yyyy-MM-dd HH:mm')
             agents     = $persistNames
             wingetOnly = $wingetOnly
             history    = $histArr
             probes     = $probeCache
-        } | ConvertTo-Json -Depth 5 | Out-File -LiteralPath $histFile -Encoding utf8
+        } | ConvertTo-Json -Depth 5
+        Write-Utf8File $histFile $stateJson
     } catch {}
 }
 
@@ -1066,7 +1074,9 @@ if ($Json) {
         }
     }
     $jsonPath = Join-Path $PSScriptRoot 'coding-agents.json'
-    @($export) | ConvertTo-Json -Depth 4 | Out-File -LiteralPath $jsonPath -Encoding utf8
+    # -InputObject keeps a single agent as a one-element array; piping it in
+    # would unwrap it and hand scripts a bare object instead of a list
+    Write-Utf8File $jsonPath (ConvertTo-Json -InputObject @($export) -Depth 4)
     Write-Host "JSON export: $jsonPath" -ForegroundColor Green
 }
 
@@ -1514,7 +1524,7 @@ $($sb.ToString())</div>
 </body></html>
 "@
     $htmlPath = Join-Path $PSScriptRoot 'coding-agents.html'
-    $html | Out-File -LiteralPath $htmlPath -Encoding utf8
+    Write-Utf8File $htmlPath $html
     Write-Host "HTML report: $htmlPath" -ForegroundColor Green
     try { Invoke-Item -LiteralPath $htmlPath } catch {}
 }
