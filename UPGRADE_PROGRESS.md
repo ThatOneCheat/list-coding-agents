@@ -13,6 +13,30 @@ Branch: `ccr-82f8cba4-qqa6vr` (the session's designated branch; see D-01).
 - [ ] Phase 3 - Integrate, adversarial review, gates
 - [ ] Phase 4 - Ship-ready (docs, final gates, progress file removed, push, draft PR)
 
+## Phase 1 status (foundation)
+
+Done (commit "feat: phase 1 foundation"):
+- Module skeleton `src/ListCodingAgents` (manifest, loader, format view, 3 public cmdlets), entry script `src/list-coding-agents.ps1` with full comment-based help for every switch (v1 switches + all new ones; `PositionalBinding = $false`).
+- Provider seam `Private/Platform/`: environment, PATH (platform separator, drive roots kept - N16), known folders (XDG, AppSupport), clock (`LCA_FAKE_NOW`), process runner (stdin closed, stdout+stderr, CI/NO_COLOR/TERM, hard timeout + tree kill, batch-file metacharacter guard), RunspacePool, registry Uninstall keys, PE version info.
+- Result model + frozen contracts (Agent, Evidence, Command, Context, Scan), diagnostics with secret scrubbing, BOM-less atomic writes, one JSON export + `schema/coding-agents.schema.json` (validated by `Test-Json` in tests).
+- v1 logic ported into the module layout (scorer with structured evidence + one scoring table in `data/catalog.json`, PATH / npm / winget sources, enrichment, update checks, state + partial-scan logic, console renderer). The v1 HTML generator is not ported: workstream E replaces it; a minimal client-side report keeps the pipeline working.
+- `build.ps1` (Build / Lint / Test, `-Coverage`): deterministic, ASCII-checked, parse-checked bundle; `PSScriptAnalyzerSettings.psd1` (5.1 + 7.4 syntax, the three command profiles); CI skeleton `.github/workflows/ci.yml` (windows pwsh + 5.1, ubuntu, macos; drift, lint, Pester; report job placeholder).
+- Fixture builder `tests/Helpers/Fixture.psm1` + `tests/fixtures/bin/shim.ps1`: fake HOME / APPDATA / XDG / PATH, fake npm / winget / any tool that logs arguments and replays canned output, in-process (`Use-LcaFixture`) and child-process (`Invoke-LcaFixtureScript`, `-AsScriptBlock` = irm|iex) runs.
+- Parity proof: `tests/Detection/Parity.Tests.ps1` loads v1's scorer, lexicons, Get-Method and Get-Kind from the frozen v1 script via the AST and compares with v2 over 8,000+ inputs (exact score and reasons for every non-catalog name; tier for catalog names; method/kind for Windows paths). `tests/Parity/V1Run.Tests.ps1` runs the real v1 script and the v2 bundle on the same fixture machine on Windows (CI only).
+
+Port deviations from v1 that are deliberate (each is a brief requirement or a confirmed defect fix):
+outputs go to `-OutDir` (default: current directory) instead of the script folder (#15); JSON is the v2 export (D-05) and never an empty file or bare object (N2); BOM-less UTF-8 everywhere (#16); `Format-LcaSize 0` = `0 MB` (#18); probes go through the process seam (stderr captured, tree kill, #9 partly); PATH split per platform and Unix exec-bit candidates (N18); drive-root PATH entries kept (N16); command strings are argument arrays (N10); `-NoOpen` honoured (#19); exit never called under `irm | iex`.
+
+Measured (Linux, pwsh 7.6.6):
+- Lint: **0** findings on src/, build.ps1 and the bundle (v1: 55).
+- Pester: **310 passed**, 0 failed, 4 skipped (Windows-only / 5.1-only), ~40 s; line coverage **74.0%** of src/ (gate is 80%, Phase 2 must add tests).
+- Bundle: 183.9 KB, byte-identical across rebuilds.
+- Fixture scan (1 npm agent, Linux): detects claude (v1 on the same fixture: 0).
+
+Known gaps handed to Phase 2 (beyond the brief's workstream scope):
+- A: scoring every binary in `/usr/bin` takes ~2.8 s on this box; `/bin` -> `/usr/bin` symlink produces a false PATH conflict (`sg`); on Linux `sg` (shadow-utils) shows as POSSIBLE.
+- D: `Update-FormatData` for `-PassThru` objects in bundle mode; `-Format table|csv|markdown`; `-FailOn`; terminal renderer.
+
 ## Environment (this run)
 
 | Item | Value |

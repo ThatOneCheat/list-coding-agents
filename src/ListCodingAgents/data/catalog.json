@@ -1,0 +1,1679 @@
+{
+  "catalogVersion": 1,
+  "scoring": {
+    "thresholds": {
+      "detected": 4,
+      "possible": 2
+    },
+    "weights": {
+      "knownCommand": 6,
+      "ambiguousCommand": 2,
+      "pathSignature": 3,
+      "agentPhrase": 4,
+      "aiVendor": 3,
+      "aiSdkDependency": 3,
+      "agentPlusCode": 2,
+      "brandName": 1,
+      "brandPlusCli": 2,
+      "brandCommand": 2,
+      "aiPlusCode": 1,
+      "extraOverride": 5,
+      "excluded": -99
+    },
+    "lexicons": {
+      "aiVendors": "anthropic|openai|moonshot|mistral|cohere|sourcegraph|augment(code)?|codeium|anysphere|factory|\\bsst\\b|kilocode|perplexity|deepseek|\\bxai\\b|bytedance|tencent|all[- ]?hands|nous(\\s?research)?|letta",
+      "aiSdkDependency": "(?i)@anthropic-ai/|(^|/)openai(@|/|$)|@google/genai|generative-ai|langchain|ollama|@ai-sdk/|^ai$|mistralai|@google/generative-ai",
+      "brandWords": "claude|gemini|copilot|codex|aider|cody|goose|opencode|openclaw|cline|roo[- ]?code|droid|crush|qwen|grok|kimi|antigravity|blackbox|windsurf|cursor|kiro|mimo|jcode|vibe|\\bgpt\\b|\\bllm\\b|kilocode|factory|openhands|codebuddy|iflow|mux|trae|zencoder|hermes|letta",
+      "brandCommandSuffix": "(?:[-_]?(?:cli|code|agent))?",
+      "agentPhrase": "coding[- ]?agent|code[- ]?agent|agentic|ai[- ]?coding|ai pair|pair program|autonomous (coding|software|dev)|ai software engineer|terminal.*agent|ai[- ]?powered coding|coding assistant",
+      "hardExclude": "(?i)install .*skill|skill for|\\bdeploy(ment)?\\b|package manager|boilerplate|scaffold|video extension|image extension|redistributable|driver|\\bmcp[- ]?server\\b|^mcp\\b|\\bmodel context protocol\\b",
+      "skillInstaller": "(?i)install .*skill|skill for",
+      "mcpUtilityName": "(?i)(^|-)mcp($|-)|-mcp-server$|^mcp-",
+      "helperName": "(?i)(launcher|host|helper|shim|wrapper|updater|unins)",
+      "vendorPublisherIgnore": "(?i)^(Node\\.js|Oven|Microsoft Corporation)$",
+      "agentWord": "\\bagent\\b",
+      "agentContext": "code|coding|cli|terminal|dev",
+      "brandContext": "cli|code|coding|terminal|assistant",
+      "aiToken": "(^|[^a-z])ai([^a-z]|$)",
+      "aiContext": "code|coding|cli|agent|assistant"
+    }
+  },
+  "agents": [
+    {
+      "id": "claude",
+      "displayName": "claude",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "claude"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [
+        "/\\.local/bin/claude",
+        "/anthropic/",
+        "/Claude/"
+      ],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "codex",
+      "displayName": "codex",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "codex"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [
+        "/OpenAI/Codex/"
+      ],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "gemini",
+      "displayName": "gemini",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "gemini"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [
+        "/gemini-cli/"
+      ],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "grok",
+      "displayName": "grok",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "grok"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [
+        "/\\.grok/bin/"
+      ],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "kimi",
+      "displayName": "kimi",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "kimi"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [
+        "/\\.kimi-code/"
+      ],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "opencode",
+      "displayName": "opencode",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "opencode"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [
+        "/opencode"
+      ],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "openclaw",
+      "displayName": "openclaw",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "openclaw"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "qwen",
+      "displayName": "qwen",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "qwen"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "jcode",
+      "displayName": "jcode",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "jcode"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [
+        "/jcode/bin/"
+      ],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "mimo",
+      "displayName": "mimo",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "mimo"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [
+        "/\\.mimocode/"
+      ],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "aider",
+      "displayName": "aider",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "aider"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "cody",
+      "displayName": "cody",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "cody"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "crush",
+      "displayName": "crush",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "crush"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "droid",
+      "displayName": "droid",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "droid"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "goose",
+      "displayName": "goose",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "goose"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "cline",
+      "displayName": "cline",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "cline"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "kilocode",
+      "displayName": "kilocode",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "kilocode"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "kilo",
+      "displayName": "kilo",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "kilo"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "factory",
+      "displayName": "factory",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "factory"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "blackbox",
+      "displayName": "blackbox",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "blackbox"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "auggie",
+      "displayName": "auggie",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "auggie"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "cursor-agent",
+      "displayName": "cursor-agent",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "cursor-agent"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "windsurf",
+      "displayName": "windsurf",
+      "vendor": null,
+      "kind": "editor",
+      "commands": [
+        "windsurf"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [
+        "/Programs/Windsurf/"
+      ],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "kiro",
+      "displayName": "kiro",
+      "vendor": null,
+      "kind": "editor",
+      "commands": [
+        "kiro"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "roo-code",
+      "displayName": "roo-code",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "roo-code"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "continue-cli",
+      "displayName": "continue-cli",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "continue-cli"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "copilot",
+      "displayName": "copilot",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "copilot"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "gh-copilot",
+      "displayName": "gh-copilot",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "gh-copilot"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "openhands",
+      "displayName": "openhands",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "openhands"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [
+        "/\\.openhands/"
+      ],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "codebuddy",
+      "displayName": "codebuddy",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "codebuddy"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "iflow",
+      "displayName": "iflow",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "iflow"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "mux",
+      "displayName": "mux",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "mux"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "zencoder",
+      "displayName": "zencoder",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "zencoder"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "hermes",
+      "displayName": "hermes",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "hermes"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [
+        "/\\.hermes/"
+      ],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "hermes-agent",
+      "displayName": "hermes-agent",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "hermes-agent"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "letta",
+      "displayName": "letta",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "letta"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "trae",
+      "displayName": "trae",
+      "vendor": null,
+      "kind": "editor",
+      "commands": [
+        "trae"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [
+        "/Programs/(trae|Trae CN)/"
+      ],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "trae-cn",
+      "displayName": "trae-cn",
+      "vendor": null,
+      "kind": "editor",
+      "commands": [
+        "trae-cn"
+      ],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $KnownCli"
+    },
+    {
+      "id": "sg",
+      "displayName": "sg",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "sg"
+      ],
+      "ambiguous": true,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $AmbiguousCli"
+    },
+    {
+      "id": "src",
+      "displayName": "src",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "src"
+      ],
+      "ambiguous": true,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $AmbiguousCli"
+    },
+    {
+      "id": "amp",
+      "displayName": "amp",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "amp"
+      ],
+      "ambiguous": true,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $AmbiguousCli"
+    },
+    {
+      "id": "pi",
+      "displayName": "pi",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "pi"
+      ],
+      "ambiguous": true,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $AmbiguousCli"
+    },
+    {
+      "id": "vibe",
+      "displayName": "vibe",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "vibe"
+      ],
+      "ambiguous": true,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $AmbiguousCli"
+    },
+    {
+      "id": "continue",
+      "displayName": "continue",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "continue"
+      ],
+      "ambiguous": true,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $AmbiguousCli"
+    },
+    {
+      "id": "roo",
+      "displayName": "roo",
+      "vendor": null,
+      "kind": "cli",
+      "commands": [
+        "roo"
+      ],
+      "ambiguous": true,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $AmbiguousCli"
+    },
+    {
+      "id": "cursor",
+      "displayName": "cursor",
+      "vendor": null,
+      "kind": "editor",
+      "commands": [],
+      "ambiguous": false,
+      "packages": {
+        "npm": [],
+        "pypi": [],
+        "cargo": [],
+        "brew": [],
+        "scoop": [],
+        "choco": [],
+        "winget": [],
+        "vscode": []
+      },
+      "pathSignatures": [
+        "/Programs/cursor/"
+      ],
+      "configDirs": {
+        "all": [],
+        "windows": [],
+        "macos": [],
+        "linux": []
+      },
+      "versionArgs": [
+        "--version"
+      ],
+      "homepage": null,
+      "repo": null,
+      "sources": [],
+      "verified": false,
+      "notes": "seeded from v1 $PathSignatures; v1 never listed \"cursor\" as a known CLI name, so it has no command here"
+    }
+  ]
+}

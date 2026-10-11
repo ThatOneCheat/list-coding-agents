@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+    tags-ignore: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  powershell:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows / PowerShell 7
+            os: windows-latest
+            shell: pwsh
+            coverage: false
+          - name: windows / Windows PowerShell 5.1
+            os: windows-latest
+            shell: powershell
+            coverage: false
+          - name: ubuntu / PowerShell 7
+            os: ubuntu-latest
+            shell: pwsh
+            coverage: true
+          - name: macos / PowerShell 7
+            os: macos-latest
+            shell: pwsh
+            coverage: false
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Show versions
+        run: |
+          $PSVersionTable | Format-Table -AutoSize | Out-String | Write-Output
+          git --version
+
+      - name: Install Pester and PSScriptAnalyzer
+        run: |
+          [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+          if ($PSVersionTable.PSEdition -ne 'Core') {
+            Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser | Out-Null
+          }
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module -Name Pester -RequiredVersion 6.2.0 -Scope CurrentUser -Force -SkipPublisherCheck -AllowClobber
+          Install-Module -Name PSScriptAnalyzer -RequiredVersion 1.25.0 -Scope CurrentUser -Force
+
+      - name: Build and check for drift
+        run: |
+          ./build.ps1 -Task Build
+          git diff --exit-code -- list-coding-agents.ps1
+          if ($LASTEXITCODE -ne 0) { throw 'list-coding-agents.ps1 differs from a fresh build: run ./build.ps1 and commit the result' }
+
+      - name: Lint
+        run: ./build.ps1 -Task Lint
+
+      - name: Pester
+        run: |
+          if ('${{ matrix.coverage }}' -eq 'true') { ./build.ps1 -Task Test -Coverage } else { ./build.ps1 -Task Test }
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4.6.0
+        with:
+          name: test-results-${{ matrix.os }}-${{ matrix.shell }}
+          path: |
+            testResults.xml
+            coverage.xml
+          if-no-files-found: ignore
+
+  report:
+    name: report (Playwright + axe)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - uses: actions/setup-node@v4.1.0
+        with:
+          node-version: 22
+
+      - name: Report tests
+        shell: pwsh
+        run: |
+          if (-not (Test-Path ./tests/report/package.json)) { Write-Output 'no report tests yet'; exit 0 }
+          Set-Location ./tests/report
+          npm ci
+          npx playwright install --with-deps chromium
+          npm test

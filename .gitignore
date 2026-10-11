@@ -1,0 +1,16 @@
+# Generated reports and exports
+coding-agents.html
+coding-agents.json
+agent-fleet-card*.png
+# v1 kept its state next to the script
+last-scan.json
+last-scan.corrupt-*.json
+# Local test / build output
+/out/
+/tests/.out/
+/tests/report/node_modules/
+/tests/report/test-results/
+/tests/report/playwright-report/
+coverage.xml
+testResults.xml
+*.log

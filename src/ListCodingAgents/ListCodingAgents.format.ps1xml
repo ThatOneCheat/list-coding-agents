@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+  <ViewDefinitions>
+    <View>
+      <Name>ListCodingAgents.Agent</Name>
+      <ViewSelectedBy>
+        <TypeName>ListCodingAgents.Agent</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader><Label>Name</Label></TableColumnHeader>
+          <TableColumnHeader><Label>Kind</Label></TableColumnHeader>
+          <TableColumnHeader><Label>Method</Label></TableColumnHeader>
+          <TableColumnHeader><Label>Version</Label></TableColumnHeader>
+          <TableColumnHeader><Label>Update</Label></TableColumnHeader>
+          <TableColumnHeader><Label>Usage</Label></TableColumnHeader>
+          <TableColumnHeader><Label>SizeMB</Label><Alignment>Right</Alignment></TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem><PropertyName>Name</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>Kind</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>Method</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>Version</PropertyName></TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>if ($_.UpdateStatus -eq 'outdated') { '-> ' + $_.Latest } else { $_.UpdateStatus }</ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem><PropertyName>Usage</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>InstallSizeMB</PropertyName></TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+  </ViewDefinitions>
+</Configuration>

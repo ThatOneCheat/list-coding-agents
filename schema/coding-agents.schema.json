@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/thatonecheat/list-coding-agents/schema/coding-agents.schema.json",
+  "title": "list-coding-agents scan export",
+  "description": "coding-agents.json (-Json), -Format json and the data embedded in coding-agents.html all follow this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "tool", "generatedAt", "host", "platform", "powershell", "redacted", "scope", "summary", "changes", "history", "agents", "diagnostics"],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "const": "list-coding-agents" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+" }
+      }
+    },
+    "generatedAt": { "$ref": "#/$defs/isoDate" },
+    "host": { "type": ["string", "null"], "description": "Machine name; null when -Redact is used." },
+    "platform": { "enum": ["windows", "macos", "linux"] },
+    "powershell": { "type": "string" },
+    "redacted": { "type": "boolean" },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["includeEditors", "includeExtensions", "wingetScanned", "partial", "partialReason"],
+      "properties": {
+        "includeEditors": { "type": "boolean" },
+        "includeExtensions": { "type": "boolean" },
+        "wingetScanned": { "type": "boolean" },
+        "partial": { "type": "boolean" },
+        "partialReason": { "type": ["string", "null"] }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["detected", "possible", "channels", "totalMB", "reclaimMB", "active30", "rank", "deadWeight", "conflicts", "outdated"],
+      "properties": {
+        "detected": { "type": "integer", "minimum": 0, "description": "DETECTED CLIs (editors and extensions never count, so runs stay comparable)." },
+        "possible": { "type": "integer", "minimum": 0 },
+        "channels": { "type": "integer", "minimum": 0 },
+        "totalMB": { "type": "number", "minimum": 0 },
+        "reclaimMB": { "type": "number", "minimum": 0 },
+        "active30": { "type": "integer", "minimum": 0 },
+        "rank": { "enum": ["MINIMALIST", "COLLECTOR", "ENTHUSIAST", "CERTIFIED HOARDER", "AGENT SINGULARITY"] },
+        "deadWeight": { "$ref": "#/$defs/stringList" },
+        "conflicts": { "$ref": "#/$defs/stringList" },
+        "outdated": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "changes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["previousScan", "new", "gone", "versionChanges"],
+      "properties": {
+        "previousScan": { "type": ["string", "null"] },
+        "new": { "$ref": "#/$defs/stringList" },
+        "gone": { "$ref": "#/$defs/stringList" },
+        "versionChanges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "from", "to"],
+            "properties": {
+              "name": { "type": "string" },
+              "from": { "type": ["string", "null"] },
+              "to": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["d", "c", "mb"],
+        "properties": {
+          "d": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "c": { "type": "integer", "minimum": 0 },
+          "mb": { "type": "number", "minimum": 0 },
+          "v": { "type": "object", "additionalProperties": { "type": ["string", "null"] }, "description": "Agent id -> version at that scan." }
+        }
+      }
+    },
+    "agents": { "type": "array", "items": { "$ref": "#/$defs/agent" } },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "level", "message"],
+        "properties": {
+          "source": { "type": "string" },
+          "level": { "enum": ["info", "warning", "error"] },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "isoDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(Z|[+-]\\d{2}:\\d{2})$" },
+    "stringList": { "type": "array", "items": { "type": "string" } },
+    "nullableString": { "type": ["string", "null"] },
+    "nullableNumber": { "type": ["number", "null"], "minimum": 0 },
+    "command": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["exe", "args", "display"],
+      "properties": {
+        "exe": { "type": "string" },
+        "args": { "$ref": "#/$defs/stringList" },
+        "display": { "type": "string" }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "displayName", "vendor", "homepage", "catalogId", "verified", "tier", "kind", "score", "why", "evidence", "command", "source", "path", "method", "channel", "package", "packageDir", "sources", "shadowedBy", "version", "versionSource", "previousVersion", "latest", "updateStatus", "updateReason", "updateCmd", "updateCommand", "uninstallCmd", "uninstallCommand", "uninstallNote", "sizeMB", "installRoot", "installSizeMB", "dataDirs", "dataSizeMB", "lastUsed", "usage", "stale", "sessions30d", "mcpServers", "mcp", "loggedIn", "isNew"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "displayName": { "type": "string" },
+        "vendor": { "$ref": "#/$defs/nullableString" },
+        "homepage": { "$ref": "#/$defs/nullableString" },
+        "catalogId": { "$ref": "#/$defs/nullableString" },
+        "verified": { "type": "boolean" },
+        "tier": { "enum": ["detected", "possible", "excluded"] },
+        "kind": { "enum": ["cli", "editor", "extension"] },
+        "score": { "type": "integer" },
+        "why": { "type": "string" },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["signal", "label", "weight", "source", "detail"],
+            "properties": {
+              "signal": { "type": "string" },
+              "label": { "type": "string" },
+              "weight": { "type": "integer" },
+              "source": { "type": "string" },
+              "detail": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "command": { "$ref": "#/$defs/nullableString", "description": "Basename on PATH; null for rows found only by a package manager, winget, the registry or an editor." },
+        "source": { "type": "string" },
+        "path": { "$ref": "#/$defs/nullableString" },
+        "method": { "type": "string", "description": "Install channel display label (v1 compatible)." },
+        "channel": { "enum": ["npm", "pnpm", "bun", "yarn", "pipx", "uv", "pip", "cargo", "brew", "scoop", "choco", "winget", "vscode", "registry", "standalone", "unknown"] },
+        "package": { "$ref": "#/$defs/nullableString" },
+        "packageDir": { "$ref": "#/$defs/nullableString" },
+        "sources": { "$ref": "#/$defs/stringList" },
+        "shadowedBy": { "$ref": "#/$defs/stringList" },
+        "version": { "$ref": "#/$defs/nullableString" },
+        "versionSource": { "$ref": "#/$defs/nullableString" },
+        "previousVersion": { "$ref": "#/$defs/nullableString" },
+        "latest": { "$ref": "#/$defs/nullableString" },
+        "updateStatus": { "enum": ["current", "outdated", "unknown"] },
+        "updateReason": { "$ref": "#/$defs/nullableString" },
+        "updateCmd": { "type": "string" },
+        "updateCommand": { "$ref": "#/$defs/command" },
+        "uninstallCmd": { "type": "string" },
+        "uninstallCommand": { "$ref": "#/$defs/command" },
+        "uninstallNote": { "$ref": "#/$defs/nullableString" },
+        "sizeMB": { "$ref": "#/$defs/nullableNumber" },
+        "installRoot": { "$ref": "#/$defs/nullableString" },
+        "installSizeMB": { "$ref": "#/$defs/nullableNumber" },
+        "dataDirs": { "$ref": "#/$defs/stringList" },
+        "dataSizeMB": { "$ref": "#/$defs/nullableNumber" },
+        "lastUsed": { "oneOf": [{ "$ref": "#/$defs/isoDate" }, { "type": "null" }] },
+        "usage": { "enum": ["active", "stale", "unknown"] },
+        "stale": { "type": "boolean" },
+        "sessions30d": { "type": "integer", "minimum": 0 },
+        "mcpServers": { "type": "integer", "minimum": 0 },
+        "mcp": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "transport"],
+            "properties": {
+              "name": { "type": "string" },
+              "transport": { "enum": ["stdio", "http", "sse", "unknown"] }
+            }
+          }
+        },
+        "loggedIn": { "type": "boolean" },
+        "isNew": { "type": "boolean" }
+      }
+    }
+  }
+}
