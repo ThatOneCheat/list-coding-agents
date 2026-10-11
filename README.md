@@ -28,10 +28,12 @@ it prints everything AND opens a html report in your browser!
 ```powershell
 .\list-coding-agents.ps1 -CheckUpdates     # tells u which agents are outdated + the exact command to update them
 .\list-coding-agents.ps1 -Json             # dumps everything into coding-agents.json if u wanna script with it
-.\list-coding-agents.ps1 -IncludeEditors   # also show cursor / windsurf / kiro (the gui ones!)
+.\list-coding-agents.ps1 -IncludeEditors   # also show cursor / windsurf / kiro + desktop apps like chatgpt/codex (the gui ones!)
 .\list-coding-agents.ps1 -ShowReasons      # tells you WHY it thinks something is an agent
 .\list-coding-agents.ps1 -NoHtml           # skip the html if u just want the terminal
 .\list-coding-agents.ps1 -NoOpen           # still writes the html but doesnt pop the browser (for scripts n stuff)
+.\list-coding-agents.ps1 -SkipWinget       # skip the winget part if its slow on ur pc (it says "partial scan" so u know)
+.\list-coding-agents.ps1 -UpdateAll        # like -CheckUpdates but then asks if u want it to run all the update commands
 ```
 
 ## ok it got a big upgrade
@@ -75,6 +77,20 @@ so for those there's a lil file called **`agents-extra.txt`**. just type the com
 blackbox
 agy
 ```
+
+and the other way around too: if it keeps showing u something that is NOT an agent, put the name in **`agents-exclude.txt`** (same deal, one per line) and it'll shut up about it. exclude wins if a name is in both
+
+also winget rows that are obviously a desktop app (store packages, or just a brand name like "Claude" / "ChatGPT" / "Copilot") count as "gui ones" now and hide unless u pass `-IncludeEditors`, same as cursor and friends
+
+## tests (yes it has tests now lol)
+
+theres pester tests in `tests/` for the scoring and parsing bits. if u have pester 5:
+
+```powershell
+Invoke-Pester -Path .\tests
+```
+
+they also run on github actions on every push, on windows powershell 5.1 AND pwsh 7, so it stays working on both
 
 ## requirements
 
