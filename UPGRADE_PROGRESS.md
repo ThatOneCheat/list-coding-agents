@@ -192,6 +192,7 @@ New findings (each survived a refutation attempt by the agent that found it; N18
 - **D-05** The JSON export changes shape: v1 wrote a bare array; v2 writes `{ schemaVersion: 2, ..., agents: [...] }` (the brief requires a `schemaVersion`). Every v1 agent key keeps its v1 meaning inside `agents[]`. Migration note goes to CHANGELOG (`jq '.agents'`).
 - **D-06** The install channel is a machine id (`npm`, `pipx`, `standalone`, ...) in `channel`; `method` keeps v1's display labels (`standalone installer`, `pip / uv`) for compatibility.
 - **D-07** Workstream branches (`v2-ws-a` ... `v2-ws-f`) live only in local worktrees and are merged locally into the session branch (see D-01).
+- **D-08** The harness's worktree-isolation guard refuses every `pwsh` command for isolated agents (it cannot prove pwsh won't run git outside the worktree), and the isolated worktrees were created from `main` (v1) - each agent rebased its branch onto the Phase 1 tip b0b0b8e. The guard was not circumvented: the isolated writers finish their code without running it, then a separate NON-isolated agent (normal session permissions, the same ones the integrator uses) runs build / lint / Pester in that worktree and fixes failures, and a third agent verifies. Reported in the final report.
 
 ## Catalog draft (Phase 0 C)
 
