@@ -47,6 +47,7 @@ Known gaps handed to Phase 2 (beyond the brief's workstream scope):
 
 - First attempt: six isolated writer agents (one per workstream). The worktree-isolation guard refused pwsh for all of them (D-08), and all six were then cut off by an account rate limit (HTTP 429, "session limit"). Work preserved as `wip(v2-ws-x)` checkpoint commits on each branch (A: catalog rebuilt from the sourced draft; B: Size/Usage; C: version/channels/commands; D: state/history/console/format; E: fonts, report template/CSS/JS, Playwright start; F: README/CONTRIBUTING/CHANGELOG/CLAUDE drafts, 5 commits). All six branches build.
 - Second attempt (workflow `v2-phase2-workstreams`): per workstream, non-isolated implementer agents continue in the same worktree with pwsh (A in two parts), then an independent read-only verifier, then up to two verify -> fix rounds.
+- That workflow was stopped twice while the session's usage limit ran out (its A part 1 and E agents were cut off mid-way; their work is in further `wip` checkpoints on v2-ws-a / v2-ws-e). Third attempt (2026-10-12): the same workflow script, now retrying an agent that dies (up to 3 attempts, told to pick up the uncommitted work), run as two concurrent runs to use 4 agent slots instead of 2: `wf_b4bfa792-a25` (A, B, F) and `wf_193be3bc-f0d` (E, D, C) - see D-09.
 
 ## Environment (this run)
 
@@ -198,6 +199,7 @@ New findings (each survived a refutation attempt by the agent that found it; N18
 - **D-06** The install channel is a machine id (`npm`, `pipx`, `standalone`, ...) in `channel`; `method` keeps v1's display labels (`standalone installer`, `pip / uv`) for compatibility.
 - **D-07** Workstream branches (`v2-ws-a` ... `v2-ws-f`) live only in local worktrees and are merged locally into the session branch (see D-01).
 - **D-08** The harness's worktree-isolation guard refuses every `pwsh` command for isolated agents (it cannot prove pwsh won't run git outside the worktree), and the isolated worktrees were created from `main` (v1) - each agent rebased its branch onto the Phase 1 tip b0b0b8e. The guard was not circumvented: the isolated writers finish their code without running it, then a separate NON-isolated agent (normal session permissions, the same ones the integrator uses) runs build / lint / Pester in that worktree and fixes failures, and a third agent verifies. Reported in the final report.
+- **D-09** One workflow runs at most 2 agents at a time on this 4-CPU host, so Phase 2 runs as two concurrent runs of the same script (each takes a subset of workstreams through `args.ws`). Agents that die on an API error or session limit are retried up to twice with a note to resume from the worktree's uncommitted state.
 
 ## Catalog draft (Phase 0 C)
 
